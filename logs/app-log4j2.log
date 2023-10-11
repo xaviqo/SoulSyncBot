@@ -1,0 +1,9 @@
+2023-10-10 20:19:37,254 INFO [restartedMain] org.springframework.boot.StartupInfoLogger: Starting SoulSyncApplication using Java 17.0.9 with PID 23451 (/home/xavi/Desktop/TRABAJOS/GIT/SoulSyncBot/soulsync/target/classes started by xavi in /home/xavi/Desktop/TRABAJOS/GIT/SoulSyncBot/soulsync)
+2023-10-10 20:19:37,259 DEBUG [restartedMain] org.springframework.boot.StartupInfoLogger: Running with Spring Boot v3.1.4, Spring v6.0.12
+2023-10-10 20:19:37,263 INFO [restartedMain] org.springframework.boot.SpringApplication: No active profile set, falling back to 1 default profile: "default"
+2023-10-10 20:19:37,460 INFO [restartedMain] org.springframework.boot.logging.DeferredLog: Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2023-10-10 20:19:37,465 INFO [restartedMain] org.springframework.boot.logging.DeferredLog: For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2023-10-10 20:19:40,427 INFO [restartedMain] org.springframework.boot.devtools.autoconfigure.OptionalLiveReloadServer: LiveReload server is running on port 35729
+2023-10-10 20:19:40,793 INFO [restartedMain] org.springframework.boot.web.embedded.netty.NettyWebServer: Netty started on port 8080
+2023-10-10 20:19:40,833 INFO [restartedMain] org.springframework.boot.StartupInfoLogger: Started SoulSyncApplication in 4.02 seconds (process running for 5.205)
+2023-10-10 20:19:40,843 INFO [restartedMain] tech.xavi.soulsync.service.AuthService: Request to Spotify Auth API to obtain access token

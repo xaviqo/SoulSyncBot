@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.*;
 
 @Slf4j
-public class JsonDatabase<T> {
+public class JsonBackupRepository<T> {
 
     private final String DATA_FIELD = "data";
     private final String LAST_UPATE_FIELD = "lastUpdate";
@@ -21,7 +21,7 @@ public class JsonDatabase<T> {
     private List<T> data;
     private long lastUpdate;
 
-    public JsonDatabase(String jsonFile, Class<T> clazz) {
+    public JsonBackupRepository(String jsonFile, Class<T> clazz) {
         this.clazz = clazz;
         this.data = new ArrayList<>();
         this.DB = new File("db/",jsonFile);

@@ -1,14 +1,170 @@
 package tech.xavi.soulsync.gateway;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import tech.xavi.soulsync.dto.gateway.*;
 
+@Log4j2
 @Component
 public class SlskdGateway extends Gateway {
 
+    private final String GET_SESSION_URL;
+    private final String INIT_SEARCH_URL;
+    private final String INIT_DOWNLOAD_URL;
+    private final String CHECK_STATUS_URL;
+    private final String GET_RESPONSES_URL;
+    private final ObjectMapper objectMapper;
+
+
     public SlskdGateway(
-            @Value("${tech.xavi.soulsync.gateway.scheme.slsk}") String scheme
+            @Value("${tech.xavi.soulsync.gateway.base-url.slskd.main}") String baseUrl,
+            @Value("${tech.xavi.soulsync.gateway.path.slskd.login}") String epSession,
+            @Value("${tech.xavi.soulsync.gateway.path.slskd.search-req}") String initSearch,
+            @Value("${tech.xavi.soulsync.gateway.path.slskd.responses}") String responsesPath,
+            @Value("${tech.xavi.soulsync.gateway.path.slskd.download}") String initDownload,
+            ObjectMapper objectMapper
     ) {
-        this.SCHEME = scheme;
+        final String addParam = "/%s";
+        this.GET_SESSION_URL = baseUrl+epSession;
+        this.INIT_SEARCH_URL = baseUrl+initSearch;
+        this.CHECK_STATUS_URL = baseUrl+initSearch+addParam;
+        this.GET_RESPONSES_URL = baseUrl+initSearch+addParam+responsesPath;
+        this.INIT_DOWNLOAD_URL = baseUrl+initDownload+addParam;
+        this.objectMapper = objectMapper;
+    }
+
+    public void download(SlskdDownloadRequest downloadRequest, String token){
+        try {
+            String formattedUrl = String.format(INIT_DOWNLOAD_URL,downloadRequest.username());
+
+            log.debug("[download] - URI: {}",formattedUrl);
+            log.debug("[download] - Payload: {}, {}",downloadRequest,token);
+
+            HttpResponse<JsonNode> response = Unirest.post(formattedUrl)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .body(new SlskdDownloadPayload[]{downloadRequest.payload()})
+                    .asJson();
+
+            int responseStatus = response.getStatus();
+            log.debug("[download] - Response status code: {}",responseStatus);
+
+        } catch (Exception e) {
+            log.error("[download] - Error while making the request: {}",e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public SlskdSearchResult[] getSearchResults(String searchId, String token){
+        try {
+            String formattedUrl = String.format(GET_RESPONSES_URL,searchId);
+
+            log.debug("[getSearchResults] - URI: {}",formattedUrl);
+            log.debug("[getSearchResults] - Payload: {}, {}",searchId,token);
+
+            HttpResponse<JsonNode> response = Unirest.get(formattedUrl)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .asJson();
+
+            int responseStatus = response.getStatus();
+            log.debug("[getSearchResults] - Response status code: {}",responseStatus);
+
+            String responseJson = response.getBody().toString();
+            SlskdSearchResult[] searchResults = objectMapper.readValue(responseJson, SlskdSearchResult[].class);
+            log.debug("[getSearchResults] - Total Results: {}",searchResults.length);
+
+            return searchResults;
+        } catch (Exception e) {
+            log.error("[getSearchResults] - Error while making the request: {}",e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public SlskdSearchStatus checkSearchStatus(String searchId, String token){
+        try {
+            String formattedUrl = String.format(CHECK_STATUS_URL,searchId);
+
+            log.debug("[checkSearchStatus] - URI: {}",formattedUrl);
+            log.debug("[checkSearchStatus] - Payload: {}, {}",searchId,token);
+
+            HttpResponse<JsonNode> response = Unirest.get(formattedUrl)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .asJson();
+
+            int responseStatus = response.getStatus();
+            log.debug("[checkSearchStatus] - Response status code: {}",responseStatus);
+
+            String responseJson = response.getBody().toString();
+            log.debug("[checkSearchStatus] - Complete response: {}",responseJson);
+
+            return objectMapper.readValue(responseJson, SlskdSearchStatus.class);
+        } catch (Exception e) {
+            log.error("[checkSearchStatus] - Error while making the request: {}",e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public SlskdSearchStatus initSearch(SlskdSearchQuery songReq, String token){
+        try {
+            log.debug("[initSearch] - URI: {}",INIT_SEARCH_URL);
+            log.debug("[initSearch] - Payload: {}, {}",songReq,token);
+
+
+            HttpResponse<JsonNode> response = Unirest.post(INIT_SEARCH_URL)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .body(songReq)
+                    .asJson();
+
+            int responseStatus = response.getStatus();
+            log.debug("[initSearch] - Response status code: {}",responseStatus);
+
+            String responseJson = response.getBody().toString();
+            log.debug("[initSearch] - Complete response: {}",responseJson);
+
+            return objectMapper.readValue(responseJson, SlskdSearchStatus.class);
+        } catch (Exception e) {
+            log.error("[initSearch] - Error while making the request: {}",e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public SlskdTokenRes getToken(String username, String password){
+        try {
+            log.debug("[getToken] - URI: {}",GET_SESSION_URL);
+            log.debug("[getToken]- Payload: {}, {}",username,password);
+
+            HttpResponse<JsonNode> response = Unirest.post(GET_SESSION_URL)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .body(SlskdLogin.builder()
+                            .username(username)
+                            .password(password)
+                            .build())
+                    .asJson();
+
+
+            int responseStatus = response.getStatus();
+            log.debug("[getToken] - Response status code: " + responseStatus);
+
+            String responseJson = response.getBody().toString();
+            log.debug("[getToken] - Complete response: " + responseJson);
+
+            return objectMapper.readValue(responseJson, SlskdTokenRes.class);
+        } catch (Exception e) {
+            log.error("[getToken] - Error while getting the token: " + e.getMessage());
+            return null;
+        }
     }
 }

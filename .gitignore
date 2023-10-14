@@ -31,3 +31,18 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Compiled Java
+*.jar
+*.war
+*.ear
+
+# Logs
+logs/
+
+# Compiled class file
+*.class
+
+# Log files
+*.log
+*.gz

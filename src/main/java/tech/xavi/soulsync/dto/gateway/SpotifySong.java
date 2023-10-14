@@ -17,8 +17,15 @@ public class SpotifySong {
 
     // We obtain better results
     // if we only select the first artist.
-    public String getArtist() {
+    public String getFirstArtist() {
         return track.getArtists().get(0).getName();
+    }
+
+    public List<String> getArtists(){
+        return track.getArtists()
+                .stream()
+                .map(Artist::getName)
+                .toList();
     }
 
     @Data

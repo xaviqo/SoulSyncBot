@@ -1,0 +1,43 @@
+package tech.xavi.soulsync.service;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.dto.gateway.SpotifySong;
+import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
+import tech.xavi.soulsync.model.Playlist;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+
+@RequiredArgsConstructor
+@Service
+public class MainService {
+
+    private final PlaylistService playlistService;
+
+    // TODO: Refactor totalTracks, find another solution
+    public Playlist addPlaylistRequest(AddPlaylistReq request){
+        String playlistId = request.playlist();
+
+        int totalTracks = playlistService
+                .fetchPlaylistTotalTracks(playlistId);
+
+        if (totalTracks < 1) {
+            return null;
+        }
+
+        List<SpotifySong> spotifyPlaylist = playlistService
+                .getAllPlaylistSongs(playlistId, totalTracks);
+        Playlist playlist = playlistService
+                .convertToPlaylistObject(playlistId,spotifyPlaylist);
+        CompletableFuture
+                .runAsync(() -> playlistService.checkPlaylist(playlist));
+
+        return playlist;
+    }
+
+
+
+
+
+}

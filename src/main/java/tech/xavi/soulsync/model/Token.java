@@ -3,5 +3,5 @@ package tech.xavi.soulsync.model;
 import lombok.Builder;
 
 @Builder
-public record Token(String token, long expirationStamp) {
+public record Token(String token, long expirationStamp, String apiName) {
 }

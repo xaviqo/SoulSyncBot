@@ -6,7 +6,7 @@ import lombok.Data;
 
 @JsonIgnoreProperties
 @Data
-public class SpotifyTokenResponse{
+public class SpotifyTokenRes {
 
     @JsonProperty("access_token")
     String token;

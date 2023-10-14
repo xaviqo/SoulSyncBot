@@ -3,7 +3,7 @@ package tech.xavi.soulsync.dto.gateway;
 import lombok.Data;
 
 @Data
-public class SpotifyPlaylistTotalTracksResponse {
+public class SpotifyPlaylistTotalTracks {
 
     private Tracks tracks;
 

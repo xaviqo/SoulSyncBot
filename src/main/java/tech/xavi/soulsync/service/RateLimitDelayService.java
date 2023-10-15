@@ -32,7 +32,7 @@ public class RateLimitDelayService {
         this.seeksRunning = new AtomicInteger(0);
     }
 
-    public synchronized int delay(){
+    public int delay(){
         return delay(MIN_MS_DELAY,MAX_MS_DELAY);
     }
 
@@ -41,7 +41,7 @@ public class RateLimitDelayService {
         int minimum = minMs*totalProcesses;
         int maximum = maxMs*totalProcesses;
         if (totalProcesses > 1) {
-            log.debug("Processes running at the same time ({}) The base pause time will be multiplied by ({})",
+            log.debug("[delay] - Processes running at the same time ({}) The base pause time will be multiplied by ({})",
                     totalProcesses,
                     totalProcesses
             );
@@ -57,12 +57,12 @@ public class RateLimitDelayService {
         return 0;
     }
 
-    private synchronized void checkLargePauseRequired(){
+    private void checkLargePauseRequired(){
         if (pauseCounter.incrementAndGet() >= LARGE_PAUSE_TRIGGER){
             int totalProcesses = getCurrentProcesses();
             int largePause = LARGE_PAUSE_MS*totalProcesses;
             pauseCounter.set(0);
-            log.debug("[searchSongs] - Total pLarge Pause Required. Milliseconds: {}",largePause);
+            log.debug("[searchSongs] - Large Pause Required. Milliseconds: {}",largePause);
             delay(largePause-1,largePause+1);
             log.debug("[searchSongs] - Large Pause Completed. Milliseconds: {}",largePause);
         }
@@ -72,13 +72,13 @@ public class RateLimitDelayService {
         return seeksRunning.get();
     }
 
-    public synchronized void initSeek(){
+    public void initSeek(){
         int total = seeksRunning.incrementAndGet();
         log.debug("[initSeek] - New search process has started. Total: {}",total);
 
     }
 
-    public synchronized void finishSeek(){
+    public void finishSeek(){
         int total = seeksRunning.decrementAndGet();
         log.debug("[finishSeek] - A search process has been terminated. Total: {}",total);
     }

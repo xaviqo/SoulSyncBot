@@ -16,8 +16,8 @@ tech:
         interval-minutes-scheduled-task: 5
       credentials:
         spotify:
-          client-id: sptfid
-          client-secret: sptfsec
+          client-id: cli-id
+          client-secret: cli-sec
         slskd:
           username: slskd
           password: slskd

@@ -1,0 +1,71 @@
+tech:
+  xavi:
+    soulsync:
+      cfg:
+        max-req-tracks-per-playlist: 20
+        max-concurrent-threads: 4
+        wait-sec-btw-result-req: 10
+        max-retries-result-req: 10
+        delay-min-ms: 500
+        delay-max-ms: 6000
+        delay-large-pause-trigger: 10
+        delay-large-pause-ms: 128000
+        common-words-to-remove: the,a,an,and,feat,with,of,in,on,at,by,for,to
+        accepted-formats: mp3,flac,opus
+        min-mp3-bitrate: 320
+        interval-minutes-scheduled-task: 5
+      credentials:
+        spotify:
+          client-id: spotify-cli-id
+          client-secret: spotify-cli-sec
+        slskd:
+          username: slskd
+          password: slskd
+      gateway:
+        base-url:
+          spotify:
+            auth: https://accounts.spotify.com
+            main: https://api.spotify.com
+          slskd:
+            main: http://localhost:5030
+        path:
+          spotify:
+            auth:
+              get-token:
+                ep: /api/token
+            main:
+              get-playlist:
+                ep: /v1/playlists/{playlistId}/tracks
+                fields: items(track(name,artists(name)))
+              get-total-tracks:
+                ep: /v1/playlists/{playlistId}/
+                fields: tracks.total
+          slskd:
+            health: /health
+            login: /api/v0/session
+            search: /api/v0/searches
+            responses: /responses
+            download: /api/v0/transfers/downloads
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false
+    username: soulsync
+    password: soulsync
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  security:
+    user:
+      password: none
+
+logging:
+  level:
+    com:
+      mashape:
+        unirest: DEBUG
+      fasterxml:
+        jackson:
+          databind: DEBUG
+    org:
+      hibernate:
+        SQL: DEBUG

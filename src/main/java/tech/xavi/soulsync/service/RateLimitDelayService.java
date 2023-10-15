@@ -49,7 +49,7 @@ public class RateLimitDelayService {
         try {
             final int randomDelay = ThreadLocalRandom.current().nextInt(minimum, maximum);
             Thread.sleep(randomDelay);
-            checkLargePauseRequired();
+            //checkLargePauseRequired();
             return randomDelay;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

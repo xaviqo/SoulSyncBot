@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.SlskdSearchQuery;
 import tech.xavi.soulsync.dto.gateway.SlskdSearchResult;
+import tech.xavi.soulsync.dto.gateway.SlskdSearchStatus;
 import tech.xavi.soulsync.dto.gateway.SpotifySong;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.model.Playlist;
@@ -80,11 +81,16 @@ public class SearchService {
             do {
                 int delayMs = delayService.delay();
                 log.debug("[fetchResults] - Delay required. Random Milliseconds:: {}",delayMs);
-                if (isSearchComplete(song)) {
+                SlskdSearchStatus searchStatus = isSearchComplete(song);
+                if (searchStatus == null){
+                    log.debug("[fetchResults] - Search is not available, 'isComplete' value is NULL: {}, {}", song.getSearchInput(), song.getSearchId());
+                    song.notify();
+                    break;
+                }
+                if (searchStatus.isComplete()) {
                     log.debug("[fetchResults] - Search process finished, " +
                             "a list of results is being requested | SearchInput: {} SearchId: {}", song.getSearchInput(), song.getSearchId());
 
-                    song.notify();
                     return slskdGateway.getSearchResults(
                             song.getSearchId().toString(),
                             authService.getSlskdToken().token()
@@ -104,7 +110,12 @@ public class SearchService {
                     try {
                         song.wait(WAIT_SEC_BTW_RESULT_REQ * 1000);
                     } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
+                        log.error("InterruptedException occurred while waiting for the next attempt: {}, {}, {}",
+                                e.getMessage() ,
+                                song.getSearchInput(),
+                                song.getSearchId()
+                        );
+                        Thread.currentThread().interrupt();
                     }
                 }
             } while (retries < MAX_RETRIES_RESULT_REQ);
@@ -113,11 +124,11 @@ public class SearchService {
         return new SlskdSearchResult[0];
     }
 
-    private boolean isSearchComplete(Song song){
+    private SlskdSearchStatus isSearchComplete(Song song){
         return slskdGateway.checkSearchStatus(
                 song.getSearchId().toString(),
                 authService.getSlskdToken().token()
-        ).isComplete();
+        );
     }
 
     public String getSongSearchInputForSlskd(SpotifySong spotifySong){

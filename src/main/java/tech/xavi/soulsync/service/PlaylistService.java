@@ -19,6 +19,7 @@ public class PlaylistService {
     private final AuthService authService;
     private final SearchService searchService;
     private final DownloadService downloadService;
+    private final RateLimitDelayService delayService;
 
 
     public PlaylistService(
@@ -26,16 +27,19 @@ public class PlaylistService {
             SpotifyGateway spotifyGateway,
             AuthService authService,
             SearchService searchService,
-            DownloadService downloadService
+            DownloadService downloadService,
+            RateLimitDelayService delayService
     ) {
         this.PL_REQ_LIMIT_VALUE = limitVal;
         this.spotifyGateway = spotifyGateway;
         this.authService = authService;
         this.searchService = searchService;
         this.downloadService = downloadService;
+        this.delayService = delayService;
     }
 
     public void checkPlaylist(Playlist playlist){
+        delayService.initSeek();
         searchService.searchSongs(playlist);
         downloadService.downloadPlaylist(playlist);
     }

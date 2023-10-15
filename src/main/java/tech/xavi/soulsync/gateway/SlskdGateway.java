@@ -109,6 +109,9 @@ public class SlskdGateway extends Gateway {
             int responseStatus = response.getStatus();
             log.debug("[checkSearchStatus] - Response status code: {}",responseStatus);
 
+            if (response.getStatus() > 399)
+                return null;
+
             String responseJson = response.getBody().toString();
             log.debug("[checkSearchStatus] - Complete response: {}",responseJson);
 
@@ -173,6 +176,7 @@ public class SlskdGateway extends Gateway {
     }
 
     public void deleteSearch(String searchId, String token){
+        String formattedUrl = String.format(DELETE_SEARCH_URL,searchId);
         try {
             log.debug("[deleteSearch] - URI: {}",DELETE_SEARCH_URL);
             log.debug("[deleteSearch]- Payload: {}, {}",searchId,token);

@@ -26,7 +26,6 @@ public class RunningTaskService {
 
     public RunningTaskService(
             @Value("${tech.xavi.soulsync.cfg.interval-minutes-scheduled-task}") int intervalMinutes,
-            @Value("${tech.xavi.soulsync.cfg.max-concurrent-threads}") int maxConcurrentTasks,
             WatchlistService watchlistService,
             QueueService queueService,
             SlskdGateway slskdGateway
@@ -35,7 +34,7 @@ public class RunningTaskService {
         this.queueService = queueService;
         this.slskdGateway = slskdGateway;
         this.configuredInterval = intervalMinutes;
-        this.taskExecutor = Executors.newScheduledThreadPool(maxConcurrentTasks);
+        this.taskExecutor = Executors.newScheduledThreadPool(1);
         this.configureTask(configuredInterval);
     }
 
@@ -43,7 +42,7 @@ public class RunningTaskService {
         log.debug("[configureTask] - Interval between tasks has been updated: {} minutes",interval);
         taskExecutor.scheduleWithFixedDelay(
                 this::runScheduledTask,
-                interval,
+                0,
                 interval,
                 TimeUnit.MINUTES
         );
@@ -58,12 +57,19 @@ public class RunningTaskService {
             log.debug("[runScheduledTask] - Scheduled task is executed. " +
                     "Total pending playlists: {}",pendingPlaylists.size());
             pendingPlaylists.forEach( pl -> {
-                pl.getSongs().forEach(song -> song.setSearchId(UUID.randomUUID()));
-                CompletableFuture.runAsync(() -> {
-                    queueService.addPlaylistToQueue(pl);
-                    watchlistService.updateWatchlist(pl);
-                });
+                if (!queueService.isPlaylistInQueue(pl)) {
+                    log.debug("[runScheduledTask] - Playlist with id ({}) is not in the work queue and will be added",pl.getSpotifyId());
+                    pl.getSongs().forEach(song -> song.setSearchId(UUID.randomUUID()));
+                    CompletableFuture.runAsync(() -> {
+                        queueService.addPlaylistToQueue(pl);
+                        watchlistService.updateWatchlist(pl);
+                        queueService.removePlaylistFromQueue(pl);
+                    });
+                } else {
+                    log.debug("[runScheduledTask] - Playlist with id ({}) is already in the work queue and will not be added",pl.getSpotifyId());
+                }
             });
+
         } else {
             log.error("[runScheduledTask] - ATTENTION ---> No API response from Slskd");
         }

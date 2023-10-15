@@ -128,6 +128,17 @@ public class SearchService {
         );
     }
 
+    public void deleteSearchFromSlskd(Song song){
+        slskdGateway.deleteSearch(
+                song.getSearchId().toString(),
+                authService.getSlskdToken().token()
+        );
+        log.debug("[deleteSearchFromSlskd] - Search ({}) removed from Slskd after download: {}",
+                song.getSearchInput(),
+                song.getSearchId()
+        );
+    }
+
     private String removeSpecialChars(String songNameAndArtist){
         final String SPECIAL_CHARS_REGEX = "[^a-zA-Z0-9]";
         final String DIACRITICAL_ACCENT_MARKS_REGEX = "\\p{M}";
@@ -149,6 +160,10 @@ public class SearchService {
             }
         }
 
-        return cleanedText.toString().trim();
+        String finalCleanedText = cleanedText.toString().isBlank()
+                ? songNameAndArtist
+                : cleanedText.toString();
+
+        return finalCleanedText.trim();
     }
 }

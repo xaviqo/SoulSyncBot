@@ -29,7 +29,7 @@ public class FileFinderService {
 
     }
 
-    public SlskdDownloadRequest findProperFile(Song song, SlskdSearchResult[] results){
+    public SlskdDownloadRequest createDownloadRequest(Song song, SlskdSearchResult[] results){
         for (SlskdSearchResult result : results) {
             SlskdFile[] files = result.files();
             if (files.length < 1) break;

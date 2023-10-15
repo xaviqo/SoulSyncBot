@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
+import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.model.Playlist;
 
 import java.util.List;
@@ -20,15 +21,18 @@ public class ScheduledTaskService {
     private final ScheduledExecutorService taskExecutor;
     private final PlaylistService playlistService;
     private final WatchlistService watchlistService;
+    private final SlskdGateway slskdGateway;
 
     public ScheduledTaskService(
             @Value("${tech.xavi.soulsync.cfg.interval-minutes-scheduled-task}") int intervalMinutes,
             @Value("${tech.xavi.soulsync.cfg.max-concurrent-threads}") int maxConcurrentTasks,
             PlaylistService playlistService,
-            WatchlistService watchlistService
+            WatchlistService watchlistService,
+            SlskdGateway slskdGateway
     ) {
         this.playlistService = playlistService;
         this.watchlistService = watchlistService;
+        this.slskdGateway = slskdGateway;
         this.configuredInterval = intervalMinutes;
         this.taskExecutor = Executors.newScheduledThreadPool(maxConcurrentTasks);
         this.configureTask(configuredInterval);
@@ -47,15 +51,19 @@ public class ScheduledTaskService {
     private void runScheduledTask(){
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        List< Playlist > pendingPlaylists = watchlistService.getWaitingPlaylists();
-        log.debug("[runScheduledTask] - Scheduled task is executed. " +
-                "Total pending playlists: {}",pendingPlaylists.size());
-        pendingPlaylists.forEach( pl -> {
-            CompletableFuture.runAsync(() -> {
-                playlistService.checkPlaylist(pl);
-                watchlistService.updateWatchlist(pl);
+        if (slskdGateway.healthCheck()) {
+            List< Playlist > pendingPlaylists = watchlistService.getWaitingPlaylists();
+            log.debug("[runScheduledTask] - Scheduled task is executed. " +
+                    "Total pending playlists: {}",pendingPlaylists.size());
+            pendingPlaylists.forEach( pl -> {
+                CompletableFuture.runAsync(() -> {
+                    playlistService.checkPlaylist(pl);
+                    watchlistService.updateWatchlist(pl);
+                });
             });
-        });
+        } else {
+            log.error("[runScheduledTask] - ATTENTION ---> No API response from Slskd");
+        }
         stopWatch.stop();
         log.debug("[runScheduledTask] - " +
                 "The scheduled task has been completed in {} seconds.",stopWatch.getTotalTimeSeconds());

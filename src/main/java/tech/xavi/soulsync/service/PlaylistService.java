@@ -56,7 +56,9 @@ public class PlaylistService {
                             .playlist(playlist)
                             .found(false)
                             .build();
-                }).toList();
+                })
+                .filter(song -> song.getSearchInput() != null && !song.getSearchInput().isEmpty())
+                .toList();
 
         playlist.setSongs(songList);
         playlist.setLastTotalTracks(songList.size());

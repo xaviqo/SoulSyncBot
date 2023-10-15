@@ -36,9 +36,13 @@ public class MainService {
                 .getAllPlaylistSongs(playlistId, totalTracks);
         Playlist playlist = playlistService
                 .convertToPlaylistObject(playlistId,spotifyPlaylist);
-        CompletableFuture
-                .runAsync(() -> queueService.addPlaylistToQueue(playlist));
         watchlistService.updateWatchlist(playlist);
+
+        CompletableFuture
+                .runAsync(() -> {
+                    queueService.addPlaylistToQueue(playlist);
+                    queueService.removePlaylistFromQueue(playlist);
+                });
 
         return playlist;
     }

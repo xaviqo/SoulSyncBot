@@ -13,8 +13,6 @@ import tech.xavi.soulsync.model.Song;
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Log4j2
 @Service
@@ -25,12 +23,10 @@ public class SearchService {
     private final int MAX_RETRIES_RESULT_REQ;
     private final SlskdGateway slskdGateway;
     private final AuthService authService;
-    private final ExecutorService threadExecutor;
     private final RateLimitDelayService delayService;
 
     public SearchService(
             @Value("${tech.xavi.soulsync.cfg.common-words-to-remove}") String commonWordsStr,
-            @Value("${tech.xavi.soulsync.cfg.max-concurrent-threads}") int maxConcurrentSearches,
             @Value("${tech.xavi.soulsync.cfg.wait-sec-btw-result-req}") int waitSecBtwResReq,
             @Value("${tech.xavi.soulsync.cfg.max-retries-result-req}") int maxRetResReq,
             SlskdGateway slskdGateway,
@@ -40,7 +36,6 @@ public class SearchService {
         this.COMMON_WORDS_TO_REMOVE = Arrays.stream(commonWordsStr.split(",")).toList();
         this.WAIT_SEC_BTW_RESULT_REQ = waitSecBtwResReq;
         this.MAX_RETRIES_RESULT_REQ = maxRetResReq;
-        this.threadExecutor = Executors.newFixedThreadPool(maxConcurrentSearches);
         this.slskdGateway = slskdGateway;
         this.authService = authService;
         this.delayService = delayService;

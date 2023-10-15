@@ -22,6 +22,5 @@ public class Playlist{
     @Column
     int lastTotalTracks;
     @Column
-    boolean active;
-    long lastScan;
+    boolean scanning;
 }

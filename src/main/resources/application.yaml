@@ -3,19 +3,18 @@ tech:
     soulsync:
       cfg:
         max-req-tracks-per-playlist: 20
-        max-concurrent-threads: 1
         wait-sec-btw-result-req: 10
         max-retries-result-req: 10
-        delay-ms: 1000
+        delay-ms: 2500
         common-words-to-remove: the,a,an,and,feat,with,of,in,on,at,by,for,to
         accepted-formats: mp3,flac,opus
         min-mp3-bitrate: 320
-        interval-minutes-scheduled-task: 5
-        max-songs-downloading-at-a-time: 8
+        interval-minutes-scheduled-task: 1
+        max-songs-downloading-at-a-time: 5
       credentials:
         spotify:
-          client-id: id
-          client-secret: sec
+          client-id: spt-cli-id
+          client-secret: spt-cli-sec
         slskd:
           username: slskd
           password: slskd

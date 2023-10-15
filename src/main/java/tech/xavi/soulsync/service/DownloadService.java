@@ -1,43 +1,22 @@
 package tech.xavi.soulsync.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.SlskdDownloadRequest;
 import tech.xavi.soulsync.dto.gateway.SlskdSearchResult;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.model.Song;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 @Log4j2
+@RequiredArgsConstructor
 @Service
 public class DownloadService {
 
     private final FileFinderService fileFinderService;
     private final SearchService searchService;
-    private final WatchlistService watchlistService;
     private final AuthService authService;
     private final SlskdGateway slskdGateway;
-    private final ExecutorService threadExecutor;
-
-
-    public DownloadService(
-            FileFinderService fileFinderService,
-            SearchService searchService,
-            WatchlistService watchlistService,
-            AuthService authService,
-            SlskdGateway slskdGateway,
-            @Value("${tech.xavi.soulsync.cfg.max-concurrent-threads}") int maxConcurrentDownloads
-            ) {
-        this.threadExecutor = Executors.newFixedThreadPool(maxConcurrentDownloads);
-        this.fileFinderService = fileFinderService;
-        this.watchlistService = watchlistService;
-        this.authService = authService;
-        this.slskdGateway = slskdGateway;
-        this.searchService = searchService;
-    }
 
     public void prepareDownload(Song song) {
         SlskdSearchResult[] results = searchService.fetchResults(song);

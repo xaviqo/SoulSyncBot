@@ -52,14 +52,16 @@ public class SlskdGateway extends Gateway {
             log.debug("[download] - URI: {}",formattedUrl);
             log.debug("[download] - Payload: {}, {}",downloadRequest,token);
 
-            HttpResponse<JsonNode> response = Unirest.post(formattedUrl)
+            HttpResponse<String> response = Unirest.post(formattedUrl)
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .body(new SlskdDownloadPayload[]{downloadRequest.payload()})
-                    .asJson();
+                    .asString();
 
             int responseStatus = response.getStatus();
             log.debug("[download] - Response status code: {}",responseStatus);
+            log.debug("[download] - Complete response: {}", response);
+
 
         } catch (Exception e) {
             log.error("[download] - Error while making the request: {}",e.getMessage());
@@ -183,10 +185,13 @@ public class SlskdGateway extends Gateway {
 
             HttpResponse<String> response = Unirest.delete(formattedUrl)
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .asString();
 
             int responseStatus = response.getStatus();
             log.debug("[deleteSearch] - Response status code: {}", responseStatus);
+            log.debug("[deleteSearch] - Complete response: {}", response.getBody());
+
 
         } catch (Exception e) {
             log.error("[deleteSearch] - Error deleting search: " + e.getMessage());

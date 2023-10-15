@@ -8,6 +8,7 @@ import tech.xavi.soulsync.model.Playlist;
 import tech.xavi.soulsync.model.Song;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
@@ -38,12 +39,6 @@ public class PlaylistService {
         this.delayService = delayService;
     }
 
-    public void checkPlaylist(Playlist playlist){
-        delayService.initSeek();
-        searchService.searchSongs(playlist);
-        downloadService.downloadPlaylist(playlist);
-    }
-
     public Playlist convertToPlaylistObject(String playlistId, List<SpotifySong> spotifyPlaylist){
         Playlist playlist = Playlist.builder()
                 .spotifyId(playlistId)
@@ -54,6 +49,7 @@ public class PlaylistService {
                     String searchInput = searchService
                             .getSongSearchInputForSlskd(sptSng);
                     return Song.builder()
+                            .searchId(UUID.randomUUID())
                             .name(sptSng.getName())
                             .artists(sptSng.getArtists())
                             .searchInput(searchInput)

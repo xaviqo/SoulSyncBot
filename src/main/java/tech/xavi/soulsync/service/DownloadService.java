@@ -6,10 +6,8 @@ import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.SlskdDownloadRequest;
 import tech.xavi.soulsync.dto.gateway.SlskdSearchResult;
 import tech.xavi.soulsync.gateway.SlskdGateway;
-import tech.xavi.soulsync.model.Playlist;
 import tech.xavi.soulsync.model.Song;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,23 +39,7 @@ public class DownloadService {
         this.searchService = searchService;
     }
 
-    public void downloadPlaylist(Playlist playlist){
-        try {
-            CountDownLatch latch = new CountDownLatch(playlist.getSongs().size());
-            playlist.getSongs().forEach(song -> {
-                threadExecutor.execute(() -> {
-                    prepareDownload(song);
-                    latch.countDown();
-                });
-            });
-            latch.await();
-            watchlistService.updateWatchlist(playlist);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private void prepareDownload(Song song) {
+    public void prepareDownload(Song song) {
         SlskdSearchResult[] results = searchService.fetchResults(song);
         int totalResults = results.length;
         if (totalResults > 1) {

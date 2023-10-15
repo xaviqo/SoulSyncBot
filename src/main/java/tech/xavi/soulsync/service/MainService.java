@@ -18,6 +18,8 @@ public class MainService {
 
     private final SlskdGateway slskdGateway;
     private final PlaylistService playlistService;
+    private final QueueService queueService;
+    private final WatchlistService watchlistService;
 
     // TODO: Refactor totalTracks, find another solution
     public Playlist addPlaylistRequest(AddPlaylistReq request){
@@ -35,7 +37,8 @@ public class MainService {
         Playlist playlist = playlistService
                 .convertToPlaylistObject(playlistId,spotifyPlaylist);
         CompletableFuture
-                .runAsync(() -> playlistService.checkPlaylist(playlist));
+                .runAsync(() -> queueService.addPlaylistToQueue(playlist));
+        watchlistService.updateWatchlist(playlist);
 
         return playlist;
     }

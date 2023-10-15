@@ -11,61 +11,36 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class RateLimitDelayService {
 
-    private final int MIN_MS_DELAY;
-    private final int MAX_MS_DELAY;
-    private final int LARGE_PAUSE_TRIGGER;
-    private final int LARGE_PAUSE_MS;
-    private final AtomicInteger pauseCounter;
+    private final int MS_DELAY;
     private final AtomicInteger seeksRunning;
 
     public RateLimitDelayService(
-            @Value("${tech.xavi.soulsync.cfg.delay-min-ms}") int minMsDelay,
-            @Value("${tech.xavi.soulsync.cfg.delay-max-ms}") int maxMsDelay,
-            @Value("${tech.xavi.soulsync.cfg.delay-large-pause-trigger}") int pauseTrig,
-            @Value("${tech.xavi.soulsync.cfg.delay-large-pause-ms}") int largePauseMs
+            @Value("${tech.xavi.soulsync.cfg.delay-ms}") int msDelay
     ) {
-        this.MIN_MS_DELAY = minMsDelay;
-        this.MAX_MS_DELAY = maxMsDelay;
-        this.LARGE_PAUSE_MS = largePauseMs;
-        this.LARGE_PAUSE_TRIGGER = pauseTrig;
-        this.pauseCounter = new AtomicInteger(0);
+        this.MS_DELAY = msDelay;
         this.seeksRunning = new AtomicInteger(0);
     }
 
     public int delay(){
-        return delay(MIN_MS_DELAY,MAX_MS_DELAY);
+        return delay(MS_DELAY);
     }
 
-    public int delay(int minMs, int maxMs){
+    public int delay(int ms){
         int totalProcesses = getCurrentProcesses();
-        int minimum = minMs*totalProcesses;
-        int maximum = maxMs*totalProcesses;
-        if (totalProcesses > 1) {
-            log.debug("[delay] - Processes running at the same time ({}) The base pause time will be multiplied by ({})",
-                    totalProcesses,
-                    totalProcesses
-            );
-        }
+        int delayMs = ms*totalProcesses;
+        log.debug("[delay] - Total processes running: ({}) Time will be multiplied by: ({}) Delay applied: ({}ms)",
+                totalProcesses,
+                totalProcesses,
+                delayMs
+        );
         try {
-            final int randomDelay = ThreadLocalRandom.current().nextInt(minimum, maximum);
+            final int randomDelay = ThreadLocalRandom.current().nextInt(delayMs/2, delayMs*2);
             Thread.sleep(randomDelay);
-            //checkLargePauseRequired();
             return randomDelay;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         return 0;
-    }
-
-    private void checkLargePauseRequired(){
-        if (pauseCounter.incrementAndGet() >= LARGE_PAUSE_TRIGGER){
-            int totalProcesses = getCurrentProcesses();
-            int largePause = LARGE_PAUSE_MS*totalProcesses;
-            pauseCounter.set(0);
-            log.debug("[searchSongs] - Large Pause Required. Milliseconds: {}",largePause);
-            delay(largePause-1,largePause+1);
-            log.debug("[searchSongs] - Large Pause Completed. Milliseconds: {}",largePause);
-        }
     }
 
     private int getCurrentProcesses(){
@@ -74,13 +49,12 @@ public class RateLimitDelayService {
 
     public void initSeek(){
         int total = seeksRunning.incrementAndGet();
-        log.debug("[initSeek] - New search process has started. Total: {}",total);
-
+        log.debug("[initSeek] - New search process has started. Total processes running: {}",total);
     }
 
     public void finishSeek(){
         int total = seeksRunning.decrementAndGet();
-        log.debug("[finishSeek] - A search process has been terminated. Total: {}",total);
+        log.debug("[finishSeek] - A search process has been terminated. Total processes running: {}",total);
     }
 
 }

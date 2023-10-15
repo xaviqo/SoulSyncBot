@@ -8,6 +8,7 @@ import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.model.Playlist;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,23 +16,23 @@ import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
-public class ScheduledTaskService {
+public class RunningTaskService {
 
     private int configuredInterval;
     private final ScheduledExecutorService taskExecutor;
-    private final PlaylistService playlistService;
     private final WatchlistService watchlistService;
+    private final QueueService queueService;
     private final SlskdGateway slskdGateway;
 
-    public ScheduledTaskService(
+    public RunningTaskService(
             @Value("${tech.xavi.soulsync.cfg.interval-minutes-scheduled-task}") int intervalMinutes,
             @Value("${tech.xavi.soulsync.cfg.max-concurrent-threads}") int maxConcurrentTasks,
-            PlaylistService playlistService,
             WatchlistService watchlistService,
+            QueueService queueService,
             SlskdGateway slskdGateway
     ) {
-        this.playlistService = playlistService;
         this.watchlistService = watchlistService;
+        this.queueService = queueService;
         this.slskdGateway = slskdGateway;
         this.configuredInterval = intervalMinutes;
         this.taskExecutor = Executors.newScheduledThreadPool(maxConcurrentTasks);
@@ -51,13 +52,15 @@ public class ScheduledTaskService {
     private void runScheduledTask(){
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
+        queueService.printQueueStatus();
         if (slskdGateway.healthCheck()) {
-            List< Playlist > pendingPlaylists = watchlistService.getWaitingPlaylists();
+            List<Playlist> pendingPlaylists = watchlistService.getWaitingPlaylists();
             log.debug("[runScheduledTask] - Scheduled task is executed. " +
                     "Total pending playlists: {}",pendingPlaylists.size());
             pendingPlaylists.forEach( pl -> {
+                pl.getSongs().forEach(song -> song.setSearchId(UUID.randomUUID()));
                 CompletableFuture.runAsync(() -> {
-                    playlistService.checkPlaylist(pl);
+                    queueService.addPlaylistToQueue(pl);
                     watchlistService.updateWatchlist(pl);
                 });
             });

@@ -178,10 +178,10 @@ public class SlskdGateway extends Gateway {
     public void deleteSearch(String searchId, String token){
         String formattedUrl = String.format(DELETE_SEARCH_URL,searchId);
         try {
-            log.debug("[deleteSearch] - URI: {}",DELETE_SEARCH_URL);
+            log.debug("[deleteSearch] - URI: {}",formattedUrl);
             log.debug("[deleteSearch]- Payload: {}, {}",searchId,token);
 
-            HttpResponse<String> response = Unirest.delete(DELETE_SEARCH_URL)
+            HttpResponse<String> response = Unirest.delete(formattedUrl)
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .asString();
 

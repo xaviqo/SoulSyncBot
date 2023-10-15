@@ -8,13 +8,11 @@ import tech.xavi.soulsync.dto.gateway.SlskdSearchResult;
 import tech.xavi.soulsync.dto.gateway.SlskdSearchStatus;
 import tech.xavi.soulsync.dto.gateway.SpotifySong;
 import tech.xavi.soulsync.gateway.SlskdGateway;
-import tech.xavi.soulsync.model.Playlist;
 import tech.xavi.soulsync.model.Song;
 
 import java.text.Normalizer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,22 +46,7 @@ public class SearchService {
         this.delayService = delayService;
     }
 
-    public void searchSongs(Playlist playlist){
-        playlist.getSongs().forEach(song -> {
-            song.setSearchId(UUID.randomUUID());;
-            log.debug("[searchSongs] - Added new searchId ({}) for ({})",
-                    song.getSearchId(),
-                    song.getSearchInput()
-            );
-            threadExecutor.execute(() -> {
-                int delayMs = delayService.delay();
-                log.debug("[searchSongs] - Delay required. Random Milliseconds:: {}",delayMs);
-                searchSong(song);
-            });
-        });
-    }
-
-    private void searchSong(Song song){
+    public void searchSong(Song song){
         slskdGateway.initSearch(
                 SlskdSearchQuery.builder()
                         .id(song.getSearchId().toString())
@@ -72,6 +55,12 @@ public class SearchService {
                 authService
                         .getSlskdToken()
                         .token()
+        );
+        int delayMs = delayService.delay();
+        log.debug("[searchSong] - Delay required. Random Milliseconds:: {}",delayMs);
+        log.debug("[searchSong] - Song search is initiated: ({}) with id ({})",
+                song.getSearchInput(),
+                song.getSearchId()
         );
     }
 

@@ -16,7 +16,7 @@ import java.util.List;
 public class Playlist{
     @Id
     String spotifyId;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "playlist_id")
     List<Song> songs;
     @Column

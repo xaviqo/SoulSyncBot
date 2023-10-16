@@ -13,8 +13,8 @@ tech:
         max-songs-downloading-at-a-time: 5
       credentials:
         spotify:
-          client-id: spt-cli-id
-          client-secret: spt-cli-sec
+          client-id: cli-id
+          client-secret: cli-sec
         slskd:
           username: slskd
           password: slskd

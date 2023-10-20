@@ -198,11 +198,11 @@ public class SlskdGateway extends Gateway {
         }
     }
 
-    public boolean healthCheck(){
+    public boolean isSlskdApiHealthy(){
         final String healthyResponse = "Healthy";
 
         try {
-            log.debug("[healthCheck] - URI: {}",GET_SESSION_URL);
+            log.debug("[healthCheck] - URI: {}",HEALTH_CHECK_URL);
 
             HttpResponse<String> response = Unirest.get(HEALTH_CHECK_URL)
                     .asString();

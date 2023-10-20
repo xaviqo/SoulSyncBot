@@ -3,6 +3,7 @@ package tech.xavi.soulsync.service;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.model.Playlist;
@@ -49,6 +50,19 @@ public class QueueService {
         }
     }
 
+    @Async("asyncExecutor")
+    public void seek(Playlist playlist){
+        log.debug("[runScheduledTask] - Playlist with id ({}) is not in the work queue and will be added",playlist.getSpotifyId());
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        addPlaylistToQueue(playlist);
+        removePlaylistFromQueue(playlist);
+        watchlistService.updateWatchlist(playlist);
+        stopWatch.stop();
+        log.debug("[runScheduledTask] - " +
+                "The scheduled task has been completed in {} seconds.",stopWatch.getTotalTimeSeconds());
+    }
+
     private void addToQueue(Song song){
         log.debug("[addToQueue] - Waiting to add a new song to the queue: {}",song.getSearchInput());
         try {
@@ -88,50 +102,34 @@ public class QueueService {
             }
         }
     }
-    private void doProcess(Song song){
+
+    private void doProcess(Song song) {
         double totalSec = 0;
+        String searchInput = song.getSearchInput();
+        log.debug("[doProcess] Started seek process for search: '{}'",searchInput);
+
+        totalSec += performService("Init Seek", delayService::initSeek, searchInput);
+        totalSec += performService("Search", () -> searchService.searchSong(song), searchInput);
+        totalSec += performService("Download", () -> downloadService.prepareDownload(song), searchInput);
+        totalSec += performService("Update Song Status", () -> watchlistService.updateSongStatus(song), searchInput);
+        totalSec += performService("Finish Seek", delayService::finishSeek, searchInput);
+
+        log.debug("[doProcess] Finished seek process for search: '{}' - Total time elapsed {} sec",searchInput,totalSec);
+    }
+
+    private double performService(String serviceName, Runnable serviceFunction, String searchInput) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
-        log.debug("[doProcess] Process initiated for the song: {}. Total time elapsed: {} sec",
-                song.getSearchInput(),
-                stopWatch.getTotalTimeSeconds()
-        );
-        delayService.initSeek();
+        log.debug("[performService] Started Process [{}] for search '{}'",serviceName,searchInput);
+        serviceFunction.run();
         stopWatch.stop();
-        totalSec+=stopWatch.getTotalTimeSeconds();
-        log.debug("[doProcess] Sent to search: {}. Time elapsed: {} sec, Total time elapsed {}",
-                song.getSearchInput(),
-                stopWatch.getTotalTimeSeconds(),
-                totalSec
+        double timeSeconds = stopWatch.getTotalTimeSeconds();
+        log.debug("[performService] Finished Process [{}] for search '{}¡, Time elapsed: {} sec",
+                serviceName,
+                searchInput,
+                timeSeconds
         );
-        stopWatch.start();
-        searchService.searchSong(song);
-        stopWatch.stop();
-        totalSec+=stopWatch.getTotalTimeSeconds();
-        log.debug("[doProcess] Sent to download: {}. Time elapsed: {} sec, Total time elapsed {}",
-                song.getSearchInput(),
-                stopWatch.getTotalTimeSeconds(),
-                totalSec
-        );
-        stopWatch.start();
-        downloadService.prepareDownload(song);
-        stopWatch.stop();
-        totalSec+=stopWatch.getTotalTimeSeconds();
-        log.debug("[doProcess] Sent to update in DB: {}. Time elapsed: {} sec, Total time elapsed {}",
-                song.getSearchInput(),
-                stopWatch.getTotalTimeSeconds(),
-                totalSec
-        );
-        stopWatch.start();
-        watchlistService.updateSongStatus(song);
-        delayService.finishSeek();
-        stopWatch.stop();
-        totalSec+=stopWatch.getTotalTimeSeconds();
-        log.debug("[doProcess] Process finished for song: {}. Time elapsed: {} sec, Total time elapsed {}",
-                song.getSearchInput(),
-                stopWatch.getTotalTimeSeconds(),
-                totalSec
-        );
+        return timeSeconds;
     }
 
 

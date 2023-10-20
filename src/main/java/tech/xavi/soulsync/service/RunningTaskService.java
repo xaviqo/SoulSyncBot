@@ -3,14 +3,12 @@ package tech.xavi.soulsync.service;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.model.Playlist;
 import tech.xavi.soulsync.model.Song;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -49,24 +47,15 @@ public class RunningTaskService {
 
     protected void runScheduledTask(){
         queueService.printQueueStatus();
-        if (slskdGateway.healthCheck()) {
+        if (slskdGateway.isSlskdApiHealthy()) {
             List<Playlist> pendingPlaylists = watchlistService.getWaitingPlaylists();
             log.debug("[runScheduledTask] - Scheduled task is executed. " +
                     "Total pending playlists: {}",pendingPlaylists.size());
             pendingPlaylists.forEach( pl -> {
                 if (!queueService.isPlaylistInQueue(pl)) {
-                    for (Song song : pl.getSongs()) song.setSearchId(UUID.randomUUID());
-                    CompletableFuture.runAsync(() -> {
-                        log.debug("[runScheduledTask] - Playlist with id ({}) is not in the work queue and will be added",pl.getSpotifyId());
-                        StopWatch stopWatch = new StopWatch();
-                        stopWatch.start();
-                        queueService.addPlaylistToQueue(pl);
-                        watchlistService.updateWatchlist(pl);
-                        queueService.removePlaylistFromQueue(pl);
-                        stopWatch.stop();
-                        log.debug("[runScheduledTask] - " +
-                                "The scheduled task has been completed in {} seconds.",stopWatch.getTotalTimeSeconds());
-                    });
+                    for (Song song : pl.getSongs())
+                        song.setSearchId(UUID.randomUUID());
+                    queueService.seek(pl);
                 } else {
                     log.debug("[runScheduledTask] - Playlist with id ({}) is already in the work queue and will not be added",pl.getSpotifyId());
                 }

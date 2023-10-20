@@ -30,12 +30,17 @@ public class DownloadService {
                 song.setFilename(filename);
                 song.setFound(true);
                 song.setSize(size);
-                log.debug("[prepareDownload] - File found ({}) for this search input ({})",filename,song.getSearchInput());
+                log.debug("[prepareDownload] - File found ({}) for this search input ({})",
+                        filename,song.getSearchInput()
+                );
                 sendDownload(downloadRequest);
                 searchService.deleteSearchFromSlskd(song);
                 return;
             }
-            log.debug("[prepareDownload] - Results found ({}) for this search input ({}), but none of them match the requested criteria",totalResults,song.getSearchInput());
+            log.debug("[prepareDownload] - Results found ({}) for this search input ({}), " +
+                    "but none of them match the requested criteria",
+                    totalResults,song.getSearchInput()
+            );
         }
         resetSongForNextIteration(song);
     }

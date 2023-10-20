@@ -12,12 +12,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RateLimitDelayService {
 
     private final int MS_DELAY;
+    private final int SEC_SEARCH_PAUSE;
     private final AtomicInteger seeksRunning;
 
     public RateLimitDelayService(
-            @Value("${tech.xavi.soulsync.cfg.delay-ms}") int msDelay
-    ) {
+            @Value("${tech.xavi.soulsync.cfg.delay-ms}") int msDelay,
+            @Value("${tech.xavi.soulsync.cfg.wait-sec-btw-result-req}") int waitSecSearchPause
+            ) {
         this.MS_DELAY = msDelay;
+        this.SEC_SEARCH_PAUSE = waitSecSearchPause;
         this.seeksRunning = new AtomicInteger(0);
     }
 
@@ -41,6 +44,11 @@ public class RateLimitDelayService {
             Thread.currentThread().interrupt();
         }
         return 0;
+    }
+
+    public int searchPause() throws InterruptedException{
+        Thread.sleep(SEC_SEARCH_PAUSE * 1000L);
+        return SEC_SEARCH_PAUSE;
     }
 
     private int getCurrentProcesses(){

@@ -9,7 +9,6 @@ import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.model.Playlist;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -36,19 +35,16 @@ public class MainService {
                 .getAllPlaylistSongs(playlistId, totalTracks);
         Playlist playlist = playlistService
                 .convertToPlaylistObject(playlistId,spotifyPlaylist);
-        watchlistService.updateWatchlist(playlist);
+        watchlistService
+                .updateWatchlist(playlist);
 
-        CompletableFuture
-                .runAsync(() -> {
-                    queueService.addPlaylistToQueue(playlist);
-                    queueService.removePlaylistFromQueue(playlist);
-                });
+        queueService.seek(playlist);
 
         return playlist;
     }
 
     public void slskdHealthCheckOnInit(){
-        if (slskdGateway.healthCheck())
+        if (slskdGateway.isSlskdApiHealthy())
             log.info("[healthCheck] - Slsk API connection ----> SUCCESS");
         else
             log.error("[healthCheck] - Slsk API connection ----> FAIL");

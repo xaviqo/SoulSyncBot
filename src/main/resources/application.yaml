@@ -5,7 +5,7 @@ tech:
         max-req-tracks-per-playlist: 20
         wait-sec-btw-result-req: 10
         max-retries-result-req: 10
-        delay-ms: 2500
+        delay-ms: 5000
         common-words-to-remove: the,a,an,and,feat,with,of,in,on,at,by,for,to
         accepted-formats: mp3,flac,opus
         min-mp3-bitrate: 320
@@ -13,8 +13,8 @@ tech:
         max-songs-downloading-at-a-time: 5
       credentials:
         spotify:
-          client-id: cli-id
-          client-secret: cli-sec
+          client-id: cliid
+          client-secret: clisec
         slskd:
           username: slskd
           password: slskd

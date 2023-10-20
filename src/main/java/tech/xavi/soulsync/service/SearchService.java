@@ -9,6 +9,8 @@ import tech.xavi.soulsync.dto.gateway.SlskdSearchStatus;
 import tech.xavi.soulsync.dto.gateway.SpotifySong;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.model.Song;
+import tech.xavi.soulsync.model.exception.SeekProcessError;
+import tech.xavi.soulsync.model.exception.SeekProcessException;
 
 import java.text.Normalizer;
 import java.util.Arrays;
@@ -19,7 +21,6 @@ import java.util.List;
 public class SearchService {
 
     private final List<String> COMMON_WORDS_TO_REMOVE;
-    private final long WAIT_SEC_BTW_RESULT_REQ;
     private final int MAX_RETRIES_RESULT_REQ;
     private final SlskdGateway slskdGateway;
     private final AuthService authService;
@@ -27,14 +28,12 @@ public class SearchService {
 
     public SearchService(
             @Value("${tech.xavi.soulsync.cfg.common-words-to-remove}") String commonWordsStr,
-            @Value("${tech.xavi.soulsync.cfg.wait-sec-btw-result-req}") int waitSecBtwResReq,
             @Value("${tech.xavi.soulsync.cfg.max-retries-result-req}") int maxRetResReq,
             SlskdGateway slskdGateway,
             AuthService authService,
             RateLimitDelayService delayService
     ) {
         this.COMMON_WORDS_TO_REMOVE = Arrays.stream(commonWordsStr.split(",")).toList();
-        this.WAIT_SEC_BTW_RESULT_REQ = waitSecBtwResReq;
         this.MAX_RETRIES_RESULT_REQ = maxRetResReq;
         this.slskdGateway = slskdGateway;
         this.authService = authService;
@@ -52,67 +51,78 @@ public class SearchService {
                         .token()
         );
         int delayMs = delayService.delay();
-        log.debug("[searchSong] - Delay required. Random Milliseconds:: {}",delayMs);
+        log.debug("[searchSong] - Delay required. Random Milliseconds: {}",
+                delayMs
+        );
         log.debug("[searchSong] - Song search is initiated: ({}) with id ({})",
                 song.getSearchInput(),
                 song.getSearchId()
         );
     }
 
-    public SlskdSearchResult[] fetchResults(Song song) {
-        synchronized (song) {
-            int retries = 0;
-            do {
-                int delayMs = delayService.delay();
-                log.debug("[fetchResults] - Delay required. Random Milliseconds:: {}",delayMs);
-                SlskdSearchStatus searchStatus = isSearchComplete(song);
-                if (searchStatus == null){
-                    log.debug("[fetchResults] - Search is not available, 'isComplete' value is NULL: {}, {}", song.getSearchInput(), song.getSearchId());
-                    song.notify();
+    public SlskdSearchResult[] fetchResults(Song song){
+        int retries = 1;
+        do {
+            try {
+                if (isSearchComplete(song).isComplete())
+                    return getResultArray(song);
+
+                if (isAttemptLimitReached(retries,song))
                     break;
-                }
-                if (searchStatus.isComplete()) {
-                    log.debug("[fetchResults] - Search process finished, " +
-                            "a list of results is being requested | SearchInput: {} SearchId: {}", song.getSearchInput(), song.getSearchId());
 
-                    return slskdGateway.getSearchResults(
-                            song.getSearchId().toString(),
-                            authService.getSlskdToken().token()
-                    );
-                } else {
-                    if (retries == MAX_RETRIES_RESULT_REQ-1) {
-                        log.debug("[fetchResults] - The search process has not been completed after {} retries. " +
-                                        "It will be postponed for the next hunting | SearchInput: {} SearchId: {}",
-                                MAX_RETRIES_RESULT_REQ, song.getSearchInput(), song.getSearchId());
-                    } else {
-                        log.debug("[fetchResults] (Attempt #{}) - The search process has not yet been completed, " +
-                                        "waiting {} sec for the next attempt | SearchInput: {} SearchId: {}",
-                                (retries+1), WAIT_SEC_BTW_RESULT_REQ, song.getSearchInput(), song.getSearchId());
-                    }
-                    retries++;
+                pause(song,retries);
+                retries++;
 
-                    try {
-                        song.wait(WAIT_SEC_BTW_RESULT_REQ * 1000);
-                    } catch (InterruptedException e) {
-                        log.error("InterruptedException occurred while waiting for the next attempt: {}, {}, {}",
-                                e.getMessage() ,
-                                song.getSearchInput(),
-                                song.getSearchId()
+            } catch (SeekProcessException seekProcessException){
+                log.error("[fetchResults] - {} - Search Input: {}",
+                        seekProcessException.getSeekProcessError(),
+                        song.getSearchInput()
                         );
-                        Thread.currentThread().interrupt();
-                    }
-                }
-            } while (retries < MAX_RETRIES_RESULT_REQ);
-        }
-        log.debug("[fetchResults] - No search results found for: {}, {}", song.getSearchInput(), song.getSearchId());
+                break;
+            } catch (InterruptedException interruptedException) {
+                log.error("InterruptedException occurred while waiting " +
+                                "for the next attempt: {}, {}, {}",
+                        interruptedException.getMessage() ,
+                        song.getSearchInput(),
+                        song.getSearchId()
+                );
+                Thread.currentThread().interrupt();
+                break;
+            }
+
+        } while (retries < MAX_RETRIES_RESULT_REQ);
         return new SlskdSearchResult[0];
     }
 
-    private SlskdSearchStatus isSearchComplete(Song song){
-        return slskdGateway.checkSearchStatus(
+    private SlskdSearchResult[] getResultArray(Song song){
+        log.debug("[fetchResults] - Search process finished, " +
+                        "a list of results is being requested | SearchInput: {} SearchId: {}",
+                song.getSearchInput(),
+                song.getSearchId()
+        );
+        return slskdGateway.getSearchResults(
                 song.getSearchId().toString(),
                 authService.getSlskdToken().token()
         );
+    }
+
+    private SlskdSearchStatus isSearchComplete(Song song) throws SeekProcessException{
+        SlskdSearchStatus searchStatus = slskdGateway.checkSearchStatus(
+                song.getSearchId().toString(),
+                authService.getSlskdToken().token()
+        );
+        if (searchStatus == null)
+            throw new SeekProcessException(
+                    SeekProcessError.NULL_RESULT_EXCEPTION
+            );
+        return searchStatus;
+    }
+
+    private void pause(Song song, int retries) throws InterruptedException {
+        int pauseSec = delayService.searchPause();
+        log.debug("[fetchResults] (Attempt #{}) - Wait {} sec pause performed " +
+                        "| SearchInput: {} SearchId: {}",
+                retries, pauseSec, song.getSearchInput(), song.getSearchId());
     }
 
     public String getSongSearchInputForSlskd(SpotifySong spotifySong){
@@ -134,6 +144,21 @@ public class SearchService {
         );
     }
 
+    private boolean isAttemptLimitReached(int retries, Song song){
+        boolean isReached = (retries == MAX_RETRIES_RESULT_REQ);
+        if (isReached){
+            log.debug("[fetchResults] - The search process has not been completed after {} attempts. " +
+                            "Postponed to next hunting | SearchInput: {} SearchId: {}",
+                    MAX_RETRIES_RESULT_REQ, song.getSearchInput(), song.getSearchId());
+        } else {
+            log.debug("[fetchResults] (Attempt #{}) - The search process has not yet been completed " +
+                            "| SearchInput: {} SearchId: {}",
+                    retries, song.getSearchInput(), song.getSearchId());
+        }
+        return isReached;
+    }
+
+    // The search fails if words of two or fewer letters are added.
     private String removeSpecialChars(String songNameAndArtist){
         final String SPECIAL_CHARS_REGEX = "[^a-zA-Z0-9]";
         final String DIACRITICAL_ACCENT_MARKS_REGEX = "\\p{M}";
@@ -150,7 +175,7 @@ public class SearchService {
         String[] words = result.split(" ");
         StringBuilder cleanedText = new StringBuilder();
         for (String word : words) {
-            if (!COMMON_WORDS_TO_REMOVE.contains(word.toLowerCase())) {
+            if (!COMMON_WORDS_TO_REMOVE.contains(word.toLowerCase()) && word.length() > 2) {
                 cleanedText.append(word).append(" ");
             }
         }

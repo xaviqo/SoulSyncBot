@@ -9,7 +9,9 @@ import tech.xavi.soulsync.dto.gateway.SlskdFile;
 import tech.xavi.soulsync.dto.gateway.SlskdSearchResult;
 import tech.xavi.soulsync.model.Song;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 @Log4j2
 @Service
@@ -33,30 +35,57 @@ public class FileFinderService {
         for (SlskdSearchResult result : results) {
             SlskdFile[] files = result.files();
             if (files.length < 1) break;
-            SlskdFile file = checkFileAndFindProper(song,files);
-            if (file != null) {
-                SlskdDownloadPayload payload = SlskdDownloadPayload.builder()
-                        .size(file.size())
-                        .filename(file.filename())
-                        .build();
-                return SlskdDownloadRequest.builder()
-                        .username(result.username())
-                        .payload(payload)
-                        .build();
-            }
+            SlskdFile file = strictSearch(song, files);
+            if (file != null) return createDownloadRequestPayload(result,file);
+        }
+        for (SlskdSearchResult result : results) {
+            SlskdFile[] files = result.files();
+            if (files.length < 1) break;
+            SlskdFile file = flexibleSearch(song, files);
+            if (file != null) return createDownloadRequestPayload(result,file);
         }
         return null;
     }
 
-    private SlskdFile checkFileAndFindProper(Song song, SlskdFile[] files){
+    private SlskdDownloadRequest createDownloadRequestPayload(SlskdSearchResult result, SlskdFile file){
+        SlskdDownloadPayload payload = SlskdDownloadPayload.builder()
+                .size(file.size())
+                .filename(file.filename())
+                .build();
+        return SlskdDownloadRequest.builder()
+                .username(result.username())
+                .payload(payload)
+                .build();
+    }
+
+    private SlskdFile strictSearch(Song song, SlskdFile[] files){
         for (SlskdFile file : files) {
             if (!isDesiredFormat(file))
                 break;
             if (!mp3BitRateCheck(file))
                 break;
-            if (!containsAllSearchKeywords(file,song))
+            if (containsAllOriginalSongKeywords(file,song)){
+                log.debug("[strictSearch] - Found file for input '{}' with strict search",
+                        song.getSearchInput()
+                );
+                return file;
+            }
+        }
+        return null;
+    }
+
+    private SlskdFile flexibleSearch(Song song, SlskdFile[] files){
+        for (SlskdFile file : files) {
+            if (!isDesiredFormat(file))
                 break;
-            return file;
+            if (!mp3BitRateCheck(file))
+                break;
+            if (containsAllSearchInputKeywords(file,song)) {
+                log.debug("[checkFileAndFindProper] - Found file for input '{}' with flexible search",
+                        song.getSearchInput()
+                );
+                return file;
+            }
         }
         return null;
     }
@@ -69,7 +98,18 @@ public class FileFinderService {
         return true;
     }
 
-    private boolean containsAllSearchKeywords(SlskdFile file, Song song){
+    private boolean containsAllOriginalSongKeywords(SlskdFile file, Song song){
+        List<String> nameAndArtists = new ArrayList<>(song.getArtists());
+        nameAndArtists.add(song.getName());
+        for (String keyword : nameAndArtists) {
+            if (!file.filename().toLowerCase().contains(keyword.toLowerCase())){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean containsAllSearchInputKeywords(SlskdFile file, Song song){
         String[] searchKeyWords = song.getSearchInput().split(" ");
         for (String keyword : searchKeyWords) {
             if (!file.filename().toLowerCase().contains(keyword.toLowerCase())){
@@ -93,5 +133,6 @@ public class FileFinderService {
             return split[split.length - 1].toLowerCase();
         return "";
     }
+
 
 }

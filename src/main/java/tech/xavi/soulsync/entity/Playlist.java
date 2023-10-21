@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.model;
+package tech.xavi.soulsync.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,11 +16,17 @@ import java.util.List;
 public class Playlist{
     @Id
     String spotifyId;
+    @Column
+    String name;
+    @Column
+    String cover;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "playlist_id")
     List<Song> songs;
     @Column
     int lastTotalTracks;
     @Column
-    boolean scanning;
+    long lastUpdate;
+    @Column
+    boolean updatable;
 }

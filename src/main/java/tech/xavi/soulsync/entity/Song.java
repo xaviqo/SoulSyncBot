@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.model;
+package tech.xavi.soulsync.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -24,7 +24,7 @@ public class Song {
     String searchInput;
     @Column
     UUID searchId;
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "artists", joinColumns = @JoinColumn(name = "song_id"))
     @Column(name = "artist")
     List<String> artists;

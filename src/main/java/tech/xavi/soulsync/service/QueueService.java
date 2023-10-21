@@ -6,21 +6,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
-import tech.xavi.soulsync.model.Playlist;
-import tech.xavi.soulsync.model.Song;
+import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.Song;
 
-import java.util.Arrays;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 @Log4j2
 @Service
 public class QueueService {
 
     private final BlockingQueue<Song> songsQueue;
-    private final Set<String> playlistsInQueue;
+    private final Map<String,Integer> playlistRemainingSongs;
     private final int MAX_RUNNERS;
     private final SearchService searchService;
     private final DownloadService downloadService;
@@ -35,7 +33,7 @@ public class QueueService {
             RateLimitDelayService delayService
     ) {
         this.songsQueue = new ArrayBlockingQueue<>(1);
-        this.playlistsInQueue = new CopyOnWriteArraySet<>();
+        this.playlistRemainingSongs = Collections.synchronizedMap(new HashMap<>());
         this.MAX_RUNNERS = maxRunners;
         this.searchService = searchService;
         this.downloadService = downloadService;
@@ -50,20 +48,45 @@ public class QueueService {
         }
     }
 
-    @Async("asyncExecutor")
-    public void seek(Playlist playlist){
-        log.debug("[runScheduledTask] - Playlist with id ({}) is not in the work queue and will be added",playlist.getSpotifyId());
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
-        addPlaylistToQueue(playlist);
-        removePlaylistFromQueue(playlist);
-        watchlistService.updateWatchlist(playlist);
-        stopWatch.stop();
-        log.debug("[runScheduledTask] - " +
-                "The scheduled task has been completed in {} seconds.",stopWatch.getTotalTimeSeconds());
+    public void addUpdatedPlaylistsToQueue(){
+        List<Playlist> pendingPlaylists = watchlistService.getPlaylists();
+        log.debug("[runScheduledTask] - Scheduled task is executed. " +
+                "Total pending playlists: {}",pendingPlaylists.size());
+        pendingPlaylists.forEach( pl -> {
+            if (!isPlaylistQueued(pl.getSpotifyId())) {
+                log.debug("[runScheduledTask] - Playlist with id ({}) is NOT in the work queue " +
+                        "and will be added",pl.getSpotifyId());
+                for (Song song : pl.getSongs())
+                    song.setSearchId(UUID.randomUUID());
+                seek(pl);
+            } else {
+                log.debug("[runScheduledTask] - Playlist with id ({}) is already in the work queue " +
+                        "and WON'T be added", pl.getSpotifyId());
+            }
+        });
     }
 
-    private void addToQueue(Song song){
+    @Async("asyncExecutor")
+    public void seek(Playlist playlist){
+        addPlaylistToQueue(playlist);
+        watchlistService.updateWatchlist(playlist);
+    }
+
+    public synchronized void addPlaylistToQueue(Playlist playlist){
+        String playlistId = playlist.getSpotifyId();
+        playlistRemainingSongs.put(
+                playlistId,
+                playlist.getLastTotalTracks()
+        );
+        playlist.getSongs().forEach(this::addSongToQueue);
+        log.debug("[addPlaylistToQueue] - Playlist added to queue: {}",playlistId);
+    }
+
+    public boolean isPlaylistQueued(String playlistId){
+        return playlistRemainingSongs.containsKey(playlistId);
+    }
+
+    private void addSongToQueue(Song song){
         log.debug("[addToQueue] - Waiting to add a new song to the queue: {}",song.getSearchInput());
         try {
             songsQueue.put(song);
@@ -73,24 +96,16 @@ public class QueueService {
         }
     }
 
-    public void addPlaylistToQueue(Playlist playlist){
+    private void decreaseRemainingPlaylistTotal(Playlist playlist){
         String playlistId = playlist.getSpotifyId();
-        playlistsInQueue.add(playlistId);
-        playlist.getSongs().forEach(this::addToQueue);
-        log.debug("[addPlaylistToQueue] - Playlist added to queue: {}",playlistId);
-    }
-
-    public void removePlaylistFromQueue(Playlist playlist){
-        String playlistId = playlist.getSpotifyId();
-        playlistsInQueue.remove(playlist.getSpotifyId());
-        log.debug("[removePlaylistFromQueue] - Removed from queue: {}",playlistId);
-    }
-
-    public boolean isPlaylistInQueue(Playlist playlist){
-        String playlistId = playlist.getSpotifyId();
-        boolean isInQueue = playlistsInQueue.contains(playlist.getSpotifyId());
-        log.debug("[Playlist] - Check playlist in queue ({}). Result: {}",playlistId,isInQueue);
-        return isInQueue;
+        int updatedRemaining = playlistRemainingSongs.get(playlistId)-1;
+        if (updatedRemaining < 1) {
+            log.debug("[addToQueue] - The playlist '{}' with id '{}' has finished the process " +
+                    "for all his queued songs.",playlist.getName(),playlistId);
+            playlistRemainingSongs.remove(playlistId);
+        } else {
+            playlistRemainingSongs.put(playlistId,updatedRemaining);
+        }
     }
 
     private void runner(){
@@ -115,6 +130,8 @@ public class QueueService {
         totalSec += performService("Finish Seek", delayService::finishSeek, searchInput);
 
         log.debug("[doProcess] Finished seek process for search: '{}' - Total time elapsed {} sec",searchInput,totalSec);
+
+        decreaseRemainingPlaylistTotal(song.getPlaylist());
     }
 
     private double performService(String serviceName, Runnable serviceFunction, String searchInput) {
@@ -134,10 +151,7 @@ public class QueueService {
 
 
     public void printQueueStatus(){
-        Object[] plQueueArr = playlistsInQueue.toArray();
-        log.debug("[QUEUE_STATUS] ----> Total songs waiting: {}",songsQueue.size());
-        log.debug("[QUEUE_STATUS] ----> Remaining capacity: {}",songsQueue.remainingCapacity());
-        log.debug("[QUEUE_STATUS] ----> Total playlists queue: {}", plQueueArr.length);
-        log.debug("[QUEUE_STATUS] ----> Playlists in queue: {}", Arrays.toString(plQueueArr));
+        log.debug("[QUEUE_STATUS] ----> Total playlists queue: {}", playlistRemainingSongs.size());
+        log.debug("[QUEUE_STATUS] ----> Playlists in queue: {}", Arrays.toString(playlistRemainingSongs.values().toArray()));
     }
 }

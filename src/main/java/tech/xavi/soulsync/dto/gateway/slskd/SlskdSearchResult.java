@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.dto.gateway;
+package tech.xavi.soulsync.dto.gateway.slskd;
 
 public record SlskdSearchResult(
         SlskdFile[] files,

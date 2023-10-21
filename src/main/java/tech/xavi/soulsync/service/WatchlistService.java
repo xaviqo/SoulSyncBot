@@ -3,8 +3,8 @@ package tech.xavi.soulsync.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.model.Playlist;
-import tech.xavi.soulsync.model.Song;
+import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.repository.SongRepository;
 
@@ -18,7 +18,7 @@ public class WatchlistService {
     private final SongRepository songRepository;
 
 
-    public List<Playlist> getWaitingPlaylists(){
+    public List<Playlist> getPlaylists(){
         return playlistRepository
                 .fetchUnfoundSongsInPlaylists();
     }

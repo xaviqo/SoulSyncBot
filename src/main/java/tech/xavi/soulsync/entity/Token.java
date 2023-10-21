@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.model;
+package tech.xavi.soulsync.entity;
 
 import lombok.Builder;
 

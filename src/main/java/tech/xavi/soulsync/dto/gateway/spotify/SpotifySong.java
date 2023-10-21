@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.dto.gateway;
+package tech.xavi.soulsync.dto.gateway.spotify;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

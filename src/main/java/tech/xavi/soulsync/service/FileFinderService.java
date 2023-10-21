@@ -3,11 +3,11 @@ package tech.xavi.soulsync.service;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.dto.gateway.SlskdDownloadPayload;
-import tech.xavi.soulsync.dto.gateway.SlskdDownloadRequest;
-import tech.xavi.soulsync.dto.gateway.SlskdFile;
-import tech.xavi.soulsync.dto.gateway.SlskdSearchResult;
-import tech.xavi.soulsync.model.Song;
+import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadPayload;
+import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadRequest;
+import tech.xavi.soulsync.dto.gateway.slskd.SlskdFile;
+import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
+import tech.xavi.soulsync.entity.Song;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,13 +20,16 @@ public class FileFinderService {
     private final String[] ACCEPTED_FORMATS;
     private final int MIN_MP3_BITRATE;
     private final boolean MP3_WANTED;
+    private final boolean AVOID_REPEAT_FAIL_DOWNLOAD;
 
     public FileFinderService(
             @Value("${tech.xavi.soulsync.cfg.accepted-formats}") String acceptedFormats,
-            @Value("${tech.xavi.soulsync.cfg.min-mp3-bitrate}") int mp3BitRate
+            @Value("${tech.xavi.soulsync.cfg.min-mp3-bitrate}") int mp3BitRate,
+            @Value("${tech.xavi.soulsync.cfg.avoid-repeating-failed-download}") String avoidFailedDw
     ) {
         this.ACCEPTED_FORMATS = acceptedFormats.split(",");
         this.MIN_MP3_BITRATE = mp3BitRate;
+        this.AVOID_REPEAT_FAIL_DOWNLOAD = avoidFailedDw.equals("true");
         this.MP3_WANTED = Arrays.asList(ACCEPTED_FORMATS).contains("mp3");
 
     }
@@ -60,6 +63,8 @@ public class FileFinderService {
 
     private SlskdFile strictSearch(Song song, SlskdFile[] files){
         for (SlskdFile file : files) {
+            if (isSameFileAsLastAttempt(song,file))
+                break;
             if (!isDesiredFormat(file))
                 break;
             if (!mp3BitRateCheck(file))
@@ -76,6 +81,8 @@ public class FileFinderService {
 
     private SlskdFile flexibleSearch(Song song, SlskdFile[] files){
         for (SlskdFile file : files) {
+            if (isSameFileAsLastAttempt(song,file))
+                break;
             if (!isDesiredFormat(file))
                 break;
             if (!mp3BitRateCheck(file))
@@ -125,6 +132,18 @@ public class FileFinderService {
             if (fileFormat.equals(format))
                 return true;
         return false;
+    }
+
+    private boolean isSameFileAsLastAttempt(Song song, SlskdFile file){
+        if (!AVOID_REPEAT_FAIL_DOWNLOAD) return true;
+        String lastFileName = song.getFilename();
+        boolean existsLastAttempt = song.getAttempts() < 2
+                || lastFileName == null
+                || lastFileName.isBlank();
+        if (!existsLastAttempt)
+            return false;
+        return file.filename()
+                .equals(lastFileName);
     }
 
     private String getFileFormat(SlskdFile file){

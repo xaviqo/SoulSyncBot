@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.model.exception;
+package tech.xavi.soulsync.exception;
 
 import lombok.AllArgsConstructor;
 

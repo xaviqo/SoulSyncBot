@@ -3,11 +3,11 @@ package tech.xavi.soulsync.service;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.dto.gateway.SlskdTokenRes;
-import tech.xavi.soulsync.dto.gateway.SpotifyTokenRes;
+import tech.xavi.soulsync.dto.gateway.slskd.SlskdTokenRes;
+import tech.xavi.soulsync.dto.gateway.spotify.SpotifyTokenRes;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
-import tech.xavi.soulsync.model.Token;
+import tech.xavi.soulsync.entity.Token;
 
 @Log4j2
 @Service

@@ -3,10 +3,10 @@ package tech.xavi.soulsync.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.dto.gateway.SpotifySong;
+import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
 import tech.xavi.soulsync.gateway.SlskdGateway;
-import tech.xavi.soulsync.model.Playlist;
+import tech.xavi.soulsync.entity.Playlist;
 
 import java.util.List;
 
@@ -24,17 +24,13 @@ public class MainService {
     public Playlist addPlaylistRequest(AddPlaylistReq request){
         String playlistId = request.playlist();
 
-        int totalTracks = playlistService
-                .fetchPlaylistTotalTracks(playlistId);
+        int totalTracks = playlistService.getTotalTracks(playlistId);
 
-        if (totalTracks < 1) {
-            return null;
-        }
 
         List<SpotifySong> spotifyPlaylist = playlistService
-                .getAllPlaylistSongs(playlistId, totalTracks);
+                .getPlaylistSongsFromSpotify(playlistId, totalTracks);
         Playlist playlist = playlistService
-                .convertToPlaylistObject(playlistId,spotifyPlaylist);
+                .createPlaylistEntity(playlistId,spotifyPlaylist);
         watchlistService
                 .updateWatchlist(playlist);
 

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
-import tech.xavi.soulsync.model.Playlist;
+import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.service.MainService;
 
 @RequiredArgsConstructor

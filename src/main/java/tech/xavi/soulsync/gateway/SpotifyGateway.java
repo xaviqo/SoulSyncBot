@@ -8,9 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import tech.xavi.soulsync.dto.gateway.SpotifyPlaylist;
-import tech.xavi.soulsync.dto.gateway.SpotifyPlaylistTotalTracks;
-import tech.xavi.soulsync.dto.gateway.SpotifyTokenRes;
+import tech.xavi.soulsync.dto.gateway.spotify.*;
 
 @Log4j2
 @Component
@@ -18,10 +16,9 @@ public class SpotifyGateway extends Gateway{
 
     private final int PL_LIMIT_VALUE;
     private final String AUTH_GET_TOKEN_URL;
-    private final String MAIN_GET_PLAYLIST_URL;
-    private final String MAIN_GET_TOTAL_TRACKS_URL;
-    private final String MAIN_GET_PLAYLIST_FIELDS;
-    private final String MAIN_GET_TOTAL_TRACKS_FIELDS;
+    private final String MAIN_GET_TRACKS;
+    private final String MAIN_GET_DATA;
+    private final String MAIN_GET_COVER;
     private final ObjectMapper objectMapper;
 
 
@@ -29,18 +26,16 @@ public class SpotifyGateway extends Gateway{
             @Value("${tech.xavi.soulsync.gateway.base-url.spotify.auth}") String authBaseUrl,
             @Value("${tech.xavi.soulsync.gateway.base-url.spotify.main}") String mainBaseUrl,
             @Value("${tech.xavi.soulsync.gateway.path.spotify.auth.get-token.ep}") String authEpGetToken,
-            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-playlist.ep}") String mainEpGetPlaylist,
-            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-total-tracks.ep}") String mainEpGetTotalTracks,
-            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-total-tracks.fields}") String mainFieldsGetTotalTracks,
-            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-playlist.fields}") String mainFieldsGetPlaylist,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-tracks.ep}") String mainEpGetPlaylist,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-playlist-data.ep}") String mainEpPlaylistData,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-cover.ep}") String mainEpGetCover,
             @Value("${tech.xavi.soulsync.cfg.max-req-tracks-per-playlist}") int limitVal,
             ObjectMapper objectMapper
     ) {
         this.AUTH_GET_TOKEN_URL = authBaseUrl+authEpGetToken;
-        this.MAIN_GET_PLAYLIST_URL = mainBaseUrl+mainEpGetPlaylist;
-        this.MAIN_GET_TOTAL_TRACKS_URL = mainBaseUrl+mainEpGetTotalTracks;
-        this.MAIN_GET_PLAYLIST_FIELDS = mainFieldsGetPlaylist;
-        this.MAIN_GET_TOTAL_TRACKS_FIELDS = mainFieldsGetTotalTracks;
+        this.MAIN_GET_TRACKS = mainBaseUrl+mainEpGetPlaylist;
+        this.MAIN_GET_DATA = mainBaseUrl+mainEpPlaylistData;
+        this.MAIN_GET_COVER = mainBaseUrl+mainEpGetCover;
         this.PL_LIMIT_VALUE = limitVal;
         this.objectMapper = objectMapper;
     }
@@ -72,15 +67,64 @@ public class SpotifyGateway extends Gateway{
         }
     }
 
-    public SpotifyPlaylistTotalTracks getPlaylistTotalTracks(String token, String playlistId) {
+    public SpotifyPlaylistName getPlaylistName(String token, String playlistId){
+        final String fields = "name";
         try {
-            log.debug("[getPlaylistTotalTracks] - URI: {}", MAIN_GET_TOTAL_TRACKS_URL);
-            log.debug("[getPlaylistTotalTracks] - Payload: {}, {}", token, playlistId);
+            log.debug("[getPlaylistName] - URI: {}", MAIN_GET_DATA);
+            log.debug("[getPlaylistName] - Payload: {}, {}", token, playlistId);
 
-            HttpResponse<JsonNode> response = Unirest.get(MAIN_GET_TOTAL_TRACKS_URL)
+            HttpResponse<JsonNode> response = Unirest.get(MAIN_GET_DATA)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .routeParam("playlistId", playlistId)
-                    .queryString("fields", MAIN_GET_TOTAL_TRACKS_FIELDS)
+                    .queryString("fields", fields)
+                    .asJson();
+
+            int responseStatus = response.getStatus();
+            log.debug("[getPlaylistName] - Response status code: " + responseStatus);
+
+            String responseJson = response.getBody().toString();
+            log.debug("[getPlaylistName] - Complete response: " + responseJson);
+
+            return objectMapper.readValue(responseJson, SpotifyPlaylistName.class);
+        } catch (Exception e) {
+            log.error("[getPlaylistName] - Error while getting playlist name: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public SpotifyPlaylistCover[] getPlaylistCover(String token, String playlistId){
+        try {
+            log.debug("[getPlaylistCover] - URI: {}", MAIN_GET_COVER);
+            log.debug("[getPlaylistCover] - Payload: {}, {}", token, playlistId);
+
+            HttpResponse<JsonNode> response = Unirest.get(MAIN_GET_COVER)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .routeParam("playlistId", playlistId)
+                    .asJson();
+
+            int responseStatus = response.getStatus();
+            log.debug("[getPlaylistCover] - Response status code: " + responseStatus);
+
+            String responseJson = response.getBody().toString();
+            log.debug("[getPlaylistCover] - Complete response: " + responseJson);
+
+            return objectMapper.readValue(responseJson, SpotifyPlaylistCover[].class);
+        } catch (Exception e) {
+            log.error("[getPlaylistCover] - Error while getting playlist name: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public SpotifyPlaylistTotalTracks getPlaylistTotalTracks(String token, String playlistId) {
+        final String fields = "tracks.total";
+        try {
+            log.debug("[getPlaylistTotalTracks] - URI: {}", MAIN_GET_DATA);
+            log.debug("[getPlaylistTotalTracks] - Payload: {}, {}", token, playlistId);
+
+            HttpResponse<JsonNode> response = Unirest.get(MAIN_GET_DATA)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .routeParam("playlistId", playlistId)
+                    .queryString("fields", fields)
                     .asJson();
 
             int responseStatus = response.getStatus();
@@ -97,14 +141,15 @@ public class SpotifyGateway extends Gateway{
     }
 
     public SpotifyPlaylist getPlaylistTracks(String token, String playlistId, int offset) {
+        final String fields = "items(track(name,artists(name)))";
         try {
-            log.debug("[getPlaylistTracks] - URI: {}", MAIN_GET_PLAYLIST_URL);
+            log.debug("[getPlaylistTracks] - URI: {}", MAIN_GET_TRACKS);
             log.debug("[getPlaylistTracks] - Payload: {}, {}, {}", token, playlistId,offset);
 
-            HttpResponse<JsonNode> response = Unirest.get(MAIN_GET_PLAYLIST_URL)
+            HttpResponse<JsonNode> response = Unirest.get(MAIN_GET_TRACKS)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .routeParam("playlistId", playlistId)
-                    .queryString("fields", MAIN_GET_PLAYLIST_FIELDS)
+                    .queryString("fields",fields)
                     .queryString("limit", PL_LIMIT_VALUE)
                     .queryString("offset", offset)
                     .asJson();

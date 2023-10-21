@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import tech.xavi.soulsync.dto.gateway.*;
+import tech.xavi.soulsync.dto.gateway.slskd.*;
 
 @Log4j2
 @Component
@@ -18,8 +18,10 @@ public class SlskdGateway extends Gateway {
     private final String GET_SESSION_URL;
     private final String INIT_SEARCH_URL;
     private final String INIT_DOWNLOAD_URL;
+    private final String GET_DOWNLOADS_STATUS_URL;
     private final String CHECK_SEARCH_STATUS_URL;
     private final String DELETE_SEARCH_URL;
+    private final String DELETE_DOWNLOAD_URL;
     private final String GET_RESPONSES_URL;
     private final String HEALTH_CHECK_URL;
     private final ObjectMapper objectMapper;
@@ -39,8 +41,10 @@ public class SlskdGateway extends Gateway {
         this.INIT_SEARCH_URL = baseUrl+search;
         this.CHECK_SEARCH_STATUS_URL = baseUrl+search+addParam;
         this.DELETE_SEARCH_URL = baseUrl+search+addParam;
+        this.DELETE_DOWNLOAD_URL = baseUrl+initDownload+addParam+addParam;
         this.GET_RESPONSES_URL = baseUrl+search+addParam+responsesPath;
         this.INIT_DOWNLOAD_URL = baseUrl+initDownload+addParam;
+        this.GET_DOWNLOADS_STATUS_URL = baseUrl+initDownload;
         this.HEALTH_CHECK_URL = baseUrl+healthCheck;
         this.objectMapper = objectMapper;
     }
@@ -151,6 +155,81 @@ public class SlskdGateway extends Gateway {
         }
     }
 
+    public SlskdDownloadStatus[] getDownloadsStatus(String token){
+        try {
+            log.debug("[getDownloadsStatus] - URI: {}",GET_DOWNLOADS_STATUS_URL);
+            log.debug("[getDownloadsStatus]- Payload: {}",token);
+
+            HttpResponse<JsonNode> response = Unirest.get(GET_DOWNLOADS_STATUS_URL)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .asJson();
+
+            int responseStatus = response.getStatus();
+            log.debug("[getDownloadsStatus] - Response status code: {}", responseStatus);
+
+            String responseJson = response.getBody().toString();
+            log.debug("[getDownloadsStatus] - Complete response: {}",responseJson);
+
+            return objectMapper.readValue(responseJson, SlskdDownloadStatus[].class);
+        } catch (Exception e) {
+            log.error("[getDownloadsStatus] - Error getting Slskd downloads status: " + e.getMessage());
+            return null;
+        }
+    }
+
+    public void deleteDownload(String token, String user, String searchId){
+        String formattedUrl = String.format(DELETE_DOWNLOAD_URL,user,searchId);
+        try {
+            log.debug("[deleteDownload] - URI: {}",formattedUrl);
+            log.debug("[deleteDownload]- Payload: {}, {}",searchId,token);
+
+            HttpResponse<String> response = Unirest.delete(formattedUrl)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .asString();
+
+            log.debug("[deleteDownload] - Response status code: {}", response.getStatus());
+        } catch (Exception e) {
+            log.error("[deleteDownload] - Error deleting download: " + e.getMessage());
+        }
+    }
+
+    public void deleteSearch(String searchId, String token){
+        String formattedUrl = String.format(DELETE_SEARCH_URL,searchId);
+        try {
+            log.debug("[deleteSearch] - URI: {}",formattedUrl);
+            log.debug("[deleteSearch]- Payload: {}, {}",searchId,token);
+
+            HttpResponse<String> response = Unirest.delete(formattedUrl)
+                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
+                    .asString();
+
+            log.debug("[deleteSearch] - Response status code: {}", response.getStatus());
+        } catch (Exception e) {
+            log.error("[deleteSearch] - Error deleting search: " + e.getMessage());
+        }
+    }
+
+    public boolean isSlskdApiHealthy(){
+        final String healthyResponse = "Healthy";
+        try {
+            log.debug("[healthCheck] - URI: {}",HEALTH_CHECK_URL);
+
+            HttpResponse<String> response = Unirest.get(HEALTH_CHECK_URL)
+                    .asString();
+
+            log.debug("[healthCheck] - Response status code: {}", response.getStatus());
+            log.debug("[healthCheck] - Complete response: {}", response.getBody());
+
+            return response.getBody().equals(healthyResponse);
+        } catch (Exception e) {
+            log.error("[healthCheck] - Unable to connect to the local Slskd API: " + e.getMessage());
+            return false;
+        }
+    }
+
     public SlskdTokenRes getToken(String username, String password){
         try {
             log.debug("[getToken] - URI: {}",GET_SESSION_URL);
@@ -174,46 +253,6 @@ public class SlskdGateway extends Gateway {
         } catch (Exception e) {
             log.error("[getToken] - Error while getting the token: " + e.getMessage());
             return null;
-        }
-    }
-
-    public void deleteSearch(String searchId, String token){
-        String formattedUrl = String.format(DELETE_SEARCH_URL,searchId);
-        try {
-            log.debug("[deleteSearch] - URI: {}",formattedUrl);
-            log.debug("[deleteSearch]- Payload: {}, {}",searchId,token);
-
-            HttpResponse<String> response = Unirest.delete(formattedUrl)
-                    .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                    .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
-                    .asString();
-
-            int responseStatus = response.getStatus();
-            log.debug("[deleteSearch] - Response status code: {}", responseStatus);
-            log.debug("[deleteSearch] - Complete response: {}", response.getBody());
-
-
-        } catch (Exception e) {
-            log.error("[deleteSearch] - Error deleting search: " + e.getMessage());
-        }
-    }
-
-    public boolean isSlskdApiHealthy(){
-        final String healthyResponse = "Healthy";
-
-        try {
-            log.debug("[healthCheck] - URI: {}",HEALTH_CHECK_URL);
-
-            HttpResponse<String> response = Unirest.get(HEALTH_CHECK_URL)
-                    .asString();
-
-            log.debug("[healthCheck] - Response status code: {}", response.getStatus());
-            log.debug("[healthCheck] - Complete response: {}", response.getBody());
-
-            return response.getBody().equals(healthyResponse);
-        } catch (Exception e) {
-            log.error("[healthCheck] - Unable to connect to the local Slskd API: " + e.getMessage());
-            return false;
         }
     }
 }

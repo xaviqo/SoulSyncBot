@@ -20,16 +20,16 @@ public class FileFinderService {
     private final String[] ACCEPTED_FORMATS;
     private final int MIN_MP3_BITRATE;
     private final boolean MP3_WANTED;
-    private final boolean AVOID_REPEAT_FAIL_DOWNLOAD;
+    private final boolean AVOID_REPEAT_ERRORED_FILE;
 
     public FileFinderService(
             @Value("${tech.xavi.soulsync.cfg.accepted-formats}") String acceptedFormats,
             @Value("${tech.xavi.soulsync.cfg.min-mp3-bitrate}") int mp3BitRate,
-            @Value("${tech.xavi.soulsync.cfg.avoid-repeating-failed-download}") String avoidFailedDw
+            @Value("${tech.xavi.soulsync.cfg.avoid-repeating-errored-file}") String avoidFailedDw
     ) {
         this.ACCEPTED_FORMATS = acceptedFormats.split(",");
         this.MIN_MP3_BITRATE = mp3BitRate;
-        this.AVOID_REPEAT_FAIL_DOWNLOAD = avoidFailedDw.equals("true");
+        this.AVOID_REPEAT_ERRORED_FILE = avoidFailedDw.equals("true");
         this.MP3_WANTED = Arrays.asList(ACCEPTED_FORMATS).contains("mp3");
 
     }
@@ -63,17 +63,13 @@ public class FileFinderService {
 
     private SlskdFile strictSearch(Song song, SlskdFile[] files){
         for (SlskdFile file : files) {
-            if (isSameFileAsLastAttempt(song,file))
-                break;
-            if (!isDesiredFormat(file))
-                break;
-            if (!mp3BitRateCheck(file))
-                break;
-            if (containsAllOriginalSongKeywords(file,song)){
-                log.debug("[strictSearch] - Found file for input '{}' with strict search",
-                        song.getSearchInput()
-                );
-                return file;
+            if (fileMeetsCriteria(song,file)){
+                if (containsAllOriginalSongKeywords(file,song)){
+                    log.debug("[strictSearch] - Found file for input '{}' with strict search",
+                            song.getSearchInput()
+                    );
+                    return file;
+                }
             }
         }
         return null;
@@ -81,26 +77,28 @@ public class FileFinderService {
 
     private SlskdFile flexibleSearch(Song song, SlskdFile[] files){
         for (SlskdFile file : files) {
-            if (isSameFileAsLastAttempt(song,file))
-                break;
-            if (!isDesiredFormat(file))
-                break;
-            if (!mp3BitRateCheck(file))
-                break;
-            if (containsAllSearchInputKeywords(file,song)) {
-                log.debug("[checkFileAndFindProper] - Found file for input '{}' with flexible search",
-                        song.getSearchInput()
-                );
-                return file;
+            if (fileMeetsCriteria(song,file)) {
+                if (containsAllSearchInputKeywords(file,song)) {
+                    log.debug("[checkFileAndFindProper] - Found file for input '{}' with flexible search",
+                            song.getSearchInput()
+                    );
+                    return file;
+                }
             }
         }
         return null;
     }
 
-    private boolean mp3BitRateCheck(SlskdFile file){
+    private boolean fileMeetsCriteria(Song song, SlskdFile file){
+        return isDifferentFileFromLastAttempt(song,file)
+                && isDesiredFormat(file)
+                && isMp3BitrateOk(file);
+    }
+
+    private boolean isMp3BitrateOk(SlskdFile file){
         String fileFormat = getFileFormat(file);
         if (MP3_WANTED && fileFormat.equals("mp3")) {
-            return file.bitRate() < MIN_MP3_BITRATE;
+            return file.bitRate() >= MIN_MP3_BITRATE;
         }
         return true;
     }
@@ -134,16 +132,13 @@ public class FileFinderService {
         return false;
     }
 
-    private boolean isSameFileAsLastAttempt(Song song, SlskdFile file){
-        if (!AVOID_REPEAT_FAIL_DOWNLOAD) return true;
-        String lastFileName = song.getFilename();
-        boolean existsLastAttempt = song.getAttempts() < 2
-                || lastFileName == null
-                || lastFileName.isBlank();
-        if (!existsLastAttempt)
-            return false;
-        return file.filename()
-                .equals(lastFileName);
+    private boolean isDifferentFileFromLastAttempt(Song song, SlskdFile file) {
+        if (AVOID_REPEAT_ERRORED_FILE) {
+            String lastFileName = song.getFilename();
+            if (lastFileName == null) return true;
+            return !lastFileName.equals(file.filename());
+        }
+        return true;
     }
 
     private String getFileFormat(SlskdFile file){

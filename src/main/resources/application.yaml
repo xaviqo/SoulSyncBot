@@ -8,10 +8,10 @@ tech:
         delay-ms: 5000
         common-words-to-remove: the,a,an,and,feat,with,of,in,on,at,by,for,to
         accepted-formats: mp3
-        min-mp3-bitrate: 320
+        min-mp3-bitrate: 100
         interval-minutes-scheduled-task: 1
         max-songs-downloading-at-a-time: 5
-        avoid-repeating-failed-download: true
+        avoid-repeating-errored-file: true
       credentials:
         spotify:
           client-id: id

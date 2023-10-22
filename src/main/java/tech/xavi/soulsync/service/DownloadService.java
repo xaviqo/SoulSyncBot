@@ -67,41 +67,41 @@ public class DownloadService {
 
     public void resetStuckSongs(){
         getSongsToBeRestartedByUsername()
-                .forEach( (user, songList) -> {
-                    songList.forEach( song -> {
-                        String searchId = song.getSearchId().toString();
-                        deleteDownload(user,searchId);
-                        resetSongForDownload(song);
-                    });
-                });
+                .forEach(this::resetSongForDownload);
     }
 
-    private Map<String,List<Song>> getSongsToBeRestartedByUsername(){
-        Map<String,List<Song>> songsToBeRestartedByUsername = new HashMap<>();
+    private List<Song> getSongsToBeRestartedByUsername(){
+        List<Song> songsToBeRestarted = new ArrayList<>();
         String token = authService.getSlskdToken().token();
         Arrays.stream(slskdGateway.getDownloadsStatus(token))
                 .forEach( status -> {
                     String username = status.getUsername();
-                    List<Song> songsToBeRestarted = getSongsToBeRestarted(status.getDirectories());
-                    if (!songsToBeRestarted.isEmpty()){
-                        songsToBeRestartedByUsername.put(
-                                username,
-                                songsToBeRestarted
-                        );
+                    List<Song> songToAdd = getSongsToBeRestarted(
+                            status.getDirectories(),
+                            username
+                    );
+                    if (!songToAdd.isEmpty()){
+                        songsToBeRestarted.addAll(songToAdd);
                     }
                 });
-        return songsToBeRestartedByUsername;
+        return songsToBeRestarted;
     }
 
-    private List<Song> getSongsToBeRestarted(List<SlskdDownloadStatus.SlskdDirectory> directories) {
+    private List<Song> getSongsToBeRestarted(
+            List<SlskdDownloadStatus.SlskdDirectory> directories,
+            String username
+    ) {
         List<Song> songsToBeRestarted = new ArrayList<>();
         directories.forEach( dir -> {
             dir.getFiles().forEach( file -> {
                 String downloadStatus = file.getState();
                 if (!isDownloadStatusComplete(downloadStatus)) {
-                    String searchId = file.getId();
-                    Song song = songRepository.findBySearchId(UUID.fromString(searchId));
-                    songsToBeRestarted.add(song);
+                    String filename = file.getFilename();
+                    Song song = songRepository.findByFilename(filename);
+                    if (song != null) {
+                        songsToBeRestarted.add(song);
+                        deleteDownload(username,file.getId());
+                    }
                 }
             });
         });
@@ -109,13 +109,13 @@ public class DownloadService {
     }
 
     private boolean isDownloadStatusComplete(String status){
-        return status.contains(DownloadStatus.SUCCEDED.name())
-                || status.contains(DownloadStatus.QUEDED.name());
+        return status.contains(DownloadStatus.SUCCEDED.getProgress())
+                || status.contains(DownloadStatus.QUEDED.getProgress());
     }
 
-    private void deleteDownload(String username, String searchId){
+    private void deleteDownload(String username, String downloadId){
         String token = authService.getSlskdToken().token();
-        slskdGateway.deleteDownload(token,username,searchId);
+        slskdGateway.deleteDownload(token,username,downloadId);
     }
 
     private void resetSongForDownload(Song song){

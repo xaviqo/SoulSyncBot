@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service;
+package tech.xavi.soulsync.service.process;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.PlaylistStatus;
 import tech.xavi.soulsync.entity.Song;
 
 import java.util.*;
@@ -149,9 +150,14 @@ public class QueueService {
         return timeSeconds;
     }
 
-
     public void printQueueStatus(){
         log.debug("[QUEUE_STATUS] ----> Total playlists queue: {}", playlistRemainingSongs.size());
         log.debug("[QUEUE_STATUS] ----> Playlists in queue: {}", Arrays.toString(playlistRemainingSongs.values().toArray()));
+    }
+
+    public PlaylistStatus getPlaylistQueueStatus(String spotifyId){
+        return isPlaylistQueued(spotifyId)
+                ? PlaylistStatus.QUEUED
+                : PlaylistStatus.WAITING;
     }
 }

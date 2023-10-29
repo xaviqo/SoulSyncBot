@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service;
+package tech.xavi.soulsync.service.process;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.PlaylistStatus;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
@@ -78,8 +79,8 @@ public class PlaylistService {
         playlistRepository
                 .findById(playlistId)
                 .ifPresent( storedPlaylist -> {
+                    updatePlaylistName(storedPlaylist);
                     if (storedPlaylist.isUpdatable()) {
-                        updatePlaylistName(storedPlaylist);
                         int totalTracks = getTotalTracks(playlistId);
                         List<Song> storedSongs = storedPlaylist.getSongs();
                         int beforeTotal = storedSongs.size();
@@ -193,6 +194,12 @@ public class PlaylistService {
                 .playlist(playlist)
                 .found(false)
                 .build();
+    }
+
+    public PlaylistStatus getPlaylistStatus(String id, int remaining){
+        return (remaining == 0)
+                ? PlaylistStatus.COMPLETED
+                : queueService.getPlaylistQueueStatus(id);
     }
 
 

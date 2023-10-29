@@ -51,8 +51,8 @@ spring:
     password: soulsync
   jpa:
     hibernate:
-      #ddl-auto: update
-      ddl-auto: create-drop
+      ddl-auto: update
+     #ddl-auto: create-drop
   security:
     user:
       password: none
@@ -68,3 +68,4 @@ logging:
     org:
       hibernate:
         SQL: DEBUG
+    root: INFO

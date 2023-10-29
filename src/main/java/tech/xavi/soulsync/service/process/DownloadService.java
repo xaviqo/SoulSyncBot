@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service;
+package tech.xavi.soulsync.service.process;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;

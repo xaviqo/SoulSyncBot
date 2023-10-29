@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class LoggerController {
 
-    @PostMapping("/")
+    @PostMapping("/v1/logger")
     public ResponseEntity<String> changeLogLevel(@RequestParam String loggerName, @RequestParam String logLevel) {
         LoggerContext context = (LoggerContext) LogManager.getContext(false);
         org.apache.logging.log4j.core.config.Configuration config = context.getConfiguration();

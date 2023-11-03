@@ -1,31 +1,15 @@
 tech:
   xavi:
     soulsync:
-      cfg:
-        max-req-tracks-per-playlist: 20
-        wait-sec-btw-result-req: 10
-        max-retries-result-req: 10
-        delay-ms: 5000
-        common-words-to-remove: the,a,an,and,feat,with,of,in,on,at,by,for,to
-        accepted-formats: mp3
-        min-mp3-bitrate: 100
-        interval-minutes-scheduled-task: 1
-        max-songs-downloading-at-a-time: 5
-        avoid-repeating-errored-file: true
-      credentials:
-        spotify:
-          client-id: id
-          client-secret: sec
-        slskd:
-          username: slskd
-          password: slskd
+      cfg-file: soulsync-cfg.properties
       gateway:
+        request:
+          spotify:
+            tracks-per-playlist: 20
         base-url:
           spotify:
             auth: https://accounts.spotify.com
             main: https://api.spotify.com
-          slskd:
-            main: http://localhost:5030
         path:
           spotify:
             auth:
@@ -51,8 +35,8 @@ spring:
     password: soulsync
   jpa:
     hibernate:
-      ddl-auto: update
-     #ddl-auto: create-drop
+      #ddl-auto: update
+      ddl-auto: create-drop
   security:
     user:
       password: none

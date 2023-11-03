@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.request;
+package tech.xavi.soulsync.service.rest;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,7 @@ import java.util.List;
 
 @RequiredArgsConstructor
 @Service
-public class GetPlaylistsRequestService {
+public class GetPlaylistsRestService {
 
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;

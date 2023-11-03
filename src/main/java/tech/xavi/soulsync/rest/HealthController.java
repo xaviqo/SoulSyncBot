@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.xavi.soulsync.dto.rest.ResponseWrapper;
-import tech.xavi.soulsync.service.request.HealthService;
+import tech.xavi.soulsync.service.rest.HealthService;
 
 @RequiredArgsConstructor
 @RestController

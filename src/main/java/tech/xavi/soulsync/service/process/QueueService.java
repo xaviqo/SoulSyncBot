@@ -2,13 +2,14 @@ package tech.xavi.soulsync.service.process;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.entity.PlaylistStatus;
 import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.SoulSyncConfiguration;
+import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -18,35 +19,52 @@ import java.util.concurrent.BlockingQueue;
 @Service
 public class QueueService {
 
+    private final SoulSyncConfiguration.App appConfiguration;
     private final BlockingQueue<Song> songsQueue;
     private final Map<String,Integer> playlistRemainingSongs;
-    private final int MAX_RUNNERS;
     private final SearchService searchService;
     private final DownloadService downloadService;
     private final WatchlistService watchlistService;
-    private final RateLimitDelayService delayService;
+    private final PauseService delayService;
+    private final ThreadPoolTaskExecutor executor;
+    private Set<Thread> activeProcesses;
 
     public QueueService(
-            @Value("${tech.xavi.soulsync.cfg.max-songs-downloading-at-a-time}") int maxRunners,
+            ConfigurationService configurationService,
             SearchService searchService,
             DownloadService downloadService,
             WatchlistService watchlistService,
-            RateLimitDelayService delayService
+            PauseService delayService
     ) {
+        this.appConfiguration = configurationService.getConfiguration().app();
         this.songsQueue = new ArrayBlockingQueue<>(1);
         this.playlistRemainingSongs = Collections.synchronizedMap(new HashMap<>());
-        this.MAX_RUNNERS = maxRunners;
         this.searchService = searchService;
         this.downloadService = downloadService;
         this.watchlistService = watchlistService;
         this.delayService = delayService;
+        this.activeProcesses = new HashSet<>();
+        int poolSize = configurationService.getConfiguration().app().getMaxSongsDownloadingSameTime();
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(poolSize);
+        executor.setMaxPoolSize(poolSize);
+        executor.setQueueCapacity(100);
+        executor.initialize();
+        this.executor = executor;
     }
 
     @PostConstruct
-    private void initRunners(){
-        for (int i = 0; i < MAX_RUNNERS; i++) {
-            new Thread(this::runner).start();
+    private void initProcesses(){
+        int simultaneousProcesses = appConfiguration.getTotalSimultaneousProcesses();
+        for (int i = 0; i < simultaneousProcesses; i++) {
+            Thread process = new Thread(this::runner);
+            activeProcesses.add(process);
+            process.start();
         }
+    }
+
+    public void stopProcesses(){
+        activeProcesses.forEach(Thread::interrupt);
     }
 
     public void addUpdatedPlaylistsToQueue(){
@@ -67,10 +85,11 @@ public class QueueService {
         });
     }
 
-    @Async("asyncExecutor")
     public void seek(Playlist playlist){
-        addPlaylistToQueue(playlist);
-        watchlistService.updateWatchlist(playlist);
+        executor.execute( () -> {
+            addPlaylistToQueue(playlist);
+            watchlistService.updateWatchlist(playlist);
+        });
     }
 
     public synchronized void addPlaylistToQueue(Playlist playlist){

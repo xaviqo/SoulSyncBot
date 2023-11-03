@@ -10,11 +10,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import tech.xavi.soulsync.dto.gateway.slskd.*;
+import tech.xavi.soulsync.entity.SoulSyncConfiguration;
+import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 @Log4j2
 @Component
 public class SlskdGateway extends Gateway {
 
+    private final SoulSyncConfiguration.Api apiConfiguration;
     private final String GET_SESSION_URL;
     private final String INIT_SEARCH_URL;
     private final String INIT_DOWNLOAD_URL;
@@ -28,25 +31,26 @@ public class SlskdGateway extends Gateway {
 
 
     public SlskdGateway(
-            @Value("${tech.xavi.soulsync.gateway.base-url.slskd.main}") String baseUrl,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.login}") String epSession,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.search}") String search,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.responses}") String responsesPath,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.download}") String initDownload,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.health}") String healthCheck,
-            ObjectMapper objectMapper
+            ObjectMapper objectMapper,
+            ConfigurationService configurationService
     ) {
         final String addParam = "/%s";
-        this.GET_SESSION_URL = baseUrl+epSession;
-        this.INIT_SEARCH_URL = baseUrl+search;
-        this.CHECK_SEARCH_STATUS_URL = baseUrl+search+addParam;
-        this.DELETE_SEARCH_URL = baseUrl+search+addParam;
-        this.DELETE_DOWNLOAD_URL = baseUrl+initDownload+addParam+addParam;
-        this.GET_RESPONSES_URL = baseUrl+search+addParam+responsesPath;
-        this.INIT_DOWNLOAD_URL = baseUrl+initDownload+addParam;
-        this.GET_DOWNLOADS_STATUS_URL = baseUrl+initDownload;
-        this.HEALTH_CHECK_URL = baseUrl+healthCheck;
+        this.GET_SESSION_URL = epSession;
+        this.INIT_SEARCH_URL = search;
+        this.CHECK_SEARCH_STATUS_URL = search+addParam;
+        this.DELETE_SEARCH_URL = search+addParam;
+        this.DELETE_DOWNLOAD_URL = initDownload+addParam+addParam;
+        this.GET_RESPONSES_URL = search+addParam+responsesPath;
+        this.INIT_DOWNLOAD_URL = initDownload+addParam;
+        this.GET_DOWNLOADS_STATUS_URL = initDownload;
+        this.HEALTH_CHECK_URL = healthCheck;
         this.objectMapper = objectMapper;
+        this.apiConfiguration = configurationService.getConfiguration().api();
     }
 
     public void download(SlskdDownloadRequest downloadRequest, String token){
@@ -56,7 +60,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[download] - URI: {}",formattedUrl);
             log.debug("[download] - Payload: {}, {}",downloadRequest,token);
 
-            HttpResponse<String> response = Unirest.post(formattedUrl)
+            HttpResponse<String> response = Unirest.post(buildUrl(formattedUrl))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .body(new SlskdDownloadPayload[]{downloadRequest.payload()})
@@ -80,7 +84,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[getSearchResults] - URI: {}",formattedUrl);
             log.debug("[getSearchResults] - Payload: {}, {}",searchId,token);
 
-            HttpResponse<JsonNode> response = Unirest.get(formattedUrl)
+            HttpResponse<JsonNode> response = Unirest.get(buildUrl(formattedUrl))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .asJson();
@@ -107,7 +111,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[checkSearchStatus] - URI: {}",formattedUrl);
             log.debug("[checkSearchStatus] - Payload: {}, {}",searchId,token);
 
-            HttpResponse<JsonNode> response = Unirest.get(formattedUrl)
+            HttpResponse<JsonNode> response = Unirest.get(buildUrl(formattedUrl))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .asJson();
@@ -135,7 +139,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[initSearch] - Payload: {}, {}",songReq,token);
 
 
-            HttpResponse<JsonNode> response = Unirest.post(INIT_SEARCH_URL)
+            HttpResponse<JsonNode> response = Unirest.post(buildUrl(INIT_SEARCH_URL))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .body(songReq)
@@ -160,7 +164,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[getDownloadsStatus] - URI: {}",GET_DOWNLOADS_STATUS_URL);
             log.debug("[getDownloadsStatus]- Payload: {}",token);
 
-            HttpResponse<JsonNode> response = Unirest.get(GET_DOWNLOADS_STATUS_URL)
+            HttpResponse<JsonNode> response = Unirest.get(buildUrl(GET_DOWNLOADS_STATUS_URL))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .asJson();
@@ -174,7 +178,7 @@ public class SlskdGateway extends Gateway {
             return objectMapper.readValue(responseJson, SlskdDownloadStatus[].class);
         } catch (Exception e) {
             log.error("[getDownloadsStatus] - Error getting Slskd downloads status: " + e.getMessage());
-            return null;
+            return new SlskdDownloadStatus[]{};
         }
     }
 
@@ -184,7 +188,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[deleteDownload] - URI: {}",formattedUrl);
             log.debug("[deleteDownload]- Payload: {}, {}",searchId,token);
 
-            HttpResponse<String> response = Unirest.delete(formattedUrl)
+            HttpResponse<String> response = Unirest.delete(buildUrl(formattedUrl))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .asString();
@@ -201,7 +205,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[deleteSearch] - URI: {}",formattedUrl);
             log.debug("[deleteSearch]- Payload: {}, {}",searchId,token);
 
-            HttpResponse<String> response = Unirest.delete(formattedUrl)
+            HttpResponse<String> response = Unirest.delete(buildUrl(formattedUrl))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .header(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + token)
                     .asString();
@@ -217,7 +221,7 @@ public class SlskdGateway extends Gateway {
         try {
             log.debug("[healthCheck] - URI: {}",HEALTH_CHECK_URL);
 
-            HttpResponse<String> response = Unirest.get(HEALTH_CHECK_URL)
+            HttpResponse<String> response = Unirest.get(buildUrl(HEALTH_CHECK_URL))
                     .asString();
 
             log.debug("[healthCheck] - Response status code: {}", response.getStatus());
@@ -235,7 +239,7 @@ public class SlskdGateway extends Gateway {
             log.debug("[getToken] - URI: {}",GET_SESSION_URL);
             log.debug("[getToken]- Payload: {}, {}",username,password);
 
-            HttpResponse<JsonNode> response = Unirest.post(GET_SESSION_URL)
+            HttpResponse<JsonNode> response = Unirest.post(buildUrl(GET_SESSION_URL))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                     .body(SlskdLogin.builder()
                             .username(username)
@@ -254,5 +258,9 @@ public class SlskdGateway extends Gateway {
             log.error("[getToken] - Error while getting the token: " + e.getMessage());
             return null;
         }
+    }
+
+    private String buildUrl(String endpoint){
+        return apiConfiguration.getSlskdUrl()+endpoint;
     }
 }

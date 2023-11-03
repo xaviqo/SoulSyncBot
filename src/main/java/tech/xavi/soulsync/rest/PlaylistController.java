@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
 import tech.xavi.soulsync.dto.rest.ResponseWrapper;
 import tech.xavi.soulsync.entity.Playlist;
-import tech.xavi.soulsync.service.request.AddPlaylistRequestService;
-import tech.xavi.soulsync.service.request.GetPlaylistsRequestService;
+import tech.xavi.soulsync.service.rest.AddPlaylistRestService;
+import tech.xavi.soulsync.service.rest.GetPlaylistsRestService;
 
 import java.net.URISyntaxException;
 import java.util.List;
@@ -18,8 +18,8 @@ import java.util.List;
 @RequestMapping("/v1/playlist")
 public class PlaylistController {
 
-    private final AddPlaylistRequestService addPlaylistService;
-    private final GetPlaylistsRequestService getPlaylistService;
+    private final AddPlaylistRestService addPlaylistService;
+    private final GetPlaylistsRestService getPlaylistService;
 
     @PostMapping()
     public ResponseEntity<ResponseWrapper<Playlist>> addPlaylist(@RequestBody AddPlaylistReq request) throws URISyntaxException {

@@ -1,16 +1,17 @@
 package tech.xavi.soulsync.service.process;
 
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchQuery;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchStatus;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
-import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.SoulSyncConfiguration;
 import tech.xavi.soulsync.exception.SeekProcessError;
 import tech.xavi.soulsync.exception.SeekProcessException;
+import tech.xavi.soulsync.gateway.SlskdGateway;
+import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 import java.text.Normalizer;
 import java.util.Arrays;
@@ -20,21 +21,18 @@ import java.util.List;
 @Service
 public class SearchService {
 
-    private final List<String> COMMON_WORDS_TO_REMOVE;
-    private final int MAX_RETRIES_RESULT_REQ;
+    private final SoulSyncConfiguration.Finder searchConfiguration;
     private final SlskdGateway slskdGateway;
     private final AuthService authService;
-    private final RateLimitDelayService delayService;
+    private final PauseService delayService;
 
     public SearchService(
-            @Value("${tech.xavi.soulsync.cfg.common-words-to-remove}") String commonWordsStr,
-            @Value("${tech.xavi.soulsync.cfg.max-retries-result-req}") int maxRetResReq,
+            ConfigurationService configurationService,
             SlskdGateway slskdGateway,
             AuthService authService,
-            RateLimitDelayService delayService
+            PauseService delayService
     ) {
-        this.COMMON_WORDS_TO_REMOVE = Arrays.stream(commonWordsStr.split(",")).toList();
-        this.MAX_RETRIES_RESULT_REQ = maxRetResReq;
+        this.searchConfiguration = configurationService.getConfiguration().finder();
         this.slskdGateway = slskdGateway;
         this.authService = authService;
         this.delayService = delayService;
@@ -61,6 +59,7 @@ public class SearchService {
     }
 
     public SlskdSearchResult[] fetchResults(Song song){
+        int maxRetries = searchConfiguration.getMaxRetriesWaitingResult();
         int retries = 1;
         do {
             try {
@@ -90,7 +89,7 @@ public class SearchService {
                 break;
             }
 
-        } while (retries < MAX_RETRIES_RESULT_REQ);
+        } while (retries < maxRetries);
         return new SlskdSearchResult[0];
     }
 
@@ -144,22 +143,24 @@ public class SearchService {
         );
     }
 
-    private boolean isAttemptLimitReached(int retries, Song song){
-        boolean isReached = (retries == MAX_RETRIES_RESULT_REQ);
+    private boolean isAttemptLimitReached(int currentRetries, Song song){
+        int maxRetries = searchConfiguration.getMaxRetriesWaitingResult();
+        boolean isReached = (currentRetries == maxRetries);
         if (isReached){
             log.debug("[fetchResults] - The search process has not been completed after {} attempts. " +
                             "Postponed to next hunting | SearchInput: {} SearchId: {}",
-                    MAX_RETRIES_RESULT_REQ, song.getSearchInput(), song.getSearchId());
+                    maxRetries, song.getSearchInput(), song.getSearchId());
         } else {
             log.debug("[fetchResults] (Attempt #{}) - The search process has not yet been completed " +
                             "| SearchInput: {} SearchId: {}",
-                    retries, song.getSearchInput(), song.getSearchId());
+                    currentRetries, song.getSearchInput(), song.getSearchId());
         }
         return isReached;
     }
 
     // The search fails if words of two or fewer letters are added.
     private String removeSpecialChars(String songNameAndArtist){
+        List<String> wordsToRemove = Arrays.asList(searchConfiguration.getWordsToRemove());
         final String SPECIAL_CHARS_REGEX = "[^a-zA-Z0-9]";
         final String DIACRITICAL_ACCENT_MARKS_REGEX = "\\p{M}";
         final String TWO_OR_MORE_SPACES_REGEX = "\\s+";
@@ -175,7 +176,7 @@ public class SearchService {
         String[] words = result.split(" ");
         StringBuilder cleanedText = new StringBuilder();
         for (String word : words) {
-            if (!COMMON_WORDS_TO_REMOVE.contains(word.toLowerCase()) && word.length() > 2) {
+            if (!wordsToRemove.contains(word.toLowerCase()) && word.length() > 2) {
                 cleanedText.append(word).append(" ");
             }
         }

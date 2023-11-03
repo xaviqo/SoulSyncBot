@@ -1,14 +1,11 @@
 package tech.xavi.soulsync.repository;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Date;
 
 @Slf4j
 public class JsonBackupRepository<T> {
@@ -18,64 +15,55 @@ public class JsonBackupRepository<T> {
     private final Class<T> clazz;
     private final ObjectMapper objectMapper;
     private final File DB;
-    private List<T> data;
+    private T data;
     private long lastUpdate;
 
     public JsonBackupRepository(String jsonFile, Class<T> clazz) {
         this.clazz = clazz;
-        this.data = new ArrayList<>();
-        this.DB = new File("db/",jsonFile);
+        this.data = null;
+        this.DB = new File(
+                "db/",
+                jsonFile+".json"
+        );
         this.objectMapper = new ObjectMapper();
-        if (!createJsonFile()) loadData();
+        createJsonFile();
+        loadData();
     }
 
-    public List<T> get(){
+    public T get(){
         return this.data;
     }
 
-    public void save(List<T> data) {
-        this.data.addAll(data);
-        this.lastUpdate = System.currentTimeMillis();
-
-        Map<String,Object> json = new HashMap<>();
-        json.put(LAST_UPATE_FIELD,this.lastUpdate);
-        json.put(DATA_FIELD,data);
-
+    public void save(T newData) {
         try {
-            objectMapper.writeValue(DB,json);
+            this.data = newData;
+            objectMapper.writeValue(DB,newData);
         } catch (IOException e) {
             log.error("Error saving data in {} at {}",
                     DB.getName(),
                     new Date(this.lastUpdate)
             );
+            e.printStackTrace();
         }
     }
 
     private void loadData(){
-        log.info("File {} detected. Loading previous data",DB.getName());
+        log.info("Loading previous data from file {}",DB.getName());
         try {
-            JsonNode jsonNode = objectMapper.readTree(DB);
-            String dataArray = jsonNode.get(DATA_FIELD).toString();
-            this.data = mapJsonToObjectList(dataArray).stream().map(obj -> (T)obj).toList();
-            this.lastUpdate = jsonNode.get(LAST_UPATE_FIELD).intValue();
+            if (DB.length() > 0) {
+                this.data = objectMapper.readValue(DB,clazz);
+            } else {
+                log.info("File {} is empty, no data to load",DB.getName());
+            }
         } catch (Exception e) {
-            log.error("Error loading data from {}",
-                    DB.getName()
-            );
+            log.error("Error loading data from {}", DB.getName());
             e.printStackTrace();
         }
-
     }
 
-    private <T> List<T> mapJsonToObjectList(String json) throws Exception {
-        CollectionType collectionType = TypeFactory.defaultInstance().constructCollectionType(ArrayList.class, clazz);
-        return objectMapper.readValue(json,collectionType);
-    }
-
-    private boolean createJsonFile(){
+    private void createJsonFile(){
         createDbDirectory();
-        boolean exists = DB.exists();
-        if (!exists) {
+        if (!DB.exists()) {
             try {
                 if (DB.createNewFile())
                     log.info("New file has been created: {}",DB.getAbsoluteFile());
@@ -85,7 +73,6 @@ public class JsonBackupRepository<T> {
         } else {
             log.info("The file is already present: {}",DB.getAbsoluteFile());
         }
-        return !exists;
     }
 
     private void createDbDirectory(){

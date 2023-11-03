@@ -30,7 +30,7 @@ public class PlaylistService {
 
 
     public PlaylistService(
-            @Value("${tech.xavi.soulsync.cfg.max-req-tracks-per-playlist}") int limitVal,
+            @Value("${tech.xavi.soulsync.gateway.request.spotify.tracks-per-playlist}") int limitVal,
             SpotifyGateway spotifyGateway,
             AuthService authService,
             SearchService searchService,

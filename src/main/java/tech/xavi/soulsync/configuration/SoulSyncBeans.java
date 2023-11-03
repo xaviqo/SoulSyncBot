@@ -2,17 +2,18 @@ package tech.xavi.soulsync.configuration;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
-import java.util.concurrent.Executor;
-
+@RequiredArgsConstructor
 @EnableAsync
 @Configuration
 public class SoulSyncBeans {
+
+    private final ConfigurationService configurationService;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -21,15 +22,17 @@ public class SoulSyncBeans {
         return objectMapper;
     }
 
-    @Bean(name = "asyncExecutor")
-    public Executor asyncExecutor(@Value("${tech.xavi.soulsync.cfg.max-songs-downloading-at-a-time}") int poolSize){
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(poolSize);
-        executor.setMaxPoolSize(poolSize);
-        executor.setQueueCapacity(100);
-        executor.setThreadNamePrefix("AsyncThread-");
-        executor.initialize();
-        return executor;
-    }
+    //@Bean(name = "asyncExecutor")
+    //public Executor asyncExecutor(){
+    //    int poolSize = configurationService.getConfiguration().app().getMaxSongsDownloadingAtTime();
+    //    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    //    executor.setCorePoolSize(poolSize);
+    //    executor.setMaxPoolSize(poolSize);
+    //    executor.setQueueCapacity(100);
+    //    executor.setThreadNamePrefix("AsyncThread-");
+    //    executor.initialize();
+    //    return executor;
+    //}
+
 
 }

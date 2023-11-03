@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.request;
+package tech.xavi.soulsync.service.rest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -17,7 +17,7 @@ import java.util.List;
 @Log4j2
 @RequiredArgsConstructor
 @Service
-public class AddPlaylistRequestService {
+public class AddPlaylistRestService {
 
     private final PlaylistService playlistService;
     private final QueueService queueService;

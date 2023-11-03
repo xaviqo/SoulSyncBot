@@ -29,7 +29,7 @@ public class SpotifyGateway extends Gateway{
             @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-tracks.ep}") String mainEpGetPlaylist,
             @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-playlist-data.ep}") String mainEpPlaylistData,
             @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-cover.ep}") String mainEpGetCover,
-            @Value("${tech.xavi.soulsync.cfg.max-req-tracks-per-playlist}") int limitVal,
+            @Value("${tech.xavi.soulsync.gateway.request.spotify.tracks-per-playlist}") int limitVal,
             ObjectMapper objectMapper
     ) {
         this.AUTH_GET_TOKEN_URL = authBaseUrl+authEpGetToken;

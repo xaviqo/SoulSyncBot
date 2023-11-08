@@ -5,13 +5,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
-import tech.xavi.soulsync.dto.rest.ResponseWrapper;
+import tech.xavi.soulsync.dto.rest.PlaylistDataTable;
 import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.SongStatus;
 import tech.xavi.soulsync.service.rest.AddPlaylistRestService;
 import tech.xavi.soulsync.service.rest.GetPlaylistsRestService;
 
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -22,34 +25,33 @@ public class PlaylistController {
     private final GetPlaylistsRestService getPlaylistService;
 
     @PostMapping()
-    public ResponseEntity<ResponseWrapper<Playlist>> addPlaylist(@RequestBody AddPlaylistReq request) throws URISyntaxException {
+    public ResponseEntity<Playlist> addPlaylist(@RequestBody AddPlaylistReq request) throws URISyntaxException {
         return new ResponseEntity<>(
-                ResponseWrapper.wrapResponse(
-                        addPlaylistService.addPlaylistRequest(request),
-                        Playlist.class
-                ),
+                addPlaylistService.addPlaylistRequest(request),
                 HttpStatus.ACCEPTED
         );
     }
 
     @GetMapping
-    public ResponseEntity<ResponseWrapper<?>> getAllPlaylists() {
+    public ResponseEntity<List<PlaylistDataTable>> getAllPlaylists() {
         return new ResponseEntity<>(
-                ResponseWrapper.wrapResponse(
-                        getPlaylistService.getDataTablePlaylistsInfo(),
-                        List.class
-                ),
+                getPlaylistService.getDataTablePlaylistsInfo(),
                 HttpStatus.OK
         );
     }
 
     @GetMapping("songs")
-    public ResponseEntity<ResponseWrapper<?>> getAllPlaylistSongs(@RequestParam String playlistId) {
+    public ResponseEntity<List<Song>> getAllPlaylistSongs(@RequestParam String playlistId) {
         return new ResponseEntity<>(
-                ResponseWrapper.wrapResponse(
-                        getPlaylistService.getSongsFromPlaylist(playlistId),
-                        List.class
-                ),
+                getPlaylistService.getSongsFromPlaylist(playlistId),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("stats")
+    public ResponseEntity<Map<SongStatus,Integer>> getSongsStats(@RequestParam String playlistId) {
+        return new ResponseEntity<>(
+                getPlaylistService.getAllStatusByPlaylistId(playlistId),
                 HttpStatus.OK
         );
     }

@@ -35,8 +35,8 @@ spring:
     password: soulsync
   jpa:
     hibernate:
-      #ddl-auto: update
-      ddl-auto: create-drop
+      ddl-auto: update
+      #ddl-auto: create-drop
   security:
     user:
       password: none
@@ -44,12 +44,10 @@ spring:
 logging:
   level:
     com:
-      mashape:
-        unirest: DEBUG
       fasterxml:
         jackson:
-          databind: DEBUG
+          databind: WARN
     org:
       hibernate:
-        SQL: DEBUG
-    root: INFO
+        SQL: WARN
+    root: WARN

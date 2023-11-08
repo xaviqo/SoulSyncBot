@@ -7,4 +7,5 @@ public interface PlaylistProjection {
     int getLastTotalTracks();
     long getLastUpdate();
     boolean isUpdatable();
+    boolean isAvoidDuplicates();
 }

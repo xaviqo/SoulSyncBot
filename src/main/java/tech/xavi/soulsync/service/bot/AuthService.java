@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.process;
+package tech.xavi.soulsync.service.bot;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -10,11 +10,13 @@ import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
+import java.time.Instant;
+
 @Log4j2
 @Service
 public class AuthService {
 
-    private final SoulSyncConfiguration.Api credentials;
+    private final SoulSyncConfiguration.Api credentialsConfiguration;
     private final SpotifyGateway spotifyGateway;
     private final SlskdGateway slskdGateway;
     private Token spotifyToken;
@@ -25,7 +27,7 @@ public class AuthService {
             SpotifyGateway spotifyGateway,
             SlskdGateway slskdGateway
     ) {
-        this.credentials = configurationService.getConfiguration().api();
+        this.credentialsConfiguration = configurationService.getConfiguration().api();
         this.spotifyGateway = spotifyGateway;
         this.slskdGateway = slskdGateway;
     }
@@ -34,7 +36,7 @@ public class AuthService {
         if (spotifyToken == null || isTokenExpired(spotifyToken)){
             SpotifyTokenRes tokenResponse = spotifyGateway
                     .getToken(getB64credentials());
-            long expirationStamp = System.currentTimeMillis() + tokenResponse.getExpires();
+            long expirationStamp = Instant.now().getEpochSecond() + tokenResponse.getExpires();
             String tokenStr = tokenResponse.getToken();
             spotifyToken = Token.builder()
                     .apiName("Spotify")
@@ -50,8 +52,8 @@ public class AuthService {
         if (slskdToken == null || isTokenExpired(slskdToken)){
             SlskdTokenRes tokenResponse = slskdGateway
                     .getToken(
-                            credentials.getSlskdUsername(),
-                            credentials.getSlskdPassword()
+                            credentialsConfiguration.getSlskdUsername(),
+                            credentialsConfiguration.getSlskdPassword()
                     );
             long expirationStamp = tokenResponse.getExpires();
             String tokenStr = tokenResponse.getToken();
@@ -66,14 +68,14 @@ public class AuthService {
 
 
     private String getB64credentials(){
-        String credentialString = credentials.getSpotifyClientId() + ":" + credentials.getSpotifyClientSecret();
+        String credentialString = credentialsConfiguration.getSpotifyClientId() + ":" + credentialsConfiguration.getSpotifyClientSecret();
         byte[] credentialBytes = (credentialString).getBytes();
         return java.util.Base64.getEncoder()
                 .encodeToString(credentialBytes);
     }
 
     private boolean isTokenExpired(Token token){
-        long currentInSeconds = System.currentTimeMillis() / 1000;
+        long currentInSeconds = Instant.now().getEpochSecond();
         boolean isExpired = currentInSeconds > (token.expirationStamp() - 60);
         if (isExpired)
             log.debug("{} token is null or has expired. A new one is requested",token.apiName());

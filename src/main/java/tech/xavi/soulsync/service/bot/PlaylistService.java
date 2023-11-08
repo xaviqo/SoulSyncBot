@@ -1,17 +1,21 @@
-package tech.xavi.soulsync.service.process;
+package tech.xavi.soulsync.service.bot;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
+import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
 import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.entity.PlaylistStatus;
 import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.SongStatus;
+import tech.xavi.soulsync.exception.SyncError;
+import tech.xavi.soulsync.exception.SyncException;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -45,13 +49,14 @@ public class PlaylistService {
         this.playlistRepository = playlistRepository;
     }
 
-    public Playlist createPlaylistEntity(String playlistId, List<SpotifySong> spotifyPlaylist){
+    public Playlist createPlaylistEntity(String playlistId, List<SpotifySong> spotifyPlaylist, AddPlaylistReq request){
         Playlist playlist = Playlist.builder()
                 .spotifyId(playlistId)
                 .cover(getCover(playlistId))
                 .name(getName(playlistId))
-                .updatable(true)
+                .updatable(request.update())
                 .lastUpdate(System.currentTimeMillis())
+                .avoidDuplicates(request.avoidDuplicates())
                 .build();
 
         List<Song> songList = spotifyPlaylist.stream()
@@ -64,18 +69,18 @@ public class PlaylistService {
         return playlist;
     }
 
-    public void updateAllPlaylists() {
+    public void updatePlaylistsFromSpotify() {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         log.debug("[updateAllPlaylists] - Playlist update started");
         playlistRepository
-                .findAllSpotifyId()
-                .forEach(this::updatePlaylist);
+                .findAllUpdatables()
+                .forEach(pl -> updatePlaylist(pl.getSpotifyId(),pl.isAvoidDuplicates()));
         stopWatch.stop();
         log.debug("[updateAllPlaylists] - Playlist update finished. Total time elapsed: {} sec",stopWatch.getTotalTimeSeconds());
     }
 
-    private void updatePlaylist(String playlistId){
+    private void updatePlaylist(String playlistId, boolean avoidDupes){
         playlistRepository
                 .findById(playlistId)
                 .ifPresent( storedPlaylist -> {
@@ -84,16 +89,16 @@ public class PlaylistService {
                         int totalTracks = getTotalTracks(playlistId);
                         List<Song> storedSongs = storedPlaylist.getSongs();
                         int beforeTotal = storedSongs.size();
-                        getPlaylistSongsFromSpotify(playlistId,totalTracks)
-                                .forEach( spotifySong -> {
-                                    if (!playlistContainsSpotifySong(storedSongs,spotifySong)) {
-                                        log.debug("[updatePlaylistTracks] - New song found in playlist {}: {}",
-                                                storedPlaylist.getName(),
-                                                spotifySong.getName() + " - " + spotifySong.getFirstArtist()
-                                        );
-                                        storedSongs.add(convertToEntitySong(spotifySong,storedPlaylist));
-                                    }
-                                });
+                        List<SpotifySong> updatedPl = getPlaylistSongsFromSpotify(playlistId,totalTracks);
+                        updatedPl.forEach( spotifySong -> {
+                            log.debug("[updatePlaylistTracks] - New song found in playlist {}: {}",
+                                    storedPlaylist.getName(),
+                                    spotifySong.getName() + " - " + spotifySong.getFirstArtist()
+                            );
+                            if (!avoidDupes || !playlistAlreadyContainsSong(storedPlaylist,spotifySong)) {
+                                storedSongs.add(convertToEntitySong(spotifySong,storedPlaylist));
+                            }
+                        });
                         int afterTotal = storedSongs.size();
                         if (afterTotal > beforeTotal) {
                             log.debug("[updatePlaylistTracks] - Playlist {} has been updated with new tracks. " +
@@ -102,6 +107,7 @@ public class PlaylistService {
                                     beforeTotal,
                                     afterTotal
                             );
+                            storedPlaylist.setLastTotalTracks(storedSongs.size());
                             storedPlaylist.setSongs(storedSongs);
                             playlistRepository.save(storedPlaylist);
                         }
@@ -110,18 +116,10 @@ public class PlaylistService {
 
     }
 
-    private boolean playlistContainsSpotifySong(List<Song> storedSongs, SpotifySong spotifySong){
-        for (Song stored : storedSongs) {
-            boolean isNameEqual = stored.getName().equalsIgnoreCase(spotifySong.getName());
-            boolean areArtistsEqual =  isArtistsArraysEqual(stored,spotifySong);
-            if (isNameEqual && areArtistsEqual) return true;
-        }
+    private boolean playlistAlreadyContainsSong(Playlist storedPlaylist, SpotifySong song){
+        for (Song storedSong : storedPlaylist.getSongs())
+            if (storedSong.getSpotifyId().equals(song.getId())) return true;
         return false;
-    }
-
-    private boolean isArtistsArraysEqual(Song storedSong, SpotifySong spotifySong){
-        return storedSong.getArtists().size() == spotifySong.getArtists().size()
-                && new HashSet<>(storedSong.getArtists()).containsAll(spotifySong.getArtists());
     }
 
     private void updatePlaylistName(Playlist playlist){
@@ -137,10 +135,17 @@ public class PlaylistService {
 
     public int getTotalTracks(String playlistId){
         String token = authService.getSpotifyToken().token();
-        return spotifyGateway
-                .getPlaylistTotalTracks(token,playlistId)
-                .getTracks()
-                .getTotal();
+        try {
+            return spotifyGateway
+                    .getPlaylistTotalTracks(token,playlistId)
+                    .getTracks()
+                    .getTotal();
+        } catch (Exception exception) {
+            throw new SyncException(
+                    SyncError.PLAYLIST_ID_NOT_VALID,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
     }
 
     public String getName(String playlistId){
@@ -192,15 +197,13 @@ public class PlaylistService {
                 .artists(spotifySong.getArtists())
                 .searchInput(searchInput)
                 .playlist(playlist)
-                .found(false)
+                .spotifyId(spotifySong.getId())
+                .status(SongStatus.WAITING)
                 .build();
     }
 
-    public PlaylistStatus getPlaylistStatus(String id, int remaining){
-        return (remaining == 0)
-                ? PlaylistStatus.COMPLETED
-                : queueService.getPlaylistQueueStatus(id);
+    public PlaylistStatus getPlaylistQueueStatus(String playlistId){
+        return queueService.getPlaylistQueueStatus(playlistId);
     }
-
 
 }

@@ -141,7 +141,7 @@ public class SpotifyGateway extends Gateway{
     }
 
     public SpotifyPlaylist getPlaylistTracks(String token, String playlistId, int offset) {
-        final String fields = "items(track(name,artists(name)))";
+        final String fields = "items(track(name,artists(name),id))";
         try {
             log.debug("[getPlaylistTracks] - URI: {}", MAIN_GET_TRACKS);
             log.debug("[getPlaylistTracks] - Payload: {}, {}, {}", token, playlistId,offset);

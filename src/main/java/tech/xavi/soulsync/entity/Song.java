@@ -2,10 +2,7 @@ package tech.xavi.soulsync.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,11 +10,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Data
+@Getter @Setter
 @Builder
 public class Song {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    long id;
+    @Id @GeneratedValue
+    int id;
+    @Column
+    String spotifyId;
     @Column
     String name;
     @Column
@@ -28,8 +27,9 @@ public class Song {
     @CollectionTable(name = "artists", joinColumns = @JoinColumn(name = "song_id"))
     @Column(name = "artist")
     List<String> artists;
+    @Enumerated(EnumType.STRING)
     @Column
-    boolean found;
+    SongStatus status;
     @Column
     String filename;
     @Column
@@ -46,4 +46,20 @@ public class Song {
         this.setAttempts(this.getAttempts()+1);
     }
 
+    @Override
+    public String toString() {
+        return "Song{" +
+                "id=" + id +
+                ", spotifyId='" + spotifyId + '\'' +
+                ", name='" + name + '\'' +
+                ", searchInput='" + searchInput + '\'' +
+                ", searchId=" + searchId +
+                ", artists=" + artists +
+                ", status=" + status +
+                ", filename='" + filename + '\'' +
+                ", size=" + size +
+                ", playlist=" + playlist.getSpotifyId() +
+                ", attempts=" + attempts +
+                '}';
+    }
 }

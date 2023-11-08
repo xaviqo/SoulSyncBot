@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.process;
+package tech.xavi.soulsync.service.bot;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -7,8 +7,6 @@ import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.repository.SongRepository;
-
-import java.util.List;
 @RequiredArgsConstructor
 @Log4j2
 @Service
@@ -17,11 +15,6 @@ public class WatchlistService {
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
 
-
-    public List<Playlist> getPlaylists(){
-        return playlistRepository
-                .fetchUnfoundSongsInPlaylists();
-    }
 
     public void updateWatchlist(Playlist playlist){
         log.debug("[addToWatchlist] - Playlist is saved in DB: {}",playlist.getSpotifyId());

@@ -40,9 +40,28 @@ public class SoulSyncConfiguration {
     public static class App {
         int pausesMs;
         int totalSimultaneousProcesses;
-        int waitingTimeBtwResultRequestsSec;
         int intervalMinutesScheduledTask;
         int maxSongsDownloadingSameTime;
+        String slskdDownloadsRoute;
+        String userFilesRoute;
+        boolean relocateFiles;
+        RelocateOption moveOrCopyFiles;
+        boolean renameCopiedFiles;
+
+        public String getSlskdDownloadsRoute() {
+            return addLastSlashIfNeeded(slskdDownloadsRoute);
+        }
+
+        public String getUserFilesRoute() {
+            return addLastSlashIfNeeded(userFilesRoute);
+        }
+
+        private String addLastSlashIfNeeded(String route){
+            if (!route.endsWith("/") && !route.endsWith("\\"))
+                return route+"/";
+            else
+                return route;
+        }
     }
 
     public Api api(){

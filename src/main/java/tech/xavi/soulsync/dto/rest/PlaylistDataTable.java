@@ -12,6 +12,6 @@ public class PlaylistDataTable {
     String cover;
     PlaylistStatus status;
     long lastUpdate;
-    int remaining;
     int total;
+    int totalSucceeded;
 }

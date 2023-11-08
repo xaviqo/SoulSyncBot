@@ -1,14 +1,12 @@
-package tech.xavi.soulsync.service.process;
+package tech.xavi.soulsync.service.bot;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
-import tech.xavi.soulsync.entity.Playlist;
-import tech.xavi.soulsync.entity.PlaylistStatus;
-import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.SoulSyncConfiguration;
+import tech.xavi.soulsync.entity.*;
+import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 import java.util.*;
@@ -27,6 +25,7 @@ public class QueueService {
     private final WatchlistService watchlistService;
     private final PauseService delayService;
     private final ThreadPoolTaskExecutor executor;
+    private final PlaylistRepository playlistRepository;
     private Set<Thread> activeProcesses;
 
     public QueueService(
@@ -34,7 +33,8 @@ public class QueueService {
             SearchService searchService,
             DownloadService downloadService,
             WatchlistService watchlistService,
-            PauseService delayService
+            PauseService delayService,
+            PlaylistRepository playlistRepository
     ) {
         this.appConfiguration = configurationService.getConfiguration().app();
         this.songsQueue = new ArrayBlockingQueue<>(1);
@@ -43,6 +43,7 @@ public class QueueService {
         this.downloadService = downloadService;
         this.watchlistService = watchlistService;
         this.delayService = delayService;
+        this.playlistRepository = playlistRepository;
         this.activeProcesses = new HashSet<>();
         int poolSize = configurationService.getConfiguration().app().getMaxSongsDownloadingSameTime();
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -67,8 +68,8 @@ public class QueueService {
         activeProcesses.forEach(Thread::interrupt);
     }
 
-    public void addUpdatedPlaylistsToQueue(){
-        List<Playlist> pendingPlaylists = watchlistService.getPlaylists();
+    public void updateQueue(){
+        List<Playlist> pendingPlaylists = playlistRepository.getPlaylistBySongStatus(SongStatus.WAITING);
         log.debug("[runScheduledTask] - Scheduled task is executed. " +
                 "Total pending playlists: {}",pendingPlaylists.size());
         pendingPlaylists.forEach( pl -> {

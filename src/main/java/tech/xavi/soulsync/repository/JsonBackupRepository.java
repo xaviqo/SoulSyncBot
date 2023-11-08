@@ -1,22 +1,23 @@
 package tech.xavi.soulsync.repository;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.extern.slf4j.Slf4j;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
+import tech.xavi.soulsync.exception.SyncError;
+import tech.xavi.soulsync.exception.SyncException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
-@Slf4j
+@Log4j2
 public class JsonBackupRepository<T> {
 
-    private final String DATA_FIELD = "data";
-    private final String LAST_UPATE_FIELD = "lastUpdate";
     private final Class<T> clazz;
     private final ObjectMapper objectMapper;
     private final File DB;
     private T data;
-    private long lastUpdate;
 
     public JsonBackupRepository(String jsonFile, Class<T> clazz) {
         this.clazz = clazz;
@@ -30,8 +31,41 @@ public class JsonBackupRepository<T> {
         loadData();
     }
 
+    public void modifyField(String mainField, String subField, JsonNode newValue) {
+        if (this.data == null) {
+            return;
+        }
+        try {
+            JsonNode jsonNode = objectMapper.valueToTree(this.data);
+            if (jsonNode.isObject()) {
+                ObjectNode objectNode = (ObjectNode) jsonNode;
+                if (objectNode.has(mainField) && objectNode.get(mainField).isObject()) {
+                    ObjectNode subObject = (ObjectNode) objectNode.get(mainField);
+                    if (subObject.has(subField)){
+                        subObject.set(subField,newValue);
+                    }
+                }
+            }
+            objectMapper.writeValue(this.DB,jsonNode);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        loadData();
+    }
+
     public T get(){
         return this.data;
+    }
+
+    public JsonNode getJsonAsNode(){
+        try {
+            return objectMapper.readTree(DB);
+        } catch (IOException e) {
+            throw new SyncException(
+                    SyncError.ERROR_READING_JSON_CFG,
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
     }
 
     public void save(T newData) {
@@ -39,9 +73,8 @@ public class JsonBackupRepository<T> {
             this.data = newData;
             objectMapper.writeValue(DB,newData);
         } catch (IOException e) {
-            log.error("Error saving data in {} at {}",
-                    DB.getName(),
-                    new Date(this.lastUpdate)
+            log.error("Error saving data in {}",
+                    DB.getName()
             );
             e.printStackTrace();
         }
@@ -86,6 +119,7 @@ public class JsonBackupRepository<T> {
         }
     }
 
-
-
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
 }

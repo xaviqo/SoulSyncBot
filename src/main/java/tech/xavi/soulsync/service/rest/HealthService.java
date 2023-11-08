@@ -24,7 +24,7 @@ public class HealthService {
 
     public void initLogCheck(){
         if (slskdGateway.isSlskdApiHealthy())
-            log.info("[healthCheck] - Slsk API connection ----> SUCCESS");
+            log.debug("[healthCheck] - Slsk API connection ----> SUCCESS");
         else
             log.error("[healthCheck] - Slsk API connection ----> FAIL");
     }

@@ -1,16 +1,19 @@
-package tech.xavi.soulsync.service.process;
+package tech.xavi.soulsync.service.bot;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchQuery;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchStatus;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.SongStatus;
 import tech.xavi.soulsync.entity.SoulSyncConfiguration;
-import tech.xavi.soulsync.exception.SeekProcessError;
-import tech.xavi.soulsync.exception.SeekProcessException;
+import tech.xavi.soulsync.exception.SyncError;
+import tech.xavi.soulsync.exception.SyncException;
 import tech.xavi.soulsync.gateway.SlskdGateway;
+import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 import java.text.Normalizer;
@@ -25,20 +28,25 @@ public class SearchService {
     private final SlskdGateway slskdGateway;
     private final AuthService authService;
     private final PauseService delayService;
+    private final SongRepository songRepository;
 
     public SearchService(
             ConfigurationService configurationService,
             SlskdGateway slskdGateway,
             AuthService authService,
-            PauseService delayService
+            PauseService delayService,
+            SongRepository songRepository
     ) {
         this.searchConfiguration = configurationService.getConfiguration().finder();
         this.slskdGateway = slskdGateway;
         this.authService = authService;
         this.delayService = delayService;
+        this.songRepository = songRepository;
     }
 
     public void searchSong(Song song){
+        song.setStatus(SongStatus.SEARCHING);
+        songRepository.save(song);
         slskdGateway.initSearch(
                 SlskdSearchQuery.builder()
                         .id(song.getSearchId().toString())
@@ -72,9 +80,9 @@ public class SearchService {
                 pause(song,retries);
                 retries++;
 
-            } catch (SeekProcessException seekProcessException){
+            } catch (SyncException syncException){
                 log.error("[fetchResults] - {} - Search Input: {}",
-                        seekProcessException.getSeekProcessError(),
+                        syncException.getSyncError(),
                         song.getSearchInput()
                         );
                 break;
@@ -105,14 +113,15 @@ public class SearchService {
         );
     }
 
-    private SlskdSearchStatus isSearchComplete(Song song) throws SeekProcessException{
+    private SlskdSearchStatus isSearchComplete(Song song) throws SyncException {
         SlskdSearchStatus searchStatus = slskdGateway.checkSearchStatus(
                 song.getSearchId().toString(),
                 authService.getSlskdToken().token()
         );
         if (searchStatus == null)
-            throw new SeekProcessException(
-                    SeekProcessError.NULL_RESULT_EXCEPTION
+            throw new SyncException(
+                    SyncError.NULL_RESULT_EXCEPTION,
+                    HttpStatus.INTERNAL_SERVER_ERROR
             );
         return searchStatus;
     }

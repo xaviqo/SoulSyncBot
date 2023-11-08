@@ -14,6 +14,9 @@ public class SpotifySong {
     public String getName() {
         return track.getName();
     }
+    public String getId(){
+        return track.getId();
+    }
 
     // We obtain better results
     // if we only select the first artist.
@@ -32,6 +35,7 @@ public class SpotifySong {
     private static class Track {
         private List<Artist> artists;
         private String name;
+        private String id;
     }
 
     @Data

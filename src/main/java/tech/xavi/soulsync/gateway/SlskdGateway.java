@@ -172,10 +172,7 @@ public class SlskdGateway extends Gateway {
             int responseStatus = response.getStatus();
             log.debug("[getDownloadsStatus] - Response status code: {}", responseStatus);
 
-            String responseJson = response.getBody().toString();
-            log.debug("[getDownloadsStatus] - Complete response: {}",responseJson);
-
-            return objectMapper.readValue(responseJson, SlskdDownloadStatus[].class);
+            return objectMapper.readValue(response.getBody().toString(), SlskdDownloadStatus[].class);
         } catch (Exception e) {
             log.error("[getDownloadsStatus] - Error getting Slskd downloads status: " + e.getMessage());
             return new SlskdDownloadStatus[]{};

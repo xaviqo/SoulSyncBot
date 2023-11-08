@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.SongStatus;
 
 import java.util.List;
 
@@ -16,6 +17,6 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
 
     Song findByFilename(String filename);
 
-    @Query("SELECT count(1) FROM Song s WHERE s.found = false AND s.playlist.spotifyId = :id")
-    Integer getTotalUnfoundSongsFromPlaylist(@Param("id") String spotifyId);
+    @Query("SELECT count(1) FROM Song s WHERE s.playlist.spotifyId = :id AND s.status = :status")
+    Integer countSongsByStatusByPlaylistId(@Param("id") String spotifyId, @Param("status") SongStatus status);
 }

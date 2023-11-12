@@ -132,9 +132,9 @@ public class ConfigurationService {
                         .acceptedFormats(getProperty("finder","accepted-formats",String.class).split(","))
                         .minimumBitRate(getProperty("finder","min-mp3-bitrate",Integer.class))
                         .avoidRepeatFileWhenErrored(getProperty("finder","avoid-repeat-file-when-error",String.class).equals("true"))
-                        .maxRetriesWaitingResult(getProperty("app","max-retries-wait-result",Integer.class))
-                        .avoidLive(getProperty("app","avoid-live",String.class).equals("true"))
-                        .avoidRemix(getProperty("app","avoid-remix",String.class).equals("true"))
+                        .maxRetriesWaitingResult(getProperty("finder","max-retries-wait-result",Integer.class))
+                        .avoidLive(getProperty("finder","avoid-live",String.class).equals("true"))
+                        .avoidRemix(getProperty("finder","avoid-remix",String.class).equals("true"))
                         .build();
             }
         }

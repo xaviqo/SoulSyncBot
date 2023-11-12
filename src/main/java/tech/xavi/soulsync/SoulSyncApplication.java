@@ -6,8 +6,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import tech.xavi.soulsync.entity.SoulSyncConfiguration;
-import tech.xavi.soulsync.repository.JsonBackupRepository;
 import tech.xavi.soulsync.service.rest.HealthService;
 
 @EnableScheduling
@@ -17,10 +15,6 @@ import tech.xavi.soulsync.service.rest.HealthService;
 public class SoulSyncApplication implements CommandLineRunner {
 
 	private final HealthService healthService;
-	private final JsonBackupRepository<SoulSyncConfiguration> jsonRepository = new JsonBackupRepository<>(
-			"soulsync_cfg",
-			SoulSyncConfiguration.class
-	);
 
 	public static void main(String[] args) {
 		SpringApplication.run(SoulSyncApplication.class, args);

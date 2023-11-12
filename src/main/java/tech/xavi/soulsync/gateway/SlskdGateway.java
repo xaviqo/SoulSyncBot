@@ -17,7 +17,6 @@ import tech.xavi.soulsync.service.configuration.ConfigurationService;
 @Component
 public class SlskdGateway extends Gateway {
 
-    private final SoulSyncConfiguration.Api apiConfiguration;
     private final String GET_SESSION_URL;
     private final String INIT_SEARCH_URL;
     private final String INIT_DOWNLOAD_URL;
@@ -36,8 +35,7 @@ public class SlskdGateway extends Gateway {
             @Value("${tech.xavi.soulsync.gateway.path.slskd.responses}") String responsesPath,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.download}") String initDownload,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.health}") String healthCheck,
-            ObjectMapper objectMapper,
-            ConfigurationService configurationService
+            ObjectMapper objectMapper
     ) {
         final String addParam = "/%s";
         this.GET_SESSION_URL = epSession;
@@ -50,7 +48,6 @@ public class SlskdGateway extends Gateway {
         this.GET_DOWNLOADS_STATUS_URL = initDownload;
         this.HEALTH_CHECK_URL = healthCheck;
         this.objectMapper = objectMapper;
-        this.apiConfiguration = configurationService.getConfiguration().api();
     }
 
     public void download(SlskdDownloadRequest downloadRequest, String token){
@@ -162,7 +159,7 @@ public class SlskdGateway extends Gateway {
     public SlskdDownloadStatus[] getDownloadsStatus(String token){
         try {
             log.debug("[getDownloadsStatus] - URI: {}",GET_DOWNLOADS_STATUS_URL);
-            log.debug("[getDownloadsStatus]- Payload: {}",token);
+            log.debug("[getDownloadsStatus] - Payload: {}",token);
 
             HttpResponse<JsonNode> response = Unirest.get(buildUrl(GET_DOWNLOADS_STATUS_URL))
                     .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
@@ -258,6 +255,10 @@ public class SlskdGateway extends Gateway {
     }
 
     private String buildUrl(String endpoint){
-        return apiConfiguration.getSlskdUrl()+endpoint;
+        return getConfiguration().getSlskdUrl()+endpoint;
+    }
+
+    private SoulSyncConfiguration.Api getConfiguration(){
+        return ConfigurationService.instance().cfg().api();
     }
 }

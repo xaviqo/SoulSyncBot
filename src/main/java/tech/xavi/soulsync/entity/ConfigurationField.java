@@ -20,6 +20,8 @@ public enum ConfigurationField {
     SLSKD_API_URL("slskd api url","slskdUrl",Section.API,Type.TEXT,"Slskd Api URL",null,null,null),
 
     // FINDER
+    AVOID_LIVES("Avoid unwanted lives","avoidLive",Section.FINDER,Type.BOOLEAN,"Avoid downloading live recordings as long as it is not a live album'",null,null,null),
+    AVOID_REMIXES("Avoid unwanted remixes","avoidRemix",Section.FINDER,Type.BOOLEAN,"Avoid downloading remixes of the added songs as long as it is not explicitly a remix",null,null,null),
     AVOID_FAILED("Avoid failed downloads","avoidRepeatFileWhenErrored",Section.FINDER,Type.BOOLEAN,"When a download fails, avoid repeating the same file on retry.",null,null,null),
     ACCEPTED_FORMATS("desired formats","acceptedFormats",Section.FINDER,Type.ARRAY,"Desired download formats, sorted by preference",null,null,null),
     BITRATE_RANGE("Mp3 Bitrate","minimumBitRate",Section.FINDER,Type.SELECT,"Minimum sample rate when searching for mp3s",null,null,BIT_RATES),
@@ -32,8 +34,8 @@ public enum ConfigurationField {
     TASK_INTERVAL_MIN("Task waiting min","intervalMinutesScheduledTask",Section.BOT,Type.NUMBER,"Minutes of waiting time between automatic search task",null,null,null),
     SLSKD_DW_ROUTE("Slslkd Dw Path","slskdDownloadsRoute",Section.BOT,Type.TEXT,"Path to completed downloads in Slskd",null,null,null),
     USER_DW_ROUTE("User Dw Path","userFilesRoute",Section.BOT,Type.TEXT,"Minutes of waiting time between automatic search task",null,null,null),
-    RELOCATE_FILES("Relocate files","relocateFiles",Section.BOT,Type.BOOLEAN,"User path for storing songs divided by playlist",null,null,null),
     MOVE_OR_COPY_FILES("Move/Copy files","moveOrCopyFiles",Section.BOT,Type.SELECT,"Move or copy the relocated files (if you move the files, do not forget to keep sharing the downloaded files)",null,null,RelocateOption.values()),
+    RELOCATE_FILES("Relocate files","relocateFiles",Section.BOT,Type.BOOLEAN,"User path for storing songs divided by playlist",null,null,null),
     RENAME_COPIED_FILES("Rename moved/copied","renameCopiedFiles",Section.BOT,Type.BOOLEAN,"Modify the name of the downloaded songs with the format [ SongName - Artists ] when they are relocated",null,null,null),
     ;
 

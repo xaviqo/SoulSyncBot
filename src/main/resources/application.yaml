@@ -1,7 +1,6 @@
 tech:
   xavi:
     soulsync:
-      cfg-file: soulsync-cfg.properties
       gateway:
         request:
           spotify:
@@ -35,8 +34,8 @@ spring:
     password: soulsync
   jpa:
     hibernate:
-      ddl-auto: update
-      #ddl-auto: create-drop
+      #ddl-auto: update
+      ddl-auto: create-drop
   security:
     user:
       password: none

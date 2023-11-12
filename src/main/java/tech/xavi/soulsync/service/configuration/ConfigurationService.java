@@ -2,10 +2,8 @@ package tech.xavi.soulsync.service.configuration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.ConfigurationField;
 import tech.xavi.soulsync.entity.RelocateOption;
 import tech.xavi.soulsync.entity.SoulSyncConfiguration;
@@ -15,65 +13,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log4j2
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@Service
 public class ConfigurationService {
 
-    private SoulSyncConfiguration configuration;
-    private SoulSyncConfiguration propertiesConfiguration;
-    private final JsonBackupRepository<SoulSyncConfiguration> jsonRepository;
-    private final Properties properties;
+    private static final AtomicReference<SoulSyncConfiguration> currentConfiguration = new AtomicReference<>(
+            new SoulSyncConfiguration()
+    );
+    private static final JsonBackupRepository<SoulSyncConfiguration> jsonRepository = new JsonBackupRepository<>(
+            "cfg",
+            SoulSyncConfiguration.class
+    );
+    private final String CFG_FILE;
 
-    public ConfigurationService(@Value("${tech.xavi.soulsync.cfg-file}") String cfgFile) {
-        this.jsonRepository = new JsonBackupRepository<>(
-                "soulsync_cfg",
-                SoulSyncConfiguration.class
-        );
-        try {
-            properties = new Properties();
-            InputStream inputStream = ConfigurationService.class
-                    .getResourceAsStream("/"+cfgFile);
-            properties.load(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        this.propertiesConfiguration = loadConfigurationFromProperties();
-        this.configuration = loadConfigurationFromJSON();
+    private ConfigurationService(String cfgFile) {
+        this.CFG_FILE = "/"+cfgFile;
+        reloadConfiguration();
     }
 
-    public void modifyConfigurationSubfield(
-            ConfigurationField.Section section,
-            String subField,
-            JsonNode newValue
-            ) {
-        jsonRepository.modifyField(
-                section.getJsonCfgFieldName(),
-                subField,
-                newValue
-        );
+    public static ConfigurationService instance(){
+        return SoulSyncConfigurationServiceHolder.INSTANCE;
     }
 
-    public synchronized SoulSyncConfiguration getConfiguration(){
-        return this.configuration;
-    }
-
-    public JsonNode readConfigurationNode(ConfigurationField.Section section, String field){
-        return jsonRepository
-                .getJsonAsNode()
-                .get(section.getJsonCfgFieldName())
-                .get(field);
-    }
-
-    public void reloadConfiguration(){
-        this.configuration = loadConfigurationFromJSON();
+    public SoulSyncConfiguration cfg(){
+        return currentConfiguration.get();
     }
 
     public void resetSectionDefaults(ConfigurationField.Section section){
         JsonNode jsonNode = jsonRepository
                 .getObjectMapper()
-                .valueToTree(getDefaultCfgBySection(section));
+                .valueToTree(instance().getDefaultCfgBySection(section));
         var fields = jsonNode.fields();
         while (fields.hasNext()) {
             Map.Entry<String, JsonNode> field = fields.next();
@@ -85,7 +56,35 @@ public class ConfigurationService {
         }
     }
 
-    private SoulSyncConfiguration loadConfigurationFromJSON(){
+    public void modifyConfigurationSubfield(
+            ConfigurationField.Section section,
+            String subField,
+            JsonNode newValue
+    ) {
+        jsonRepository.modifyField(
+                section.getJsonCfgFieldName(),
+                subField,
+                newValue
+        );
+    }
+
+
+    public JsonNode readConfigurationNode(ConfigurationField.Section section, String field){
+        return jsonRepository
+                .getJsonAsNode()
+                .get(section.getJsonCfgFieldName())
+                .get(field);
+    }
+
+    public void reloadConfiguration(){
+        currentConfiguration.set(
+                loadConfigurationFromJSON(
+                        loadConfigurationFromProperties()
+                )
+        );
+    }
+
+    private SoulSyncConfiguration loadConfigurationFromJSON(SoulSyncConfiguration propertiesConfiguration){
         SoulSyncConfiguration cfgFromJson = jsonRepository.get();
         if (cfgFromJson == null) {
             jsonRepository.save(propertiesConfiguration);
@@ -134,6 +133,8 @@ public class ConfigurationService {
                         .minimumBitRate(getProperty("finder","min-mp3-bitrate",Integer.class))
                         .avoidRepeatFileWhenErrored(getProperty("finder","avoid-repeat-file-when-error",String.class).equals("true"))
                         .maxRetriesWaitingResult(getProperty("app","max-retries-wait-result",Integer.class))
+                        .avoidLive(getProperty("app","avoid-live",String.class).equals("true"))
+                        .avoidRemix(getProperty("app","avoid-remix",String.class).equals("true"))
                         .build();
             }
         }
@@ -141,7 +142,7 @@ public class ConfigurationService {
     }
 
     private <T> T getProperty(String group, String prop, Class<T> targetType) {
-        String value = properties.getProperty(getFullPropertyName(group, prop));
+        String value = getPropertiesReader().getProperty(getFullPropertyName(group, prop));
         if (value != null) {
             if (targetType.isAssignableFrom(String.class)) {
                 return targetType.cast(value);
@@ -158,6 +159,22 @@ public class ConfigurationService {
     private String getFullPropertyName(String group, String prop){
         final String SOULSYNC_PACKAGE = "tech.xavi.soulsync.cfg.";
         return SOULSYNC_PACKAGE+group+"."+prop;
+    }
+
+    private Properties getPropertiesReader(){
+        try {
+            Properties properties = new Properties();
+            InputStream inputStream = ConfigurationService.class
+                    .getResourceAsStream(this.CFG_FILE);
+            properties.load(inputStream);
+            return properties;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static class SoulSyncConfigurationServiceHolder {
+        private static final ConfigurationService INSTANCE = new ConfigurationService("soulsync-cfg.properties");
     }
 
 }

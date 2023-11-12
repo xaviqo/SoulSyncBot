@@ -1,5 +1,6 @@
 package tech.xavi.soulsync.service.bot;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadPayload;
@@ -15,13 +16,8 @@ import java.util.List;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 public class FileFinderService {
-
-    private final SoulSyncConfiguration.Finder finderConfiguration;
-
-    public FileFinderService(ConfigurationService configurationService) {
-        this.finderConfiguration = configurationService.getConfiguration().finder();
-    }
 
     public SlskdDownloadRequest createDownloadRequest(Song song, SlskdSearchResult[] results){
         for (SlskdSearchResult result : results) {
@@ -81,12 +77,33 @@ public class FileFinderService {
     private boolean fileMeetsCriteria(Song song, SlskdFile file){
         return isDifferentFileFromLastAttempt(song,file)
                 && isDesiredFormat(file)
-                && isMp3BitrateOk(file);
+                && isMp3BitrateOk(file)
+                && isNotLive(song,file)
+                && isNotRemix(song,file);
     }
 
+    private boolean isNotLive(Song song, SlskdFile file){
+        boolean isLiveSong = song.getSearchInput().toLowerCase().contains("live");
+        if (getConfiguration().isAvoidLive() && !isLiveSong) {
+            return !file.filename().toLowerCase().contains("live");
+        }
+        return true;
+    }
+
+    private boolean isNotRemix(Song song, SlskdFile file) {
+        String lcSearchInput = song.getSearchInput().toLowerCase();
+        boolean isRemixSong = lcSearchInput.contains("remix") || lcSearchInput.contains("rmx");
+        if (getConfiguration().isAvoidRemix() && !isRemixSong) {
+            String lcFilename = file.filename().toLowerCase();
+            return !lcFilename.contains("remix") || !lcFilename.contains("rmx");
+        }
+        return true;
+    }
+
+
     private boolean isMp3BitrateOk(SlskdFile file){
-        int minimumBitrate = finderConfiguration.getMinimumBitRate();
-        boolean weWantMp3 = finderConfiguration.weWantMp3();
+        int minimumBitrate = getConfiguration().getMinimumBitRate();
+        boolean weWantMp3 = getConfiguration().weWantMp3();
         String fileFormat = getFileFormat(file);
         if (weWantMp3 && fileFormat.equals("mp3")) {
             return file.bitRate() >= minimumBitrate;
@@ -116,7 +133,7 @@ public class FileFinderService {
     }
 
     private boolean isDesiredFormat(SlskdFile file){
-        String[] acceptedFormats = finderConfiguration.getAcceptedFormats();
+        String[] acceptedFormats = getConfiguration().getAcceptedFormats();
         String fileFormat = getFileFormat(file);
         for (String format : acceptedFormats)
             if (fileFormat.equals(format))
@@ -125,7 +142,7 @@ public class FileFinderService {
     }
 
     private boolean isDifferentFileFromLastAttempt(Song song, SlskdFile file) {
-        boolean avoidRepeatErroredFile = finderConfiguration.isAvoidRepeatFileWhenErrored();
+        boolean avoidRepeatErroredFile = getConfiguration().isAvoidRepeatFileWhenErrored();
         if (avoidRepeatErroredFile) {
             String lastFileName = song.getFilename();
             if (lastFileName == null) return true;
@@ -141,5 +158,8 @@ public class FileFinderService {
         return "";
     }
 
+    private SoulSyncConfiguration.Finder getConfiguration(){
+        return ConfigurationService.instance().cfg().finder();
+    }
 
 }

@@ -12,16 +12,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class PauseService {
 
-    private final SoulSyncConfiguration.App appConfiguration;
     private final AtomicInteger seeksRunning;
 
-    public PauseService(ConfigurationService configurationService) {
-        this.appConfiguration = configurationService.getConfiguration().app();
+    public PauseService() {
         this.seeksRunning = new AtomicInteger(0);
     }
 
     public int delay(){
-        return delay(appConfiguration.getPausesMs());
+        return delay(getConfiguration().getPausesMs());
     }
 
     public int delay(int ms){
@@ -59,6 +57,10 @@ public class PauseService {
     public void finishSeek(){
         int total = seeksRunning.decrementAndGet();
         log.debug("[finishSeek] - A search process has been terminated. Total processes running: {}",total);
+    }
+
+    private SoulSyncConfiguration.App getConfiguration(){
+        return ConfigurationService.instance().cfg().app();
     }
 
 }

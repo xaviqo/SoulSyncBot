@@ -12,6 +12,13 @@ public class SoulSyncConfiguration {
     Finder finderCfg;
     App appCfg;
 
+
+    public Api api(){
+        return this.apiCfg;
+    }
+    public Finder finder() { return this.finderCfg; }
+    public App app() { return this.appCfg; }
+
     @Builder @Data @AllArgsConstructor @NoArgsConstructor
     public static class Api {
         String spotifyClientId;
@@ -28,6 +35,8 @@ public class SoulSyncConfiguration {
         int minimumBitRate;
         boolean avoidRepeatFileWhenErrored;
         int maxRetriesWaitingResult;
+        boolean avoidRemix;
+        boolean avoidLive;
 
         public boolean weWantMp3(){
             for (String format : acceptedFormats)
@@ -64,10 +73,5 @@ public class SoulSyncConfiguration {
         }
     }
 
-    public Api api(){
-        return this.apiCfg;
-    }
-    public Finder finder() { return this.finderCfg; }
-    public App app() { return this.appCfg; }
 
 }

@@ -38,6 +38,10 @@ public class SoulSyncConfiguration {
         boolean avoidRemix;
         boolean avoidLive;
 
+        public int getMaxRetriesWaitingResult() {
+            return maxRetriesWaitingResult;
+        }
+
         public boolean weWantMp3(){
             for (String format : acceptedFormats)
                 if (format.equals("mp3")) return true;

@@ -16,7 +16,6 @@ import java.util.concurrent.ScheduledFuture;
 public class RunningTaskService {
 
     private boolean runTask = true;
-    private final SoulSyncConfiguration.App appConfiguration;
     private final QueueService queueService;
     private final PlaylistService playlistService;
     private final SlskdGateway slskdGateway;
@@ -26,7 +25,6 @@ public class RunningTaskService {
     private ScheduledFuture<?> scheduledTask;
 
     public RunningTaskService(
-            ConfigurationService configurationService,
             QueueService queueService,
             PlaylistService playlistService,
             DownloadService downloadService,
@@ -40,12 +38,11 @@ public class RunningTaskService {
         this.downloadService = downloadService;
         this.relocateService = relocateService;
         this.taskScheduler = taskScheduler;
-        this.appConfiguration = configurationService.getConfiguration().app();
         this.configureTask();
     }
 
     private void configureTask(){
-        int interval = appConfiguration.getIntervalMinutesScheduledTask();
+        int interval = getConfiguration().getIntervalMinutesScheduledTask();
         if (scheduledTask != null) {
             log.debug("[configureTask] - The running task has been stopped by the user, " +
                     "a new time interval of {} minutes is set",interval);
@@ -71,6 +68,10 @@ public class RunningTaskService {
             }
             relocateService.moveFinishedPlaylistsSongs();
         }
+    }
+
+    private SoulSyncConfiguration.App getConfiguration(){
+        return ConfigurationService.instance().cfg().app();
     }
 
 }

@@ -6,14 +6,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 @RequiredArgsConstructor
 @EnableAsync
 @Configuration
 public class SoulSyncBeans {
-
-    private final ConfigurationService configurationService;
 
     @Bean
     public ObjectMapper objectMapper() {
@@ -33,6 +30,5 @@ public class SoulSyncBeans {
     //    executor.initialize();
     //    return executor;
     //}
-
 
 }

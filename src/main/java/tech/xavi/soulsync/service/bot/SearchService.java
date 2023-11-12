@@ -24,20 +24,17 @@ import java.util.List;
 @Service
 public class SearchService {
 
-    private final SoulSyncConfiguration.Finder searchConfiguration;
     private final SlskdGateway slskdGateway;
     private final AuthService authService;
     private final PauseService delayService;
     private final SongRepository songRepository;
 
     public SearchService(
-            ConfigurationService configurationService,
             SlskdGateway slskdGateway,
             AuthService authService,
             PauseService delayService,
             SongRepository songRepository
     ) {
-        this.searchConfiguration = configurationService.getConfiguration().finder();
         this.slskdGateway = slskdGateway;
         this.authService = authService;
         this.delayService = delayService;
@@ -67,7 +64,7 @@ public class SearchService {
     }
 
     public SlskdSearchResult[] fetchResults(Song song){
-        int maxRetries = searchConfiguration.getMaxRetriesWaitingResult();
+        int maxRetries = getConfiguration().getMaxRetriesWaitingResult();
         int retries = 1;
         do {
             try {
@@ -153,7 +150,7 @@ public class SearchService {
     }
 
     private boolean isAttemptLimitReached(int currentRetries, Song song){
-        int maxRetries = searchConfiguration.getMaxRetriesWaitingResult();
+        int maxRetries = getConfiguration().getMaxRetriesWaitingResult();
         boolean isReached = (currentRetries == maxRetries);
         if (isReached){
             log.debug("[fetchResults] - The search process has not been completed after {} attempts. " +
@@ -169,7 +166,7 @@ public class SearchService {
 
     // The search fails if words of two or fewer letters are added.
     private String removeSpecialChars(String songNameAndArtist){
-        List<String> wordsToRemove = Arrays.asList(searchConfiguration.getWordsToRemove());
+        List<String> wordsToRemove = Arrays.asList(getConfiguration().getWordsToRemove());
         final String SPECIAL_CHARS_REGEX = "[^a-zA-Z0-9]";
         final String DIACRITICAL_ACCENT_MARKS_REGEX = "\\p{M}";
         final String TWO_OR_MORE_SPACES_REGEX = "\\s+";
@@ -195,5 +192,9 @@ public class SearchService {
                 : cleanedText.toString();
 
         return finalCleanedText.trim();
+    }
+
+    private SoulSyncConfiguration.Finder getConfiguration(){
+        return ConfigurationService.instance().cfg().finder();
     }
 }

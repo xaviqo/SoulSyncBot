@@ -16,9 +16,7 @@ import tech.xavi.soulsync.service.bot.WatchlistService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -46,14 +44,9 @@ public class AddPlaylistRestService {
         List<SpotifySong> spotifyPlaylist = playlistService
                 .getPlaylistSongsFromSpotify(playlistId, totalTracks);
 
-        if (request.avoidDuplicates()) {
-            spotifyPlaylist = new ArrayList<>(spotifyPlaylist.stream()
-                    .collect(Collectors.toMap(SpotifySong::getId, song -> song, (existing, replacement) -> existing))
-                    .values());
-        }
-
         Playlist playlist = playlistService
                 .createPlaylistEntity(playlistId,spotifyPlaylist,request);
+
         watchlistService
                 .updateWatchlist(playlist);
 

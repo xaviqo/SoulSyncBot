@@ -23,22 +23,19 @@ public class RelocateService {
 
     private static final String PL_FOLDER_NAME_REGEX = "[^a-zA-Z0-9\\s]";
     private static final String SPLIT_BY_FOLDERS_REGEX = "[\\\\/]";
-    private final SoulSyncConfiguration.App relocateConfiguration;
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
 
     public RelocateService(
-            ConfigurationService configurationService,
             PlaylistRepository playlistRepository,
             SongRepository songRepository
     ) {
-        this.relocateConfiguration = configurationService.getConfiguration().app();
         this.playlistRepository = playlistRepository;
         this.songRepository = songRepository;
     }
 
     public void moveFinishedPlaylistsSongs(){
-        String copyAction = relocateConfiguration.getMoveOrCopyFiles().getAction().toUpperCase();
+        String copyAction = getConfiguration().getMoveOrCopyFiles().getAction().toUpperCase();
         AtomicInteger totalMoved = new AtomicInteger();
         playlistRepository
                 .findAll()
@@ -72,13 +69,13 @@ public class RelocateService {
                 "[moveFinishedPlaylistsSongs] - A total of {} songs have been {} to the directory '{}'",
                 totalMoved.get(),
                 copyAction,
-                relocateConfiguration.getUserFilesRoute()
+                getConfiguration().getUserFilesRoute()
         );
     }
 
     private Path moveFile(String playlistFolder, String originalFilePath, String finalSongName) {
-        boolean isRenamed = relocateConfiguration.isRenameCopiedFiles();
-        String downloadsDir = relocateConfiguration.getSlskdDownloadsRoute();
+        boolean isRenamed = getConfiguration().isRenameCopiedFiles();
+        String downloadsDir = getConfiguration().getSlskdDownloadsRoute();
         File downloadedFile = new File(downloadsDir + originalFilePath);
 
         if (!downloadedFile.exists()) {
@@ -97,7 +94,7 @@ public class RelocateService {
             Path sourcePath = Paths.get(downloadsDir + originalFilePath);
             Path destinationPath = Paths.get(finalFilePath);
 
-            if (relocateConfiguration.getMoveOrCopyFiles().equals(RelocateOption.MOVE)) {
+            if (getConfiguration().getMoveOrCopyFiles().equals(RelocateOption.MOVE)) {
                 return Files.move(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
             } else {
                 return Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
@@ -109,7 +106,7 @@ public class RelocateService {
     }
 
     private String getSongTitleWithArtists(Song song) {
-        if (relocateConfiguration.isRenameCopiedFiles()) {
+        if (getConfiguration().isRenameCopiedFiles()) {
             StringBuilder songTitleWithArtists = new StringBuilder(song.getName());
             List<String> artists = song.getArtists();
             if (artists != null && !artists.isEmpty()) {
@@ -138,7 +135,7 @@ public class RelocateService {
     }
 
     private String getPlaylistFolderName(Playlist playlist){
-        String userFilesRoute = relocateConfiguration.getUserFilesRoute();
+        String userFilesRoute = getConfiguration().getUserFilesRoute();
         return userFilesRoute
                 +playlist
                 .getName()
@@ -162,4 +159,7 @@ public class RelocateService {
         return "";
     }
 
+    private SoulSyncConfiguration.App getConfiguration(){
+        return ConfigurationService.instance().cfg().app();
+    }
 }

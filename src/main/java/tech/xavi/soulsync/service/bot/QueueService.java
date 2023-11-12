@@ -17,7 +17,6 @@ import java.util.concurrent.BlockingQueue;
 @Service
 public class QueueService {
 
-    private final SoulSyncConfiguration.App appConfiguration;
     private final BlockingQueue<Song> songsQueue;
     private final Map<String,Integer> playlistRemainingSongs;
     private final SearchService searchService;
@@ -29,14 +28,12 @@ public class QueueService {
     private Set<Thread> activeProcesses;
 
     public QueueService(
-            ConfigurationService configurationService,
             SearchService searchService,
             DownloadService downloadService,
             WatchlistService watchlistService,
             PauseService delayService,
             PlaylistRepository playlistRepository
     ) {
-        this.appConfiguration = configurationService.getConfiguration().app();
         this.songsQueue = new ArrayBlockingQueue<>(1);
         this.playlistRemainingSongs = Collections.synchronizedMap(new HashMap<>());
         this.searchService = searchService;
@@ -45,7 +42,7 @@ public class QueueService {
         this.delayService = delayService;
         this.playlistRepository = playlistRepository;
         this.activeProcesses = new HashSet<>();
-        int poolSize = configurationService.getConfiguration().app().getMaxSongsDownloadingSameTime();
+        int poolSize = ConfigurationService.instance().cfg().app().getMaxSongsDownloadingSameTime();
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(poolSize);
         executor.setMaxPoolSize(poolSize);
@@ -56,7 +53,7 @@ public class QueueService {
 
     @PostConstruct
     private void initProcesses(){
-        int simultaneousProcesses = appConfiguration.getTotalSimultaneousProcesses();
+        int simultaneousProcesses = getConfiguration().getTotalSimultaneousProcesses();
         for (int i = 0; i < simultaneousProcesses; i++) {
             Thread process = new Thread(this::runner);
             activeProcesses.add(process);
@@ -179,5 +176,9 @@ public class QueueService {
         return isPlaylistQueued(spotifyId)
                 ? PlaylistStatus.QUEUED
                 : PlaylistStatus.WAITING;
+    }
+
+    private SoulSyncConfiguration.App getConfiguration(){
+        return ConfigurationService.instance().cfg().app();
     }
 }

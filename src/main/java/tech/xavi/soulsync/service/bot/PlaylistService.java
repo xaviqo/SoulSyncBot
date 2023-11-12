@@ -16,9 +16,11 @@ import tech.xavi.soulsync.exception.SyncException;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Log4j2
@@ -58,6 +60,12 @@ public class PlaylistService {
                 .lastUpdate(System.currentTimeMillis())
                 .avoidDuplicates(request.avoidDuplicates())
                 .build();
+
+        if (request.avoidDuplicates()) {
+            spotifyPlaylist = new ArrayList<>(spotifyPlaylist.stream()
+                    .collect(Collectors.toMap(SpotifySong::getId, song -> song, (existing, replacement) -> existing))
+                    .values());
+        }
 
         List<Song> songList = spotifyPlaylist.stream()
                 .map( spotifySong -> convertToEntitySong(spotifySong,playlist))

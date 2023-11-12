@@ -16,18 +16,15 @@ import java.time.Instant;
 @Service
 public class AuthService {
 
-    private final SoulSyncConfiguration.Api credentialsConfiguration;
     private final SpotifyGateway spotifyGateway;
     private final SlskdGateway slskdGateway;
     private Token spotifyToken;
     private Token slskdToken;
 
     public AuthService(
-            ConfigurationService configurationService,
             SpotifyGateway spotifyGateway,
             SlskdGateway slskdGateway
     ) {
-        this.credentialsConfiguration = configurationService.getConfiguration().api();
         this.spotifyGateway = spotifyGateway;
         this.slskdGateway = slskdGateway;
     }
@@ -52,8 +49,8 @@ public class AuthService {
         if (slskdToken == null || isTokenExpired(slskdToken)){
             SlskdTokenRes tokenResponse = slskdGateway
                     .getToken(
-                            credentialsConfiguration.getSlskdUsername(),
-                            credentialsConfiguration.getSlskdPassword()
+                            getConfiguration().getSlskdUsername(),
+                            getConfiguration().getSlskdPassword()
                     );
             long expirationStamp = tokenResponse.getExpires();
             String tokenStr = tokenResponse.getToken();
@@ -68,7 +65,7 @@ public class AuthService {
 
 
     private String getB64credentials(){
-        String credentialString = credentialsConfiguration.getSpotifyClientId() + ":" + credentialsConfiguration.getSpotifyClientSecret();
+        String credentialString = getConfiguration().getSpotifyClientId() + ":" + getConfiguration().getSpotifyClientSecret();
         byte[] credentialBytes = (credentialString).getBytes();
         return java.util.Base64.getEncoder()
                 .encodeToString(credentialBytes);
@@ -82,5 +79,8 @@ public class AuthService {
         return isExpired;
     }
 
+    private SoulSyncConfiguration.Api getConfiguration(){
+        return ConfigurationService.instance().cfg().api();
+    }
 
 }

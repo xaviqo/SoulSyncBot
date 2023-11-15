@@ -29,9 +29,9 @@ tech:
             download: /api/v0/transfers/downloads
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false
-    username: soulsync
-    password: soulsync
+    url: ${SOULSYNC_DATASOURCE_URL}
+    username: ${SOULSYNC_DATASOURCE_USER}
+    password: ${SOULSYNC_DATASOURCE_PASS}
   jpa:
     hibernate:
       #ddl-auto: update

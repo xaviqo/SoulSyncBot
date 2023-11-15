@@ -1,0 +1,4 @@
+FROM openjdk:17-jdk-alpine
+RUN apk add --no-cache bash
+COPY soulsync-bot.jar /app/soulsync-bot.jar
+ENTRYPOINT ["java", "-jar", "/app/soulsync-bot.jar"]

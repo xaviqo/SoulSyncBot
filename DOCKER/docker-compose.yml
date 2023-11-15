@@ -1,0 +1,42 @@
+version: '3'
+
+services:
+  bot:
+    container_name: soulsyncbot
+    image: soulsync-bot:1.0.0
+    build: .
+    environment:
+      - SOULSYNC_DATASOURCE_URL=jdbc:postgresql://db:5432/soulsync?currentSchema=public&ssl=false
+      - SOULSYNC_DATASOURCE_USER=soulsync
+      - SOULSYNC_DATASOURCE_PASS=soulsync
+    ports:
+      - 8080:8080
+    depends_on:
+      - db
+      - slskd
+
+  db:
+    container_name: soulsyncdb
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: soulsync
+      POSTGRES_PASSWORD: soulsync
+      POSTGRES_DB: soulsync
+
+  slskd:
+    container_name: slskd
+    image: slskd/slskd
+    ports:
+      - "5030:5030"
+      - "5031:5031"
+      - "50300:50300"
+    environment:
+      - SLSKD_REMOTE_CONFIGURATION=true
+    volumes:
+      - /app:/app
+    restart: always
+    soulseek:
+     username: soulsyncbot
+     password: soulsyncbot

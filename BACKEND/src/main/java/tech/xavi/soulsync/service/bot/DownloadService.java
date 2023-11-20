@@ -11,6 +11,7 @@ import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.SongStatus;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.repository.SongRepository;
+import tech.xavi.soulsync.service.auth.AuthService;
 
 import java.util.*;
 

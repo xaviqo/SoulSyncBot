@@ -28,6 +28,7 @@ public class ConfigurationService {
     );
     private final String CFG_FILE;
 
+
     private ConfigurationService(String cfgFile) {
         this.CFG_FILE = "/"+cfgFile;
         reloadConfiguration();
@@ -35,6 +36,10 @@ public class ConfigurationService {
 
     public static ConfigurationService instance(){
         return SoulSyncConfigurationServiceHolder.INSTANCE;
+    }
+
+    public static boolean isSoulSyncConfigured(){
+        return ConfigurationService.instance().cfg().api().isConfigured();
     }
 
     public SoulSyncConfiguration cfg(){
@@ -106,6 +111,7 @@ public class ConfigurationService {
         switch (section){
             case API -> {
                 return SoulSyncConfiguration.Api.builder()
+                        .isConfigured(false)
                         .spotifyClientId(getProperty("api.spotify","client-id", String.class))
                         .spotifyClientSecret(getProperty("api.spotify","client-secret", String.class))
                         .slskdUsername(getProperty("api.slskd","username", String.class))
@@ -124,6 +130,7 @@ public class ConfigurationService {
                         .relocateFiles(getProperty("app","relocate-files",String.class).equals("true"))
                         .moveOrCopyFiles(RelocateOption.getOption(getProperty("app","move-files-or-copy",String.class)))
                         .renameCopiedFiles(getProperty("app","rename-copied-files",String.class).equals("true"))
+                        .minimumMinutesBtwSongCheck(getProperty("app","minimum-minutes-between-song-check",Integer.class))
                         .build();
             }
             case FINDER -> {
@@ -174,7 +181,8 @@ public class ConfigurationService {
     }
 
     private static class SoulSyncConfigurationServiceHolder {
-        private static final ConfigurationService INSTANCE = new ConfigurationService("soulsync-cfg.properties");
+        private static final ConfigurationService INSTANCE
+                = new ConfigurationService("soulsync-cfg.properties");
     }
 
 }

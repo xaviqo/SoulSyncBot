@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.configuration.security;
+package tech.xavi.soulsync.configuration;
 
 import com.mashape.unirest.http.Unirest;
 import jakarta.annotation.PostConstruct;

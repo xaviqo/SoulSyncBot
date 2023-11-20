@@ -93,6 +93,7 @@ export default {
       this.sending = true;
       this.axios.post('/playlist',this.payload)
           .then( () => {
+            console.log()
             this.emitter.emit('load-playlist');
             this.emitter.emit('show-alert',{
               info: 'Playlist added to watchlist',
@@ -101,6 +102,7 @@ export default {
             });
           })
           .catch( (err) => {
+            console.log(err);
             this.emitter.emit('show-alert',{
               info: err.response.data.message,
               icon: 'pi-exclamation-circle',

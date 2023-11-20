@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
-import tech.xavi.soulsync.entity.SoulSyncError;
-import tech.xavi.soulsync.configuration.security.SoulSyncException;
+import tech.xavi.soulsync.exception.SyncError;
+import tech.xavi.soulsync.exception.SyncException;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,8 +61,8 @@ public class JsonBackupRepository<T> {
         try {
             return objectMapper.readTree(DB);
         } catch (IOException e) {
-            throw new SoulSyncException(
-                    SoulSyncError.ERROR_READING_JSON_CFG,
+            throw new SyncException(
+                    SyncError.ERROR_READING_JSON_CFG,
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         }

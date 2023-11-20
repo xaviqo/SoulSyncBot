@@ -1,6 +1,10 @@
 tech:
   xavi:
     soulsync:
+      jwt:
+        issuer: SoulSyncAPI
+        token:
+          exp-sec: 86400000
       gateway:
         request:
           spotify:
@@ -29,9 +33,9 @@ tech:
             download: /api/v0/transfers/downloads
 spring:
   datasource:
-    url: ${SOULSYNC_DATASOURCE_URL}
-    username: ${SOULSYNC_DATASOURCE_USER}
-    password: ${SOULSYNC_DATASOURCE_PASS}
+    url: ${SOULSYNC_DATASOURCE_URL:jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false}
+    username: ${SOULSYNC_DATASOURCE_USER:soulsync}
+    password: ${SOULSYNC_DATASOURCE_PASS:soulsync}
   jpa:
     hibernate:
       #ddl-auto: update

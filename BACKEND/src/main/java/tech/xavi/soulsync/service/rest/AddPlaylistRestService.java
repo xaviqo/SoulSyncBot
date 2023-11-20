@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
 import tech.xavi.soulsync.entity.Playlist;
-import tech.xavi.soulsync.exception.SyncError;
-import tech.xavi.soulsync.exception.SyncException;
+import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.service.bot.PlaylistService;
 import tech.xavi.soulsync.service.bot.QueueService;
@@ -33,8 +33,8 @@ public class AddPlaylistRestService {
         String playlistId = obtainIdFromRequest(request);
 
         if (isPlaylistInDB(playlistId)) {
-            throw new SyncException(
-                    SyncError.PLAYLIST_ALREADY_EXISTS.buildMessage(request.playlist().toLowerCase()),
+            throw new SoulSyncException(
+                    SoulSyncError.PLAYLIST_ALREADY_EXISTS.buildMessage(request.playlist().toLowerCase()),
                     HttpStatus.BAD_REQUEST
             );
         }

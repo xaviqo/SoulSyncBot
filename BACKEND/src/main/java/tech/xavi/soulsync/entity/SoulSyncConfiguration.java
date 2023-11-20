@@ -21,6 +21,7 @@ public class SoulSyncConfiguration {
 
     @Builder @Data @AllArgsConstructor @NoArgsConstructor
     public static class Api {
+        boolean isConfigured;
         String spotifyClientId;
         String spotifyClientSecret;
         String slskdUsername;
@@ -55,6 +56,7 @@ public class SoulSyncConfiguration {
         int totalSimultaneousProcesses;
         int intervalMinutesScheduledTask;
         int maxSongsDownloadingSameTime;
+        int minimumMinutesBtwSongCheck;
         String slskdDownloadsRoute;
         String userFilesRoute;
         boolean relocateFiles;

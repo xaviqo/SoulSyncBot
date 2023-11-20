@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.configuration;
+package tech.xavi.soulsync.configuration.security;
 
 
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ public class SoulSyncSecurity {
     private CorsConfiguration getCorsConfiguration() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Collections.singletonList("*"));
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "DELETE"));
         configuration.setAllowCredentials(true);
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
         return configuration;

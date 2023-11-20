@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import tech.xavi.soulsync.configuration.constants.EndPoint;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
 import tech.xavi.soulsync.dto.rest.PlaylistDataTable;
 import tech.xavi.soulsync.entity.Playlist;
@@ -18,13 +19,12 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/v1/playlist")
 public class PlaylistController {
 
     private final AddPlaylistRestService addPlaylistService;
     private final GetPlaylistsRestService getPlaylistService;
 
-    @PostMapping()
+    @PostMapping(EndPoint.PLAYLIST)
     public ResponseEntity<Playlist> addPlaylist(@RequestBody AddPlaylistReq request) throws URISyntaxException {
         return new ResponseEntity<>(
                 addPlaylistService.addPlaylistRequest(request),
@@ -32,7 +32,7 @@ public class PlaylistController {
         );
     }
 
-    @GetMapping
+    @GetMapping(EndPoint.PLAYLIST)
     public ResponseEntity<List<PlaylistDataTable>> getAllPlaylists() {
         return new ResponseEntity<>(
                 getPlaylistService.getDataTablePlaylistsInfo(),
@@ -40,7 +40,7 @@ public class PlaylistController {
         );
     }
 
-    @GetMapping("songs")
+    @GetMapping(EndPoint.PL_GET_SONGS)
     public ResponseEntity<List<Song>> getAllPlaylistSongs(@RequestParam String playlistId) {
         return new ResponseEntity<>(
                 getPlaylistService.getSongsFromPlaylist(playlistId),
@@ -48,7 +48,7 @@ public class PlaylistController {
         );
     }
 
-    @GetMapping("stats")
+    @GetMapping(EndPoint.PL_GET_SONGS_STATS)
     public ResponseEntity<Map<SongStatus,Integer>> getSongsStats(@RequestParam String playlistId) {
         return new ResponseEntity<>(
                 getPlaylistService.getAllStatusByPlaylistId(playlistId),

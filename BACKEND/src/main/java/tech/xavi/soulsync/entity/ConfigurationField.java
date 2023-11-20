@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-import static tech.xavi.soulsync.configuration.ConfigurationFinals.BIT_RATES;
+import static tech.xavi.soulsync.configuration.constants.ConfigurationFinals.BIT_RATES;
 
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 @Getter
@@ -29,6 +29,7 @@ public enum ConfigurationField {
     WORDS_TO_REMOVE("words to remove","wordsToRemove",Section.FINDER,Type.ARRAY,"Words to remove in the bot search input",null,null,null),
 
     // BOT
+    MIN_MINUTES_BTW_SONG_CHECK("Minimum minutes between song check","minimumMinutesBtwSongCheck",Section.BOT,Type.NUMBER,"Minimum waiting time between checks of the same song",null,null,null),
     PAUSES_MS("Ms per pause","pausesMs",Section.BOT,Type.NUMBER,"Millisecond pause on direct requests to SoulSeek to avoid temporary API bans",null,null,null),
     MAX_PL_DOWNLOAD_AT_TIME("Playlist processes","totalSimultaneousProcesses",Section.BOT,Type.NUMBER,"Max number of playlist search processes running at the same time",null,null,null),
     TASK_INTERVAL_MIN("Task waiting min","intervalMinutesScheduledTask",Section.BOT,Type.NUMBER,"Minutes of waiting time between automatic search task",null,null,null),

@@ -32,6 +32,7 @@ import Chips from "primevue/chips";
 import InputSwitch from "primevue/inputswitch";
 import InputNumber from "primevue/inputnumber";
 import ProgressSpinner from "primevue/progressspinner";
+import Dialog from "primevue/dialog";
 
 const emitter = mitt();
 const app  = createApp({
@@ -39,6 +40,27 @@ const app  = createApp({
 });
 
 axios.defaults.baseURL = 'http://localhost:8080/v1';
+axios.interceptors.request.use(
+    async config => {
+        const token = localStorage.getItem("token")
+        if (token){
+            config.headers = {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json',
+            }
+        } else {
+            config.headers = {
+                'Accept': 'application/json',
+            }
+        }
+
+        return config;
+    },
+    error => {
+        Promise.reject(error)
+    });
+
+
 app.config.globalProperties.emitter = emitter
 app
     .component('Button',Button)
@@ -63,6 +85,7 @@ app
     .component('Slider',Slider)
     .component('Chips',Chips)
     .component('ProgressSpinner',ProgressSpinner)
+    .component('Dialog',Dialog)
 
 app.directive('tooltip', Tooltip)
 

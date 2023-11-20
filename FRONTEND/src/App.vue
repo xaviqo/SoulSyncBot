@@ -25,6 +25,8 @@
 <script>
 import NavBar from "@/components/NavBar.vue";
 import GlobalColors from "@/models/GlobalColors";
+import {mapActions} from "pinia";
+import {useUserCfgStore} from "@/store/UserCfg";
 /*
 { "current": "xl", "xs": false, "smMinus": false, "smPlus": true, "sm": false, "mdMinus": false, "mdPlus": true, "md": false, "lgMinus": false, "lgPlus": true, "lg": false, "xl": true, "orientation": "landscape", "isLandscape": true, "isPortrait": false, "theme": "dark", "isDark": true, "isLight": false, "motionPreference": "no-preference", "isMotion": true, "isInert": false }
 */
@@ -59,9 +61,16 @@ export default {
     closeMessage(){
       setTimeout(() => this.message.show = false,1000)
     },
+    ...mapActions(useUserCfgStore, [
+      'checkStatus',
+    ])
   },
   created() {
+    this.checkStatus();
     this.emitter.on('show-alert', payload => this.showAlert(payload));
+  },
+  mounted() {
+    this.emitter.emit('trigger-refresh');
   }
 }
 </script>

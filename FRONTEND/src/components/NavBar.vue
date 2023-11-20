@@ -1,7 +1,10 @@
 <template>
   <Toolbar class="p-4 border-1 border-bottom-1 border-black-alpha-90 shadow-1" style="background-color: #f8f9fa;">
     <template #start>
-      <div class="flex justify-content-between">
+      <div
+          class="flex justify-content-between"
+          v-if="isConnected"
+      >
         <router-link
             v-for="item in menu"
             :key="item.name"
@@ -15,15 +18,27 @@
             {{ item.name }}
           </div>
         </router-link>
+        <div
+            class="p-2 border-1 border-black-alpha-90 surface-50 hover:surface-100 cursor-pointer shadow-1 mr-4"
+            @click="logout"
+        >
+          <i class="mr-2 pi pi-reply" style="font-size: .9rem" />
+          Log Out
+        </div>
       </div>
     </template>
+    <template #center >
+      <span v-if="!isConnected" class="text-2xl">S O U L  <b>S Y N C</b></span>
+    </template>
     <template #end>
-      <HealthStatusComp v-if="mq.mdPlus"/>
+      <HealthStatusComp v-if="mq.mdPlus && isConnected"/>
     </template>
   </Toolbar>
 </template>
 <script>
 import HealthStatusComp from "@/components/HealthStatusComp.vue";
+import {mapActions, mapState} from "pinia";
+import {useUserCfgStore} from "@/store/UserCfg";
 
 export default {
   name: 'NavBar',
@@ -38,10 +53,21 @@ export default {
     ]
   }),
   methods: {
-    loadIsMobile(){
-    }
+    logout(){
+      this.emitter.emit('show-alert', {
+        info: 'See you soon. I will keep on doing my thing in the background...',
+        icon: 'pi-info-circle',
+        severity: 'success'
+      })
+      this.deleteToken();
+      this.$router.push("/login");
+    },
+    ...mapActions(useUserCfgStore, [
+      'deleteToken',
+    ])
   },
-  mounted() {
+  computed: {
+    ...mapState(useUserCfgStore, ['isConnected'])
   }
 }
 </script>

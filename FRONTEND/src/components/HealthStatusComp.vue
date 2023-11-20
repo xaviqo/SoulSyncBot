@@ -1,15 +1,17 @@
 <template>
-  <div class="w-full grid grid">
-    <div v-for="api in status" :key="api.name" class="col-3 flex justify-content-center align-items-center">
+  <div class="w-18rem grid grid-nogutter">
+    <div v-for="api in status" :key="api.name" class="col-6 flex justify-content-center align-items-center">
       <div class="grid grid-nogutter border-1 border-black-alpha-90 shadow-1">
         <div
-            class="col-2 p-1 border-right-1 border-black-alpha-90 flex align-items-center justify-content-center text-white"
-            :class="api.status ? 'bg-green-300' : 'bg-red-300'"
+            class="col-2 w-2rem h-2rem border-right-1 border-black-alpha-90 flex align-items-center justify-content-center text-white"
+            :class="api.loading ? 'bg-primary' : (api.alive ? 'bg-green-300' : 'bg-red-300')"
         >
-          <i :class=" api.status ? 'pi pi-thumbs-up' : 'pi pi-thumbs-down' "  style="font-size: 0.7rem" ></i>
+          <i class="pi pi-spin pi-spinner" v-if="api.loading"></i>
+          <i class="pi pi-thumbs-up text-black-alpha-80" v-if="!api.loading && api.alive"></i>
+          <i class="pi pi-thumbs-down" v-if="!api.loading && !api.alive"></i>
         </div>
-        <div class="col-10 surface-50 flex align-items-center justify-content-end text-overflow-ellipsis">
-          <span class="mx-2 font text-xs white-space-nowrap overflow-hidden">{{ api.name }}</span>
+        <div class="surface-50 flex align-items-center justify-content-start">
+          <span class="mx-2 font-medium">{{ api.name.toUpperCase() }}</span>
         </div>
       </div>
     </div>
@@ -23,50 +25,66 @@ export default {
   name: "HealthStatusComp",
   data: () => ({
     status: [
-      { key: "slskd-response", name: "SLSKD API" , status: false },
-      { key: "slskd-cfg-ok", name: "SLSKD CFG" , status: false },
-      { key: "spotify-response", name: "SPTF API" , status: false },
-      { key: "spotify-cfg-ok", name: "SPTF CFG" , status: false }
+      {
+        name: 'SoulSync',
+        loading: true,
+        alive: false,
+        route: '/health/soulsync'
+      },
+      {
+        name: 'Slskd',
+        loading: true,
+        alive: false,
+        route: '/health/slskd'
+      }
     ],
     currentStatus: false
   }),
   methods: {
     async checkApis() {
+      for (const api of this.status) {
+        await this.check(api);
+      }
+
+      const hasStatusChanged = this.status.some(api => api.alive !== this.currentStatus);
+      if (hasStatusChanged) {
+        this.currentStatus = !this.currentStatus;
+        this.setApiStatus(this.currentStatus);
+        this.emitter.emit('show-alert', {
+          info: this.currentStatus
+              ? 'API connection active'
+              : 'API connection failed'
+          ,
+          icon: 'pi-sync'
+          ,
+          severity: this.currentStatus
+              ? 'success'
+              : 'error'
+        })
+      }
+    },
+    async check(api) {
+      api.loading = true;
       try {
-        const response = (await this.axios.get("/health")).data;
-        const lastCurrentStatus = this.currentStatus;
-        this.currentStatus = response['all-ok'];
-        for (const key in response) {
-          const check = this.status.find( o => o.key === key);
-          if (check) check.status = response[key];
+        const res = await this.axios.get(api.route);
+        const isOK = res.status === 200 && res.data === 'OK';
+        if (isOK) {
+          api.alive = true;
+        } else {
+          api.alive = false;
         }
-        if (this.currentStatus !== lastCurrentStatus) {
-          this.setApiStatus(this.currentStatus);
-          this.emitter.emit('show-alert', {
-            info: this.currentStatus
-                ? 'API connection active'
-                : 'API connection failed'
-            ,
-            icon: 'pi-sync'
-            ,
-            severity: this.currentStatus
-                ? 'success'
-                : 'error'
-          })
-        }
-      } catch (err) {
-        const statusCode = err?.response?.status;
-        if (!statusCode || statusCode >= 400) {
-          this.deleteToken();
-          this.$router.push("/login");
-        }
+      } catch (e) {
+        console.log(e);
+        api.alive = false;
+      } finally {
+        api.loading = false;
       }
     },
     ...mapActions(useUserCfgStore, [
-      'setApiStatus', 'deleteToken'
+      'setApiStatus',
     ])
   },
-  mounted() {
+  created() {
     this.emitter.on('trigger-refresh', () => {
       this.checkApis();
     });

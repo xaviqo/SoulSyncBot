@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full border-1 bg-white p-2 border-black-alpha-90 shadow-2 mt-2">
+  <div class="border-1 bg-white p-2 border-black-alpha-90 shadow-2 mt-1">
     <div class="flex justify-content-between">
       <div class="flex">
         <div class="w-2rem h-2rem surface-50 border-1 border-black-alpha-90 flex align-items-center justify-content-center mr-3">
@@ -11,7 +11,6 @@
       </div>
       <div v-if="isApiAlive" class="flex align-items-center">
         <Button
-            v-if="section.enableReset"
             label="Reset to default"
             icon="pi pi-history"
             severity="secondary"
@@ -26,7 +25,7 @@
       </div>
     </div>
   </div>
-  <Card class="w-full border-1 border-black-alpha-90 shadow-2 mt-1">
+  <Card class="border-1 border-black-alpha-90 shadow-2 mt-1 h-30rem">
     <template #content>
       <div v-if="isApiAlive" class="w-full h-full grid">
         <template v-for="field in fields" :key="field.field">
@@ -130,16 +129,7 @@ export default {
     fields: []
   }),
   props: {
-    section: Object,
-  },
-  watch: {
-    section(newSection) {
-      if (newSection.fields != null) {
-        this.fields = newSection.fields;
-      } else {
-        this.fetchOptions(newSection);
-      }
-    },
+    section: Object
   },
   methods: {
     save(){
@@ -149,32 +139,17 @@ export default {
           { params: { section: this.section.section }}
       )
       .then( res => {
-        if (this.section.fields == null) {
-          this.fields = res.data;
-        } else {
-          this.fields.forEach( field => field.value = "");
-        }
-        this.emitter.emit('show-alert',{
-          info: 'Changes successfully implemented',
-          icon: 'pi-check-circle',
-          severity: 'success'
-        });
+        this.fields = res.data;
+        console.log(res.data)
       })
-      .catch( err => {
-        this.emitter.emit('show-alert',{
-          info: err.response.data.message,
-          icon: 'pi-exclamation-circle',
-          severity: 'error'
-        });
-      })
+      .catch( e => console.log(e))
     },
     reset(){
-      if (this.section.enableReset) {
-        this.axios.post(`/configuration/reset?section=${this.section.section}`)
-            .then( res => {
-              this.fields = res.data;
-            }).catch(e => console.log(e))
-      }
+      this.axios.post(`/configuration/reset?section=${this.section.section}`)
+      .then( res => {
+        this.fields = res.data;
+      })
+          .catch(e => console.log(e))
     },
     fetchOptions(section){
       this.axios.get(

@@ -6,8 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.ConfigurationField;
-import tech.xavi.soulsync.entity.SoulSyncError;
-import tech.xavi.soulsync.configuration.security.SoulSyncException;
+import tech.xavi.soulsync.exception.SyncError;
+import tech.xavi.soulsync.exception.SyncException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,8 +39,8 @@ public class CfgFieldsService {
                 return;
             }
         }
-        throw new SoulSyncException(
-                SoulSyncError.FIELD_VALUE_NOT_VALID.buildMessage(
+        throw new SyncException(
+                SyncError.FIELD_VALUE_NOT_VALID.buildMessage(
                         value.toString(),
                         field.getFieldName().toUpperCase(),
                         field.getType().getInputErrorMsg()
@@ -64,6 +64,10 @@ public class CfgFieldsService {
         return false;
     }
 
+    //private boolean checkType(Object value, Class<?> type){
+    //    return type.isInstance(value);
+    //}
+
     public List<ConfigurationField> fieldsMapToConfigurationFields(List<Map<String,Object>> configValues){
         List<ConfigurationField> fields = new ArrayList<>();
         configValues.forEach( fieldMap -> {
@@ -78,8 +82,8 @@ public class CfgFieldsService {
         for (ConfigurationField field : ConfigurationField.values()){
             if (field.getJsonFieldName().equals(jsonFieldName)) return field;
         }
-        throw new SoulSyncException(
-                SoulSyncError.CFG_FIELD_NOT_FOUND.buildMessage(jsonFieldName),
+        throw new SyncException(
+                SyncError.CFG_FIELD_NOT_FOUND.buildMessage(jsonFieldName),
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -90,8 +94,8 @@ public class CfgFieldsService {
                 return section;
             }
         }
-        throw new SoulSyncException(
-                SoulSyncError.CFG_SECTION_NOT_FOUND.buildMessage(sectionStr),
+        throw new SyncException(
+                SyncError.CFG_SECTION_NOT_FOUND.buildMessage(sectionStr),
                 HttpStatus.BAD_REQUEST
         );
     }

@@ -41,8 +41,6 @@ public class Song {
     @Builder.Default
     @Column
     int attempts = 1;
-    @Column
-    long lastCheck;
 
     public void addAttempt(){
         this.setAttempts(this.getAttempts()+1);

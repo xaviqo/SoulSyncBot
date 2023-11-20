@@ -1,15 +1,14 @@
-package tech.xavi.soulsync.configuration.security;
+package tech.xavi.soulsync.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
-import tech.xavi.soulsync.entity.SoulSyncError;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class SoulSyncException extends RuntimeException{
-    private final SoulSyncError soulSyncError;
+public class SyncException extends RuntimeException{
+    private final SyncError syncError;
     private final HttpStatus httpStatus;
 }

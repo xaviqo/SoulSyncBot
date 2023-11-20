@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.auth;
+package tech.xavi.soulsync.service.bot;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;

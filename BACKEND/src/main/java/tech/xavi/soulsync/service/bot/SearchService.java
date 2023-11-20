@@ -10,12 +10,11 @@ import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.SongStatus;
 import tech.xavi.soulsync.entity.SoulSyncConfiguration;
-import tech.xavi.soulsync.entity.SoulSyncError;
-import tech.xavi.soulsync.configuration.security.SoulSyncException;
+import tech.xavi.soulsync.exception.SyncError;
+import tech.xavi.soulsync.exception.SyncException;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
-import tech.xavi.soulsync.service.auth.AuthService;
 
 import java.text.Normalizer;
 import java.util.Arrays;
@@ -44,7 +43,6 @@ public class SearchService {
 
     public void searchSong(Song song){
         song.setStatus(SongStatus.SEARCHING);
-        song.setLastCheck(System.currentTimeMillis());
         songRepository.save(song);
         slskdGateway.initSearch(
                 SlskdSearchQuery.builder()
@@ -79,9 +77,9 @@ public class SearchService {
                 pause(song,retries);
                 retries++;
 
-            } catch (SoulSyncException soulSyncException){
+            } catch (SyncException syncException){
                 log.error("[fetchResults] - {} - Search Input: {}",
-                        soulSyncException.getSoulSyncError(),
+                        syncException.getSyncError(),
                         song.getSearchInput()
                         );
                 break;
@@ -112,14 +110,14 @@ public class SearchService {
         );
     }
 
-    private SlskdSearchStatus isSearchComplete(Song song) throws SoulSyncException {
+    private SlskdSearchStatus isSearchComplete(Song song) throws SyncException {
         SlskdSearchStatus searchStatus = slskdGateway.checkSearchStatus(
                 song.getSearchId().toString(),
                 authService.getSlskdToken().token()
         );
         if (searchStatus == null)
-            throw new SoulSyncException(
-                    SoulSyncError.NULL_RESULT_EXCEPTION,
+            throw new SyncException(
+                    SyncError.NULL_RESULT_EXCEPTION,
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         return searchStatus;

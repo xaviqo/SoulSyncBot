@@ -12,6 +12,7 @@ import tech.xavi.soulsync.service.configuration.ConfigurationService;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
@@ -71,6 +72,7 @@ public class QueueService {
                 "Total pending playlists: {}",pendingPlaylists.size());
         pendingPlaylists.forEach( pl -> {
             if (!isPlaylistQueued(pl.getSpotifyId())) {
+                pl.setSongs(removeSongsThatNotReachMinimumWaitingTime(pl));
                 log.debug("[runScheduledTask] - Playlist with id ({}) is NOT in the work queue " +
                         "and will be added",pl.getSpotifyId());
                 for (Song song : pl.getSongs())
@@ -119,11 +121,28 @@ public class QueueService {
         int updatedRemaining = playlistRemainingSongs.get(playlistId)-1;
         if (updatedRemaining < 1) {
             log.debug("[addToQueue] - The playlist '{}' with id '{}' has finished the process " +
-                    "for all his queued songs.",playlist.getName(),playlistId);
+                    "for all his queued songs",playlist.getName(),playlistId);
             playlistRemainingSongs.remove(playlistId);
         } else {
             playlistRemainingSongs.put(playlistId,updatedRemaining);
         }
+    }
+
+    private List<Song> removeSongsThatNotReachMinimumWaitingTime(Playlist playlist){
+        int minimumMinutes = getConfiguration().getMinimumMinutesBtwSongCheck();
+        if (minimumMinutes <= 0) return playlist.getSongs();
+        long minimumTimeInMs = TimeUnit.MINUTES.toMillis(minimumMinutes);
+        List<Song> cleanList = playlist.getSongs().stream()
+                .filter(song -> (song.getLastCheck()+minimumTimeInMs) >= System.currentTimeMillis() )
+                .toList();
+        log.debug("[removeSongsThatNotReachMinimumWaitingTime] - " +
+                        "A total of {} songs from playlist {} with {} songs " +
+                        "will be placed in the search queue",
+                cleanList.size(),
+                playlist.getSpotifyId(),
+                playlist.getSongs().size()
+        );
+        return cleanList;
     }
 
     private void runner(){

@@ -4,28 +4,25 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import tech.xavi.soulsync.exception.ApiErrorPayload;
-import tech.xavi.soulsync.exception.SyncException;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
+import tech.xavi.soulsync.dto.rest.ApiErrorPayload;
 
 @RestControllerAdvice
-
 public class ExceptionController {
 
-    @ExceptionHandler(value = SyncException.class)
+    @ExceptionHandler(value = SoulSyncException.class)
     public ResponseEntity<ApiErrorPayload> handleException(
-            SyncException syncException, HttpServletRequest request
+            SoulSyncException soulSyncException, HttpServletRequest request
     ){
         return new ResponseEntity<>(
                 ApiErrorPayload.builder()
-                        .path(request.getRequestURI())
-                        .method(request.getMethod())
-                        .message(syncException.getSyncError().getMessage())
-                        .error(syncException.getSyncError().name())
-                        .code(syncException.getSyncError().getCode())
+                        .message(soulSyncException.getSoulSyncError().getMessage())
+                        .error(soulSyncException.getSoulSyncError().name())
+                        .code(soulSyncException.getSoulSyncError().getCode())
                         .moment(System.currentTimeMillis())
-                        .status(syncException.getHttpStatus())
                         .build(),
-                syncException.getHttpStatus()
+                soulSyncException.getHttpStatus()
         );
     }
+
 }

@@ -11,10 +11,11 @@ import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.entity.PlaylistStatus;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.SongStatus;
-import tech.xavi.soulsync.exception.SyncError;
-import tech.xavi.soulsync.exception.SyncException;
+import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
+import tech.xavi.soulsync.service.auth.AuthService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -121,7 +122,6 @@ public class PlaylistService {
                         }
                     }
                 });
-
     }
 
     private boolean playlistAlreadyContainsSong(Playlist storedPlaylist, SpotifySong song){
@@ -149,8 +149,8 @@ public class PlaylistService {
                     .getTracks()
                     .getTotal();
         } catch (Exception exception) {
-            throw new SyncException(
-                    SyncError.PLAYLIST_ID_NOT_VALID,
+            throw new SoulSyncException(
+                    SoulSyncError.PLAYLIST_ID_NOT_VALID,
                     HttpStatus.BAD_REQUEST
             );
         }
@@ -207,6 +207,7 @@ public class PlaylistService {
                 .playlist(playlist)
                 .spotifyId(spotifySong.getId())
                 .status(SongStatus.WAITING)
+                .lastCheck(0)
                 .build();
     }
 

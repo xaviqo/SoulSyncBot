@@ -15,7 +15,6 @@ public class WatchlistService {
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
 
-
     public void updateWatchlist(Playlist playlist){
         log.debug("[addToWatchlist] - Playlist is saved in DB: {}",playlist.getSpotifyId());
         playlistRepository.save(playlist);

@@ -50,7 +50,7 @@ public class AddPlaylistRestService {
         watchlistService
                 .updateWatchlist(playlist);
 
-        queueService.seek(playlist);
+        queueService.seek(playlist,playlist.getSongs());
 
         return playlist;
     }

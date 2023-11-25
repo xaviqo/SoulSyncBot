@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -63,5 +64,20 @@ public class Song {
                 ", playlist=" + playlist.getSpotifyId() +
                 ", attempts=" + attempts +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        return Objects.equals(
+                spotifyId,
+                ((Song) o).spotifyId
+        );
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(spotifyId);
     }
 }

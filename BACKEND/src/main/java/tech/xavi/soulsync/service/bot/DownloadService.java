@@ -114,6 +114,7 @@ public class DownloadService {
     }
 
     private void resetSongForDownload(Song song){
+        song.setSize(0);
         song.setStatus(SongStatus.WAITING);
         songRepository.save(song);
     }

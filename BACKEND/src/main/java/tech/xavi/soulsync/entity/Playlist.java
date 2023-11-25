@@ -3,7 +3,7 @@ package tech.xavi.soulsync.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,7 +19,7 @@ public class Playlist{
     String cover;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "playlist_id")
-    List<Song> songs;
+    Set<Song> songs;
     @Column
     int lastTotalTracks;
     @Column

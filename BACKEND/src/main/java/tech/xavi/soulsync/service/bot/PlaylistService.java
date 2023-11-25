@@ -5,20 +5,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
-import tech.xavi.soulsync.entity.Playlist;
-import tech.xavi.soulsync.entity.PlaylistStatus;
-import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.SongStatus;
-import tech.xavi.soulsync.entity.SoulSyncError;
-import tech.xavi.soulsync.configuration.security.SoulSyncException;
+import tech.xavi.soulsync.entity.*;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.service.auth.AuthService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -69,10 +66,10 @@ public class PlaylistService {
                     .values());
         }
 
-        List<Song> songList = spotifyPlaylist.stream()
+        Set<Song> songList = spotifyPlaylist.stream()
                 .map( spotifySong -> convertToEntitySong(spotifySong,playlist))
                 .filter(song -> song.getSearchInput() != null && !song.getSearchInput().isEmpty())
-                .toList();
+                .collect(Collectors.toSet());;
 
         playlist.setSongs(songList);
         playlist.setLastTotalTracks(songList.size());

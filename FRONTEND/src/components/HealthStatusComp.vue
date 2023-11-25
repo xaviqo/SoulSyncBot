@@ -59,6 +59,11 @@ export default {
         if (!statusCode || statusCode >= 400) {
           this.deleteToken();
           this.$router.push("/login");
+          this.emitter.emit('show-alert',{
+            info: 'Lost connection to SoulSync API',
+            icon: 'pi-exclamation-circle',
+            severity: 'error'
+          });
         }
       }
     },
@@ -67,12 +72,16 @@ export default {
     ])
   },
   mounted() {
-    this.emitter.on('trigger-refresh', () => {
-      this.checkApis();
+    this.checkApis();
+    this.$subscribe( (mutation) => {
+      const refresh = mutation.events.key === 'call';
+      if (refresh) {
+        this.checkApis();
+      }
     });
   },
   computed: {
-    ...mapState(useUserCfgStore, ['refresh'])
+    ...mapState(useUserCfgStore, ['$subscribe'])
   }
 }
 </script>

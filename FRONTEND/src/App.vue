@@ -38,11 +38,6 @@ const msgModel = {
 };
 export default {
   name: 'SoulSyncApp',
-  computed: {
-    GlobalColors() {
-      return GlobalColors
-    },
-  },
   inject: ["mq"],
   components: {NavBar},
   data: () => ({
@@ -62,15 +57,17 @@ export default {
       setTimeout(() => this.message.show = false,1000)
     },
     ...mapActions(useUserCfgStore, [
-      'checkStatus',
+      'checkTokenStatus','$subscribe'
     ])
   },
   created() {
-    this.checkStatus();
+    this.checkTokenStatus();
     this.emitter.on('show-alert', payload => this.showAlert(payload));
   },
-  mounted() {
-    this.emitter.emit('trigger-refresh');
+  computed: {
+    GlobalColors() {
+      return GlobalColors
+    },
   }
 }
 </script>

@@ -8,15 +8,15 @@
     <template #content>
       <div class="w-full flex justify-content-center -mt-2">
         <ProgressBar
-            :value="this.interval.progress"
+            :value="interval.progress"
             class="w-full border-1 border-black-alpha-90"
-        > {{ this.interval.sec }}/{{ this.refresh }}
+        >{{ interval.sec }} <span class="ml-1" v-if="interval.sec > interval.refresh/3"> {{ ` / ${interval.refresh}` }}</span>
         </ProgressBar>
       </div>
       <div class="flex justify-content-center grid mt-3">
         <Dropdown
-            v-model="refresh"
-            :options="this.interval.options"
+            v-model="interval.refresh"
+            :options="options"
             @change="setNewInterval"
         />
       </div>
@@ -31,54 +31,42 @@ export default {
   name: "RefreshConfigComp",
   inject: ["mq"],
   data: () => ({
-    interval: {
-      min: 10,
-      max: 120,
-      step: 10,
-      options: [],
-      progress: 0,
-      task: null,
-      incrementValue: 0,
-      sec: 0
-    }
+    min: 10,
+    max: 120,
+    step: 10,
+    options: []
   }),
   methods: {
     setNewInterval(ev){
-      this.setRefreshInterval(ev.value);
+      this.interval.refresh = ev.value;
       clearInterval(this.interval.task);
-      this.interval.incrementValue = 100 / this.refresh;
-      this.interval.progress=0;
-      this.interval.sec=0;
-      this.interval.task = setInterval(this.updateTimerBar,1000);
+      this.initInterval();
     },
     updateTimerBar(){
-      this.interval.progress+=this.interval.incrementValue;
+      this.interval.progress+=this.interval.increment;
       this.interval.sec+=1;
-
-      if (this.interval.progress >= 100) {
-        this.interval.progress = 0;
-        this.interval.sec = 0;
-        this.emitter.emit('trigger-refresh');
+      if (this.interval.progress >= 100){
+        this.resetInterval();
       }
     },
-    ...mapActions(useUserCfgStore, [
-      'setRefreshInterval',
-    ])
-  },
-  computed: {
-    ...mapState(useUserCfgStore, ['refresh'])
+    initInterval(){
+      this.resetInterval();
+      this.interval.increment = (100 / this.interval.refresh);
+      this.interval.task = setInterval(this.updateTimerBar,1000);
+    },
+    ...mapActions(useUserCfgStore,['resetInterval'])
   },
   created() {
-    for (let i = this.interval.min; i <= this.interval.max ; i+=this.interval.step) {
-      this.interval.options.push(i);
+    for (let i = this.min; i <= this.max ; i+=this.step) {
+      this.options.push(i);
     }
-    this.interval.incrementValue = 100 / this.refresh;
-    this.interval.task = setInterval(this.updateTimerBar,1000);
-    this.emitter.on('force-refresh', () => this.setNewInterval(this.refresh));
-    this.emitter.emit('trigger-refresh');
+    this.initInterval();
   },
   beforeUnmount() {
     clearInterval(this.interval.task);
+  },
+  computed: {
+    ...mapState(useUserCfgStore, ['interval'])
   }
 }
 </script>

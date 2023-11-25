@@ -19,6 +19,7 @@ import static tech.xavi.soulsync.configuration.constants.ConfigurationFinals.DEF
 @SpringBootApplication
 public class SoulSyncApplication implements CommandLineRunner {
 
+	private static final boolean CREATE_ADMIN = true;
 	private final HealthService healthService;
 	private final AccountService accountService;
 	private final ConfigurationRestService configurationRestService;
@@ -29,10 +30,12 @@ public class SoulSyncApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args){
-		accountService.createAccount(
-				DEFAULT_ADMIN_USER,
-				DEFAULT_ADMIN_PASS
-		);
+		if (CREATE_ADMIN){
+			accountService.createAccount(
+					DEFAULT_ADMIN_USER,
+					DEFAULT_ADMIN_PASS
+			);
+		}
 		printSplashScreen();
 		configurationRestService.checkApisConfiguration(
 				healthService.initLogCheck()

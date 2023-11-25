@@ -76,8 +76,8 @@ export default {
     getProgressBarValue(total, succeeded){
       return Math.round(( succeeded / total ) * 100);
     },
-    fetchPlaylists(){
-      if (this.isApiAlive) {
+    fetchPlaylists(fetch){
+      if (fetch) {
         this.axios.get('/playlist')
             .then( res => {
               this.waitUpdate = false;
@@ -96,16 +96,18 @@ export default {
     waitUpdate: false
   }),
   created() {
-    this.fetchPlaylists();
-    this.emitter.on('load-playlist', () => {
-      this.waitUpdate = true;
+    this.$subscribe( (mutation) => {
+      const refresh = mutation.events.key === 'call';
+      if (refresh) {
+        this.fetchPlaylists(this.isApiAlive);
+      }
     });
-    this.emitter.on('trigger-refresh', () => {
-      this.fetchPlaylists();
-    });
+    this.fetchPlaylists(true);
   },
   computed: {
-    ...mapState(useUserCfgStore, ['refresh','isApiAlive'])
+    ...mapState(useUserCfgStore, [
+        'isApiAlive','$subscribe'
+    ])
   }
 }
 </script>

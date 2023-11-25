@@ -52,5 +52,5 @@ logging:
           databind: WARN
     org:
       hibernate:
-        SQL: WARN
+        SQL: INFO
     root: WARN

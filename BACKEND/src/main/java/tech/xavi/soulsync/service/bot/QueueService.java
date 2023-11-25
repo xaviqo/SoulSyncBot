@@ -72,7 +72,7 @@ public class QueueService {
                 "Total pending playlists: {}",pendingPlaylists.size());
         pendingPlaylists.forEach( pl -> {
             if (!isPlaylistQueued(pl.getSpotifyId())) {
-                pl.setSongs(removeSongsThatNotReachMinimumWaitingTime(pl));
+                //pl.setSongs(removeSongsThatNotReachMinimumWaitingTime(pl));
                 log.debug("[runScheduledTask] - Playlist with id ({}) is NOT in the work queue " +
                         "and will be added",pl.getSpotifyId());
                 for (Song song : pl.getSongs())

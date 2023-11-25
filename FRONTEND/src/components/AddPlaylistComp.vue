@@ -93,7 +93,6 @@ export default {
       this.sending = true;
       this.axios.post('/playlist',this.payload)
           .then( () => {
-            this.emitter.emit('load-playlist');
             this.emitter.emit('show-alert',{
               info: 'Playlist added to watchlist',
               icon: 'pi-check-circle',

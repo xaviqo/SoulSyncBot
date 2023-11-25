@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -84,40 +85,33 @@ public class PlaylistService {
         log.debug("[updateAllPlaylists] - Playlist update started");
         playlistRepository
                 .findAllUpdatables()
-                .forEach(pl -> updatePlaylist(pl.getSpotifyId(),pl.isAvoidDuplicates()));
+                .forEach(pl -> updatePlaylist(pl.getSpotifyId()));
         stopWatch.stop();
         log.debug("[updateAllPlaylists] - Playlist update finished. Total time elapsed: {} sec",stopWatch.getTotalTimeSeconds());
     }
 
-    private void updatePlaylist(String playlistId, boolean avoidDupes){
+    private void updatePlaylist(String playlistId){
+        AtomicBoolean hasNewSongs = new AtomicBoolean(false);
         playlistRepository
                 .findById(playlistId)
                 .ifPresent( storedPlaylist -> {
                     updatePlaylistName(storedPlaylist);
                     if (storedPlaylist.isUpdatable()) {
                         int totalTracks = getTotalTracks(playlistId);
-                        List<Song> storedSongs = storedPlaylist.getSongs();
-                        int beforeTotal = storedSongs.size();
                         List<SpotifySong> updatedPl = getPlaylistSongsFromSpotify(playlistId,totalTracks);
                         updatedPl.forEach( spotifySong -> {
-                            log.debug("[updatePlaylistTracks] - New song found in playlist {}: {}",
-                                    storedPlaylist.getName(),
-                                    spotifySong.getName() + " - " + spotifySong.getFirstArtist()
-                            );
-                            if (!avoidDupes || !playlistAlreadyContainsSong(storedPlaylist,spotifySong)) {
-                                storedSongs.add(convertToEntitySong(spotifySong,storedPlaylist));
+                            if (!playlistAlreadyContainsSong(storedPlaylist,spotifySong)) {
+                                hasNewSongs.set(true);
+                                log.debug("[updatePlaylist] - New song found in playlist {}: {}",
+                                        storedPlaylist.getName(),
+                                        spotifySong.getName() + " - " + spotifySong.getFirstArtist()
+                                );
+                                storedPlaylist.getSongs().add(convertToEntitySong(spotifySong,storedPlaylist));
                             }
                         });
-                        int afterTotal = storedSongs.size();
-                        if (afterTotal > beforeTotal) {
-                            log.debug("[updatePlaylistTracks] - Playlist {} has been updated with new tracks. " +
-                                            "Previous Total: {} - New total: {}",
-                                    storedPlaylist.getName(),
-                                    beforeTotal,
-                                    afterTotal
-                            );
-                            storedPlaylist.setLastTotalTracks(storedSongs.size());
-                            storedPlaylist.setSongs(storedSongs);
+                        if (hasNewSongs.get()) {
+                            log.debug("[updatePlaylist] - Playlist {} has been updated with new tracks",storedPlaylist.getName());
+                            storedPlaylist.setLastTotalTracks(storedPlaylist.getSongs().size());
                             playlistRepository.save(storedPlaylist);
                         }
                     }

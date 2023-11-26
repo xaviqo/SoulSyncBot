@@ -17,5 +17,7 @@ node_modules/
 target/
 .idea/
 HELP.md
-.env.production
-.env.development
+**/.env.*
+**/.env
+.env.*
+.env

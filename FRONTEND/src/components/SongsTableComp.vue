@@ -76,7 +76,14 @@
         </span>
         </template>
       </Column>
-      <Column field="attempts" header="Attempts" style="width: 3% " sortable>
+      <Column header="Last Check" sortable>
+        <template #body="slotProps">
+          <span>
+            {{ getElapsedTime(slotProps.data.lastCheck) }}
+          </span>
+        </template>
+      </Column>
+      <Column field="attempts" header="Att." style="width: 1% " sortable>
       </Column>
       <template #footer> <strong>Total: </strong>{{ playlist.songs.length }} songs. </template>
     </DataTable>
@@ -132,6 +139,19 @@ export default {
         .catch( e => console.log(e))
       }
     },
+    getElapsedTime(timestamp) {
+      if (timestamp < 1) return 'Never';
+      const now = new Date();
+      const elapsedTimeInMilliseconds = now - timestamp;
+      const elapsedMinutes = Math.floor(elapsedTimeInMilliseconds / (1000 * 60));
+      if (elapsedMinutes < 1) {
+        return '< 1 min';
+      } else if (elapsedMinutes === 1) {
+        return '1 min';
+      } else {
+        return `${elapsedMinutes} mins`;
+      }
+    }
   },
   data: () => ({
     playlist: {

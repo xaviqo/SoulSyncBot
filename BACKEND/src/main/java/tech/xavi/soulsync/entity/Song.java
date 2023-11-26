@@ -61,8 +61,8 @@ public class Song {
                 ", status=" + status +
                 ", filename='" + filename + '\'' +
                 ", size=" + size +
-                ", playlist=" + playlist.getSpotifyId() +
                 ", attempts=" + attempts +
+                ", lastCheck=" + lastCheck +
                 '}';
     }
 

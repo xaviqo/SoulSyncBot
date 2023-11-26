@@ -1,3 +1,6 @@
+server:
+  port: 14947
+
 tech:
   xavi:
     soulsync:
@@ -49,8 +52,8 @@ logging:
     com:
       fasterxml:
         jackson:
-          databind: WARN
+          databind: INFO
     org:
       hibernate:
         SQL: INFO
-    root: WARN
+    root: INFO

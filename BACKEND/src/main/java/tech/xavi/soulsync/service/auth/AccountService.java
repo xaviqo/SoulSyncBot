@@ -1,6 +1,7 @@
 package tech.xavi.soulsync.service.auth;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,10 @@ import tech.xavi.soulsync.entity.Account;
 import tech.xavi.soulsync.entity.SoulSyncError;
 import tech.xavi.soulsync.repository.AccountRepository;
 
+import static tech.xavi.soulsync.configuration.constants.ConfigurationFinals.DEFAULT_ADMIN_PASS;
+import static tech.xavi.soulsync.configuration.constants.ConfigurationFinals.DEFAULT_ADMIN_USER;
+
+@Log4j2
 @RequiredArgsConstructor
 @Service
 public class AccountService {
@@ -65,5 +70,14 @@ public class AccountService {
                 ));
     }
 
+    public void createDefaultAdmin(){
+        if (accountRepository.findAccountByUsername(DEFAULT_ADMIN_USER).isEmpty()){
+            createAccount(
+                    DEFAULT_ADMIN_USER,
+                    DEFAULT_ADMIN_PASS
+            );
+            log.info("[run] - Default Admin created: '{}' - '{}'",DEFAULT_ADMIN_USER,DEFAULT_ADMIN_PASS);
+        }
+    }
 
 }

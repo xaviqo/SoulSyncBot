@@ -61,8 +61,8 @@
         <span v-if="slotProps.data.filename">
           {{ getFile(slotProps.data.filename)  }}
         </span>
-          <span v-else class="text-gray-400">
-          Not Found
+        <span v-else class="text-gray-400">
+          {{ slotProps.data.attempts < 2 ? 'Waiting...' : 'Not Found' }}
         </span>
         </template>
       </Column>
@@ -72,7 +72,7 @@
             {{ fromBytesToMB(slotProps.data.size)+'MB'  }}
           </div>
           <span v-else class="text-gray-400">
-          Not Found
+          {{ slotProps.data.attempts < 2 ? 'Waiting...' : 'Not Found' }}
         </span>
         </template>
       </Column>
@@ -121,14 +121,16 @@ export default {
       return Math.round(bytes / 1048576 );
     },
     fetchSongs(playlistId){
-      this.axios.get(
-          '/playlist/songs',
-          { params: { playlistId } }
-      )
-          .then( res => {
-            this.playlist.songs = res.data;
-          })
-          .catch( e => console.log(e))
+      if (this.isApiAlive) {
+        this.axios.get(
+            '/playlist/songs',
+            { params: { playlistId } }
+        )
+        .then( res => {
+          this.playlist.songs = res.data;
+        })
+        .catch( e => console.log(e))
+      }
     },
   },
   data: () => ({
@@ -151,14 +153,16 @@ export default {
       } else {
         this.playlist.songs = [];
       }
-    })
-    this.emitter.on('trigger-refresh', () => {
-      if (this.playlist.id) this.fetchSongs(this.playlist.id)
-      if (!this.isApiAlive) this.playlist.songs = [];
+    });
+    this.$subscribe( (mutation) => {
+      const refresh = mutation.events.key === 'call';
+      if (refresh) {
+        this.fetchSongs(this.playlist.id);
+      }
     });
   },
   computed: {
-    ...mapState(useUserCfgStore, ['isApiAlive'])
+    ...mapState(useUserCfgStore, ['isApiAlive','$subscribe'])
   }
 }
 </script>

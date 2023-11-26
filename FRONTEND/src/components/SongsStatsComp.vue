@@ -20,6 +20,9 @@
 </template>
 <script>
 
+import {mapState} from "pinia";
+import {useUserCfgStore} from "@/store/UserCfg";
+
 export default {
   name: "SongsStatsComp",
   methods: {
@@ -27,14 +30,16 @@ export default {
       return Math.round(( succeeded / total ) * 100);
     },
     fetchStats(playlistId){
-      this.axios.get(
-          '/playlist/stats',
-          { params: { playlistId } }
-      )
-      .then( res => {
-        this.playlist.stats = res.data;
-      })
-      .catch( e => console.log(e))
+      if (this.isApiAlive) {
+        this.axios.get(
+            '/playlist/stats',
+            { params: { playlistId } }
+        )
+            .then( res => {
+              this.playlist.stats = res.data;
+            })
+            .catch( e => console.log(e))
+      }
     },
     capitalize(str) {
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -62,9 +67,15 @@ export default {
         this.playlist.stats = null;
       }
     })
-    this.emitter.on('trigger-refresh', () => {
-      if (this.playlist.id) this.fetchStats(this.playlist.id);
+    this.$subscribe( (mutation) => {
+      const refresh = mutation.events.key === 'call';
+      if (refresh && this.playlist.id) {
+        this.fetchStats(this.playlist.id);
+      }
     });
+  },
+  computed: {
+    ...mapState(useUserCfgStore, ['isApiAlive','$subscribe'])
   }
 }
 </script>

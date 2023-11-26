@@ -76,7 +76,7 @@ public class QueueService {
                 Set<Song> songsToSeek = removeSongsThatNotReachMinimumWaitingTime(pl);
                 log.debug("[runScheduledTask] - Playlist with id ({}) is NOT in the work queue " +
                         "and will be added",pl.getSpotifyId());
-                for (Song song : songsToSeek) song.setSearchId(UUID.randomUUID());
+                songsToSeek.forEach(song -> song.setSearchId(UUID.randomUUID()));
                 seek(pl,songsToSeek);
             } else {
                 log.debug("[runScheduledTask] - Playlist with id ({}) is already in the work queue " +
@@ -85,24 +85,29 @@ public class QueueService {
         });
     }
 
-    public void seek(Playlist playlist, Set<Song> plSongsToSeek){
-        executor.execute( () -> {
-            addPlaylistToQueue(playlist,plSongsToSeek);
-            plSongsToSeek.forEach(watchlistService::updateSongStatus);
-        });
+    public void seek(Playlist playlist,Set<Song> songsToSeek){
+        if (!isPlaylistQueued(playlist.getSpotifyId())) {
+            executor.execute( () -> {
+                addPlaylistToQueue(playlist,songsToSeek);
+                watchlistService.updateWatchlist(playlist);
+            });
+        }
     }
 
-    public synchronized void addPlaylistToQueue(Playlist playlist, Set<Song> plSongsToSeek){
+    public synchronized void addPlaylistToQueue(Playlist playlist,Set<Song> songsToSeek){
         String playlistId = playlist.getSpotifyId();
         playlistRemainingSongs.put(
                 playlistId,
-                playlist.getLastTotalTracks()
+                songsToSeek.size()
         );
-        plSongsToSeek.forEach(this::addSongToQueue);
+        songsToSeek.forEach(this::addSongToQueue);
         log.debug("[addPlaylistToQueue] - Playlist added to queue: {}",playlistId);
     }
 
     public boolean isPlaylistQueued(String playlistId){
+        playlistRemainingSongs.forEach( (key,val) -> {
+            log.debug("[playlistRemainingSongs] - Playlist ID: {} - Remaining: {}",key,val);
+        });
         return playlistRemainingSongs.containsKey(playlistId);
     }
 
@@ -133,8 +138,12 @@ public class QueueService {
         if (minimumMinutes <= 0) return playlist.getSongs();
         long minimumTimeInMs = TimeUnit.MINUTES.toMillis(minimumMinutes);
         Set<Song> cleanList = playlist.getSongs().stream()
-                .filter(song -> (song.getLastCheck()+minimumTimeInMs) >= System.currentTimeMillis() )
-                .collect(Collectors.toSet());;
+                .filter(song -> {
+                    boolean shouldKeep = (song.getLastCheck() == 0 || (song.getLastCheck() + minimumTimeInMs) <= System.currentTimeMillis());
+                    log.debug("[removeSongsThatNotReachMinimumWaitingTime] - Song: {} | Last Check: {} | Should Keep: {}", song.getName(), song.getLastCheck(), shouldKeep);
+                    return shouldKeep;
+                })
+                .collect(Collectors.toSet());
         log.debug("[removeSongsThatNotReachMinimumWaitingTime] - " +
                         "A total of {} songs from playlist {} with {} songs " +
                         "will be placed in the search queue",

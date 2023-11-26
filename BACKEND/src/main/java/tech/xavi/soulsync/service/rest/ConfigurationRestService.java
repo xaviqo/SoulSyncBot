@@ -37,7 +37,7 @@ public class ConfigurationRestService {
     }
 
     public List<?> saveConfiguration(String sectionStr, List<Map<String,Object>> configValues) {
-        boolean isUserSave =  (Objects.equals(sectionStr, "admin"));
+        boolean isUserSave = (Objects.equals(sectionStr, "admin"));
         return isUserSave
                 ? saveOrUpdateUser(configValues)
                 : saveJsonConfiguration(sectionStr,configValues);

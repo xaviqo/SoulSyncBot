@@ -22,6 +22,7 @@ import java.io.IOException;
 public class ConfigurationCheckFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
+    private final boolean disabled = true;
 
     @Override
     protected void doFilterInternal(
@@ -29,7 +30,7 @@ public class ConfigurationCheckFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        if (ConfigurationService.isSoulSyncConfigured()) {
+        if (disabled || ConfigurationService.isSoulSyncConfigured()) {
             filterChain.doFilter(request, response);
         } else {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);

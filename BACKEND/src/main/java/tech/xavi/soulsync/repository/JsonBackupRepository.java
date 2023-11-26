@@ -32,9 +32,7 @@ public class JsonBackupRepository<T> {
     }
 
     public void modifyField(String mainField, String subField, JsonNode newValue) {
-        if (this.data == null) {
-            return;
-        }
+        if (this.data == null) return;
         try {
             JsonNode jsonNode = objectMapper.valueToTree(this.data);
             if (jsonNode.isObject()) {
@@ -81,7 +79,7 @@ public class JsonBackupRepository<T> {
     }
 
     private void loadData(){
-        log.info("Loading previous data from file {}",DB.getName());
+        log.debug("Loading previous data from file {}",DB.getName());
         try {
             if (DB.length() > 0) {
                 this.data = objectMapper.readValue(DB,clazz);

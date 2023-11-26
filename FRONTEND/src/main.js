@@ -39,7 +39,11 @@ const app  = createApp({
     render: ()=>h(App)
 });
 
-axios.defaults.baseURL = 'http://localhost:8080/v1';
+axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL;
+
+console.log("MODE ---> "+process.env.NODE_ENV);
+console.log("process.env.VUE_APP_BACKEND_URL ---> "+process.env.VUE_APP_BACKEND_URL);
+console.log("axios.defaults.baseURL ---> "+axios.defaults.baseURL);
 axios.interceptors.request.use(
     async config => {
         const token = localStorage.getItem("token")

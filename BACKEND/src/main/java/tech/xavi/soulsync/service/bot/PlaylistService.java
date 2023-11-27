@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
+import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
@@ -193,7 +194,7 @@ public class PlaylistService {
         return Song.builder()
                 .searchId(UUID.randomUUID())
                 .name(spotifySong.getName())
-                .artists(spotifySong.getArtists())
+                .artists(String.join(ConfigurationFinals.ARTIST_DIVIDER,spotifySong.getArtists()))
                 .searchInput(searchInput)
                 .playlist(playlist)
                 .spotifyId(spotifySong.getId())

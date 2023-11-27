@@ -58,13 +58,13 @@ public class Gateway {
         HttpResponse<String> response = unirestRequest.asString();
         int responseStatus = response.getStatus();
         String responseBody = response.getBody();
-        log.debug("{} Response status code: {}", api.getLoggerMethodPrefix(), responseStatus);
-        log.debug("{} Complete response: {}", api.getLoggerMethodPrefix(), responseBody);
+        log.trace("{} Response status code: {}", api.getLoggerMethodPrefix(), responseStatus);
+        log.trace("{} Complete response: {}", api.getLoggerMethodPrefix(), responseBody);
         return responseBody;
     }
 
     private HttpRequestWithBody createUnirestRequest(ExternalApi api, GatewayRequest request) {
-        log.debug("{} URI: {}", api.getLoggerMethodPrefix(), request.getUrl());
+        log.trace("{} URI: {}", api.getLoggerMethodPrefix(), request.getUrl());
 
         HttpRequestWithBody unirestRequest = new HttpRequestWithBody(request.getMethod(), request.getUrl());
         if (request.isAppJson()) unirestRequest.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
@@ -88,7 +88,7 @@ public class Gateway {
 
     private void handlePayload(HttpRequestWithBody unirestRequest, ExternalApi api, GatewayRequest request) {
         if (Objects.nonNull(request.getPayload())) {
-            log.debug("{} Payload: {}", api.getLoggerMethodPrefix(), request.getPayload().toString());
+            log.trace("{} Payload: {}", api.getLoggerMethodPrefix(), request.getPayload().toString());
             unirestRequest.body(request.getPayload());
         }
     }

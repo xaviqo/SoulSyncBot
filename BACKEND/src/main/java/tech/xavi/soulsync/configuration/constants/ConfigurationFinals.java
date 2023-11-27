@@ -8,6 +8,8 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 @Configuration
 public class ConfigurationFinals {
 
+    public static final String ARTIST_DIVIDER = "~ç~";
+
     public static final String TOKEN_PREFIX = "Bearer ";
 
     public final static Integer[] BIT_RATES = new Integer[]{8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320};

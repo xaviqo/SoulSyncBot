@@ -3,8 +3,8 @@ package tech.xavi.soulsync.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -24,10 +24,8 @@ public class Song {
     String searchInput;
     @Column
     UUID searchId;
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "artists", joinColumns = @JoinColumn(name = "song_id"))
-    @Column(name = "artist")
-    List<String> artists;
+    @Column
+    String artists;
     @Enumerated(EnumType.STRING)
     @Column
     SongStatus status;
@@ -47,6 +45,10 @@ public class Song {
 
     public void addAttempt(){
         this.setAttempts(this.getAttempts()+1);
+    }
+
+    public String[] getArtists(){
+        return artists.split(ConfigurationFinals.ARTIST_DIVIDER);
     }
 
     @Override

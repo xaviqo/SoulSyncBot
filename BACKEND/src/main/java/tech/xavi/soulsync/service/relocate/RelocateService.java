@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Log4j2
@@ -53,14 +52,14 @@ public class RelocateService {
                                     totalMoved.getAndIncrement();
                                     log.debug(
                                             "[moveFinishedPlaylistsSongs] - Song '{}' has been '{}' to the directory '{}'",
-                                            song.getName() + " - " + song.getArtists().get(0),
+                                            song.getName() + " - " + song.getArtists()[0],
                                             copyAction,
                                             finalPath.toAbsolutePath()
                                     );
                                 } else {
                                     log.debug(
                                             "[moveFinishedPlaylistsSongs] - finalPath for Song '{}' is empty",
-                                            song.getName() + " - " + song.getArtists().get(0)
+                                            song.getName() + " - " + song.getArtists()[0]
                                     );
                                 }
                             });
@@ -108,8 +107,8 @@ public class RelocateService {
     private String getSongTitleWithArtists(Song song) {
         if (getConfiguration().isRenameCopiedFiles()) {
             StringBuilder songTitleWithArtists = new StringBuilder(song.getName());
-            List<String> artists = song.getArtists();
-            if (artists != null && !artists.isEmpty()) {
+            String[] artists = song.getArtists();
+            if (artists != null && artists.length > 0) {
                 songTitleWithArtists.append(" - ");
                 songTitleWithArtists.append(String.join(" ", artists));
             }

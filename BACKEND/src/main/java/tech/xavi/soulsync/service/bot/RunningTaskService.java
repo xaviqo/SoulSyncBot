@@ -4,7 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.SoulSyncConfiguration;
-import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 import tech.xavi.soulsync.service.relocate.RelocateService;
 
@@ -15,10 +14,8 @@ import java.util.concurrent.ScheduledFuture;
 @Service
 public class RunningTaskService {
 
-    private boolean runTask = true;
     private final QueueService queueService;
     private final PlaylistService playlistService;
-    private final SlskdGateway slskdGateway;
     private final DownloadService downloadService;
     private final RelocateService relocateService;
     private final TaskScheduler taskScheduler;
@@ -28,13 +25,11 @@ public class RunningTaskService {
             QueueService queueService,
             PlaylistService playlistService,
             DownloadService downloadService,
-            SlskdGateway slskdGateway,
             RelocateService relocateService,
             TaskScheduler taskScheduler
     ) {
         this.queueService = queueService;
         this.playlistService = playlistService;
-        this.slskdGateway = slskdGateway;
         this.downloadService = downloadService;
         this.relocateService = relocateService;
         this.taskScheduler = taskScheduler;
@@ -57,17 +52,13 @@ public class RunningTaskService {
     }
 
     protected void runScheduledTask(){
-        if (runTask) {
-            queueService.printQueueStatus();
-            if (slskdGateway.isSlskdApiHealthy()) {
-                downloadService.updateSongsStatus();
-                playlistService.updatePlaylistsFromSpotify();
-                queueService.updateQueue();
-            } else {
-                log.error("[runScheduledTask] - ATTENTION ---> No API response from Slskd");
-            }
-            relocateService.moveFinishedPlaylistsSongs();
-        }
+        log.debug("[runScheduledTask] - Task started");
+        queueService.printQueueStatus();
+        downloadService.updateSongsStatus();
+        playlistService.updatePlaylistsFromSpotify();
+        queueService.updateQueue();
+        relocateService.moveFinishedPlaylistsSongs();
+        log.debug("[runScheduledTask] - Task finished");
     }
 
     private SoulSyncConfiguration.App getConfiguration(){

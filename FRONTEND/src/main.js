@@ -39,7 +39,7 @@ const app  = createApp({
     render: ()=>h(App)
 });
 
-axios.defaults.baseURL = 'https://api.xavi.tech/v1'//process.env.VUE_APP_BACKEND_URL;
+axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL;
 
 /*console.log("MODE ---> "+process.env.NODE_ENV);
 console.log("process.env.VUE_APP_BACKEND_URL ---> "+process.env.VUE_APP_BACKEND_URL);

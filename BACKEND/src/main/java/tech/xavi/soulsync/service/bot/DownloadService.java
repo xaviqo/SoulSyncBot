@@ -70,6 +70,7 @@ public class DownloadService {
     }
 
     public void updateSongsStatus(){
+        log.debug("[updateSongsStatus] - Updating songs status...");
         List<Song> songsToBeRestarted = new ArrayList<>();
         String token = authService.getSlskdToken().token();
         Arrays.stream(slskdGateway.getDownloadsStatus(token))
@@ -83,6 +84,7 @@ public class DownloadService {
                         songsToBeRestarted.addAll(songToAdd);
                     }
                 });
+        log.debug("[updateSongsStatus] - Found a total of {} downloads stuck",songsToBeRestarted.size());
         songsToBeRestarted.forEach(this::resetSongForDownload);
     }
 
@@ -114,6 +116,7 @@ public class DownloadService {
     }
 
     private void resetSongForDownload(Song song){
+        log.debug("[resetSongForDownload] - Search restarted due to stuck download: {} - {}",song.getName(),song.getArtists()[0]);
         song.setSize(0);
         song.setStatus(SongStatus.WAITING);
         songRepository.save(song);

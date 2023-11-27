@@ -112,11 +112,13 @@ public class FileFinderService {
     }
 
     private boolean containsAllOriginalSongKeywords(SlskdFile file, Song song){
-        List<String> nameAndArtists = new ArrayList<>(song.getArtists());
+        List<String> nameAndArtists = new ArrayList<>(List.of(song.getArtists()));
         nameAndArtists.add(song.getName());
         for (String keyword : nameAndArtists) {
-            if (!file.filename().toLowerCase().contains(keyword.toLowerCase())){
-                return false;
+            for (String kw : keyword.split(" ")) {
+                if (!file.filename().toLowerCase().contains(kw.toLowerCase())){
+                    return false;
+                }
             }
         }
         return true;

@@ -72,10 +72,7 @@ public class AccountService {
 
     public void createDefaultAdmin(){
         if (accountRepository.findAccountByUsername(DEFAULT_ADMIN_USER).isEmpty()){
-            createAccount(
-                    DEFAULT_ADMIN_USER,
-                    DEFAULT_ADMIN_PASS
-            );
+            createAccount(DEFAULT_ADMIN_USER, DEFAULT_ADMIN_PASS);
             log.info("[run] - Default Admin created: '{}' - '{}'",DEFAULT_ADMIN_USER,DEFAULT_ADMIN_PASS);
         }
     }

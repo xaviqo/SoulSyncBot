@@ -34,6 +34,7 @@ tech:
             search: /api/v0/searches
             responses: /responses
             download: /api/v0/transfers/downloads
+
 spring:
   datasource:
     url: ${SOULSYNC_DATASOURCE_URL:jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false}
@@ -41,6 +42,7 @@ spring:
     password: ${SOULSYNC_DATASOURCE_PASS:soulsync}
   jpa:
     hibernate:
+      #ddl-auto: validate
       #ddl-auto: update
       ddl-auto: create-drop
   security:
@@ -52,8 +54,7 @@ logging:
     com:
       fasterxml:
         jackson:
-          databind: INFO
+          databind: DEBUG
     org:
       hibernate:
-        SQL: INFO
-    root: INFO
+        SQL: DEBUG

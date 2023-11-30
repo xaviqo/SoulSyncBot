@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
 import tech.xavi.soulsync.dto.rest.ApiErrorPayload;
-import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.service.auth.JwtService;
 
 import java.io.IOException;

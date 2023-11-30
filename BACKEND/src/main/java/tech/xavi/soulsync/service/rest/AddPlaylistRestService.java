@@ -4,15 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
 import tech.xavi.soulsync.entity.Playlist;
-import tech.xavi.soulsync.entity.SoulSyncError;
-import tech.xavi.soulsync.configuration.security.SoulSyncException;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.service.bot.PlaylistService;
-import tech.xavi.soulsync.service.bot.QueueService;
-import tech.xavi.soulsync.service.bot.WatchlistService;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,13 +23,10 @@ public class AddPlaylistRestService {
 
     private final PlaylistRepository playlistRepository;
     private final PlaylistService playlistService;
-    private final QueueService queueService;
-    private final WatchlistService watchlistService;
 
     public Playlist addPlaylistRequest(AddPlaylistReq request) throws URISyntaxException {
 
         String playlistId = obtainIdFromRequest(request);
-
         if (isPlaylistInDB(playlistId)) {
             throw new SoulSyncException(
                     SoulSyncError.PLAYLIST_ALREADY_EXISTS.buildMessage(request.playlist().toLowerCase()),
@@ -39,20 +34,10 @@ public class AddPlaylistRestService {
             );
         }
 
-        int totalTracks = playlistService.getTotalTracks(playlistId);
+        List<SpotifySong> spotifyPlaylistSongs = playlistService.getPlaylistSongsFromSpotify(playlistId);
 
-        List<SpotifySong> spotifyPlaylist = playlistService
-                .getPlaylistSongsFromSpotify(playlistId, totalTracks);
-
-        Playlist playlist = playlistService
-                .createPlaylistEntity(playlistId,spotifyPlaylist,request);
-
-        watchlistService
-                .updateWatchlist(playlist);
-
-        queueService.seek(playlist,playlist.getSongs());
-
-        return playlist;
+        return playlistService
+                .createAndGetPlaylistEntity(playlistId,spotifyPlaylistSongs,request);
     }
 
     public boolean isPlaylistInDB(String playlistId){

@@ -73,9 +73,8 @@ export default {
   },
   mounted() {
     this.checkApis();
-    this.$subscribe( (mutation) => {
-      const refresh = mutation.events.key === 'call';
-      if (refresh) {
+    this.$subscribe( (mutation, state) => {
+      if (state.interval.sec === 0) {
         this.checkApis();
       }
     });

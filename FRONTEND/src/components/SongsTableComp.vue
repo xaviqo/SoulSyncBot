@@ -174,9 +174,8 @@ export default {
         this.playlist.songs = [];
       }
     });
-    this.$subscribe( (mutation) => {
-      const refresh = mutation.events.key === 'call';
-      if (refresh) {
+    this.$subscribe( (mutation, state) => {
+      if (state.interval.sec === 0) {
         this.fetchSongs(this.playlist.id);
       }
     });

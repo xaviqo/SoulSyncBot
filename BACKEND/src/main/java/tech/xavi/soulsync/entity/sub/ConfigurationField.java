@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.entity;
+package tech.xavi.soulsync.entity.sub;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.JsonNode;

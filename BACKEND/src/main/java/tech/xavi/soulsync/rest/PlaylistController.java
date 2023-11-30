@@ -9,13 +9,14 @@ import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
 import tech.xavi.soulsync.dto.rest.PlaylistDataTable;
 import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.SongStatus;
+import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.service.rest.AddPlaylistRestService;
 import tech.xavi.soulsync.service.rest.GetPlaylistsRestService;
 
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @RestController
@@ -41,7 +42,7 @@ public class PlaylistController {
     }
 
     @GetMapping(EndPoint.PL_GET_SONGS)
-    public ResponseEntity<List<Song>> getAllPlaylistSongs(@RequestParam String playlistId) {
+    public ResponseEntity<Set<Song>> getAllPlaylistSongs(@RequestParam String playlistId) {
         return new ResponseEntity<>(
                 getPlaylistService.getSongsFromPlaylist(playlistId),
                 HttpStatus.OK

@@ -8,7 +8,7 @@ import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadRequest;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdFile;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
 import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.SoulSyncConfiguration;
+import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 import java.util.ArrayList;

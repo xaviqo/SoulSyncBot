@@ -5,18 +5,26 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.SongStatus;
+import tech.xavi.soulsync.entity.sub.SongStatus;
 
-import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface SongRepository extends JpaRepository<Song, Integer> {
 
-    @Query("SELECT s FROM Song s WHERE s.playlist.spotifyId = :id")
-    List<Song> getSongsByPlaylistId(@Param("id") String spotifyId);
+    Optional<Set<Song>> findByStatus(SongStatus status);
+
+    Optional<Song> findBySpotifyId(String spotifyId);
 
     Song findByFilename(String filename);
 
-    @Query("SELECT count(1) FROM Song s WHERE s.playlist.spotifyId = :id AND s.status = :status")
-    Integer countSongsByStatusByPlaylistId(@Param("id") String spotifyId, @Param("status") SongStatus status);
+    @Query("SELECT count(1) FROM PlaylistSongRelation pls " +
+            "WHERE pls.playlist.spotifyId = :id " +
+            "AND pls.song.status = :status")
+    Integer countSongsByStatusByPlaylistId(
+            @Param("id") String spotifyId,
+            @Param("status") SongStatus status
+    );
+
 }

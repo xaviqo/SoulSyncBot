@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import tech.xavi.soulsync.dto.gateway.GatewayRequest;
 import tech.xavi.soulsync.dto.gateway.slskd.*;
-import tech.xavi.soulsync.entity.SoulSyncConfiguration;
+import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 @Log4j2

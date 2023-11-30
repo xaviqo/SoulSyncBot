@@ -4,6 +4,9 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tech.xavi.soulsync.entity.*;
+import tech.xavi.soulsync.entity.sub.RelocateOption;
+import tech.xavi.soulsync.entity.sub.SongStatus;
+import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
@@ -41,7 +44,7 @@ public class RelocateService {
                 .forEach( playlist -> {
                     String plFolderName = getPlaylistFolderName(playlist);
                     playlist.getSongs().stream()
-                            .filter(song -> song.getStatus().equals(SongStatus.COMPLETED) )
+                            .filter( song -> song.getStatus().equals(SongStatus.COMPLETED) )
                             .forEach( song -> {
                                 String originalFileAndFolder = getFileAndFolder(song.getFilename());
                                 String finalSongName = getSongTitleWithArtists(song);
@@ -136,7 +139,7 @@ public class RelocateService {
     private String getPlaylistFolderName(Playlist playlist){
         String userFilesRoute = getConfiguration().getUserFilesRoute();
         return userFilesRoute
-                +playlist
+                + playlist
                 .getName()
                 .replaceAll(PL_FOLDER_NAME_REGEX, "")
                 .trim()
@@ -146,8 +149,7 @@ public class RelocateService {
 
 
     private String getFileFormat(String fileAndFolders){
-        String[] arr = fileAndFolders
-                .split(SPLIT_BY_FOLDERS_REGEX);
+        String[] arr = fileAndFolders.split(SPLIT_BY_FOLDERS_REGEX);
         if (arr.length > 0) {
             String file = arr[arr.length -1];
             if (file.contains(".")){

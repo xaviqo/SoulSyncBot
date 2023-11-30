@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import tech.xavi.soulsync.entity.ConfigurationField;
-import tech.xavi.soulsync.entity.RelocateOption;
-import tech.xavi.soulsync.entity.SoulSyncConfiguration;
+import tech.xavi.soulsync.entity.sub.ConfigurationField;
+import tech.xavi.soulsync.entity.sub.RelocateOption;
+import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.repository.JsonBackupRepository;
 
 import java.io.IOException;

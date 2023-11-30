@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.entity.ConfigurationField;
-import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.entity.sub.ConfigurationField;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
 
 import java.util.ArrayList;
@@ -20,24 +20,28 @@ public class CfgFieldsService {
 
     private final ObjectMapper mapper;
 
-    public void checkValidFieldValue(ConfigurationField field){
+    public void checkValidFieldValue(ConfigurationField field) {
         JsonNode value = field.getValue();
-        if (field.getType() == ConfigurationField.Type.TEXT) {
-            if (value.isTextual()) return;
-        } else if (field.getType() == ConfigurationField.Type.NUMBER) {
-            if (value.isNumber()) return;
-        } else if (field.getType() == ConfigurationField.Type.ARRAY) {
-            if (value.isArray()) return;
-        } else if (field.getType() == ConfigurationField.Type.BOOLEAN) {
-            if (value.isBoolean()) return;
-        } else if (field.getType() == ConfigurationField.Type.RANGE) {
-            if (isInRange(field)) {
-                return;
-            }
-        } else if (field.getType() == ConfigurationField.Type.SELECT) {
-            if (isSelectOptionPresent(field)) {
-                return;
-            }
+
+        switch (field.getType()) {
+            case TEXT:
+                if (value.isTextual() && value.textValue().length() > 0) {return;}
+                break;
+            case NUMBER:
+                if (value.isNumber()) {return;}
+                break;
+            case ARRAY:
+                if (value.isArray() && value.size() > 0) {return;}
+                break;
+            case BOOLEAN:
+                if (value.isBoolean()) {return;}
+                break;
+            case RANGE:
+                if (isInRange(field)) {return;}
+                break;
+            case SELECT:
+                if (isSelectOptionPresent(field)) {return;}
+                break;
         }
         throw new SoulSyncException(
                 SoulSyncError.FIELD_VALUE_NOT_VALID.buildMessage(

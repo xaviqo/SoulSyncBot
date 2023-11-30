@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.constants.EndPoint;
-import tech.xavi.soulsync.entity.ConfigurationField;
+import tech.xavi.soulsync.entity.sub.ConfigurationField;
 import tech.xavi.soulsync.service.rest.ConfigurationRestService;
 
 import java.util.List;

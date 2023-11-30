@@ -3,7 +3,7 @@ package tech.xavi.soulsync.service.rest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.entity.ConfigurationField;
+import tech.xavi.soulsync.entity.sub.ConfigurationField;
 import tech.xavi.soulsync.service.auth.AccountService;
 import tech.xavi.soulsync.service.configuration.CfgFieldsService;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;

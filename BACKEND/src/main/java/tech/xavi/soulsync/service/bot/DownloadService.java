@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadRequest;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadStatus;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
-import tech.xavi.soulsync.entity.DownloadStatus;
+import tech.xavi.soulsync.entity.sub.DownloadStatus;
 import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.SongStatus;
+import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.auth.AuthService;
@@ -66,7 +66,6 @@ public class DownloadService {
         song.setFilename(null);
         song.setSearchId(null);
         song.setStatus(SongStatus.WAITING);
-        song.addAttempt();
     }
 
     public void updateSongsStatus(){

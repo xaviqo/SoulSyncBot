@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.entity;
+package tech.xavi.soulsync.entity.sub;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,15 +17,18 @@ public enum SoulSyncError {
     CFG_SECTION_NOT_FOUND(702,"Section '%s' is not valid"),
     CFG_FIELD_NOT_FOUND(703,"Field '%s' is not valid"),
     FIELD_VALUE_NOT_VALID(704,"Value '%s' is not valid for field '%s'. %s"),
+/*
+    FIELD_VALUE_IS_EMPTY(705,"The value of field '%s' cannot be empty"),
+*/
 
     GATEWAY_FATAL_ERROR(800,"A fatal error has occurred while calling the %s API"),
     GATEWAY_CALL_ERROR(801,"An error occurred getting a response from the %s API"),
     GATEWAY_JSON_DESERIALIZATION_ERROR(802,"An error occurred while deserializing the JSON response from %s API"),
     SPOTIFY_TOKEN_CALL_ERROR(803,"An error occurred obtaining the Spotify token"),
-    NULL_RESULT_EXCEPTION(804,"Slskd search ID is not available. Possibly expired."),
+    NULL_RESULT_EXCEPTION(804,"Slskd search ID is not available. Possibly expired"),
 
 
-    PLAYLIST_ID_NOT_VALID(900,"The provided spotify playlist is not valid."),
+    PLAYLIST_ID_NOT_VALID(900,"The provided spotify playlist is not valid"),
     PLAYLIST_ALREADY_EXISTS(901,"Playlist '%s' already added in database")
     ;
 

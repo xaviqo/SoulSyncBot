@@ -35,9 +35,7 @@ import ProgressSpinner from "primevue/progressspinner";
 import Dialog from "primevue/dialog";
 
 const emitter = mitt();
-const app  = createApp({
-    render: ()=>h(App)
-});
+const app  = createApp({render: ()=>h(App)});
 
 axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL;
 

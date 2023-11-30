@@ -102,7 +102,7 @@
                 id="chips"
                 v-model="field.value"
             />
-        </span>
+            </span>
           </div>
         </template>
       </div>
@@ -166,6 +166,9 @@ export default {
           icon: 'pi-exclamation-circle',
           severity: 'error'
         });
+        if (err.response.data.code === 704){
+          this.fetchOptions(this.section);
+        }
       })
     },
     reset(){
@@ -173,7 +176,19 @@ export default {
         this.axios.post(`/configuration/reset?section=${this.section.section}`)
             .then( res => {
               this.fields = res.data;
-            }).catch(e => console.log(e))
+              this.emitter.emit('show-alert',{
+                info: 'Section values reset successfully',
+                icon: 'pi-check-circle',
+                severity: 'success'
+              });
+            }).catch(err => {
+              console.log(err)
+              this.emitter.emit('show-alert',{
+                info: err.response.data.message,
+                icon: 'pi-exclamation-circle',
+                severity: 'error'
+              });
+        })
       }
     },
     fetchOptions(section){

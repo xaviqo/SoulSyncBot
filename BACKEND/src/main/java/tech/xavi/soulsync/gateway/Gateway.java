@@ -13,7 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.GatewayRequest;
-import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 
 import java.util.Objects;
 

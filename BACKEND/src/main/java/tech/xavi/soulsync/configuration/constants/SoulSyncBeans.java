@@ -15,7 +15,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
-import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.repository.AccountRepository;
 
 @RequiredArgsConstructor

@@ -9,14 +9,16 @@ import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
-import tech.xavi.soulsync.entity.*;
+import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.sub.SongStatus;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
+import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.auth.AuthService;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,8 +33,8 @@ public class PlaylistService {
     private final SpotifyGateway spotifyGateway;
     private final AuthService authService;
     private final SearchService searchService;
-    private final QueueService queueService;
     private final PlaylistRepository playlistRepository;
+    private final SongRepository songRepository;
 
 
     public PlaylistService(
@@ -40,41 +42,45 @@ public class PlaylistService {
             SpotifyGateway spotifyGateway,
             AuthService authService,
             SearchService searchService,
-            QueueService queueService,
-            PlaylistRepository playlistRepository
+            PlaylistRepository playlistRepository,
+            SongRepository songRepository
     ) {
         this.PL_REQ_LIMIT_VALUE = limitVal;
         this.spotifyGateway = spotifyGateway;
         this.authService = authService;
         this.searchService = searchService;
-        this.queueService = queueService;
         this.playlistRepository = playlistRepository;
+        this.songRepository = songRepository;
     }
 
-    public Playlist createPlaylistEntity(String playlistId, List<SpotifySong> spotifyPlaylist, AddPlaylistReq request){
+    public Playlist createAndGetPlaylistEntity(String playlistId, List<SpotifySong> spotifyPlaylist, AddPlaylistReq request) {
         Playlist playlist = Playlist.builder()
                 .spotifyId(playlistId)
                 .cover(getCover(playlistId))
                 .name(getName(playlistId))
                 .updatable(request.update())
                 .lastUpdate(System.currentTimeMillis())
-                .avoidDuplicates(request.avoidDuplicates())
+                .added(System.currentTimeMillis())
                 .build();
-
-        if (request.avoidDuplicates()) {
-            spotifyPlaylist = new ArrayList<>(spotifyPlaylist.stream()
-                    .collect(Collectors.toMap(SpotifySong::getId, song -> song, (existing, replacement) -> existing))
-                    .values());
-        }
-
-        Set<Song> songList = spotifyPlaylist.stream()
-                .map( spotifySong -> convertToEntitySong(spotifySong,playlist))
-                .filter(song -> song.getSearchInput() != null && !song.getSearchInput().isEmpty())
-                .collect(Collectors.toSet());;
-
-        playlist.setSongs(songList);
-        playlist.setLastTotalTracks(songList.size());
+        playlistRepository.save(playlist);
+        addSongs(playlist,spotifyPlaylist);
         return playlist;
+    }
+
+    public void addSongs(Playlist playlist, List<SpotifySong> spotifyPlaylist){
+        spotifyPlaylist.stream()
+                .collect(Collectors
+                        .toMap(
+                                SpotifySong::getId,
+                                this::getOrCreateSong,
+                                (existing, replace) -> existing)
+                )
+                .values()
+                .stream()
+                .filter(song -> song.getSearchInput() != null && !song.getSearchInput().isEmpty())
+                .forEach(playlist::addSong);
+        playlist.setLastTotalTracks(playlist.getSongs().size());
+        playlistRepository.save(playlist);
     }
 
     public void updatePlaylistsFromSpotify() {
@@ -95,8 +101,7 @@ public class PlaylistService {
                 .ifPresent( storedPlaylist -> {
                     updatePlaylistName(storedPlaylist);
                     if (storedPlaylist.isUpdatable()) {
-                        int totalTracks = getTotalTracks(playlistId);
-                        List<SpotifySong> updatedPl = getPlaylistSongsFromSpotify(playlistId,totalTracks);
+                        List<SpotifySong> updatedPl = getPlaylistSongsFromSpotify(playlistId);
                         updatedPl.forEach( spotifySong -> {
                             if (!playlistAlreadyContainsSong(storedPlaylist,spotifySong)) {
                                 hasNewSongs.set(true);
@@ -104,7 +109,7 @@ public class PlaylistService {
                                         storedPlaylist.getName(),
                                         spotifySong.getName() + " - " + spotifySong.getFirstArtist()
                                 );
-                                storedPlaylist.getSongs().add(convertToEntitySong(spotifySong,storedPlaylist));
+                                storedPlaylist.getSongs().add(getOrCreateSong(spotifySong));
                             }
                         });
                         if (hasNewSongs.get()) {
@@ -162,8 +167,8 @@ public class PlaylistService {
                 .url();
     }
 
-    public List<SpotifySong> getPlaylistSongsFromSpotify(String playlistId, int totalTracks) {
-        return joinAllFutures(fetchPlaylistDataAsync(playlistId, totalTracks));
+    public List<SpotifySong> getPlaylistSongsFromSpotify(String playlistId) {
+        return joinAllFutures(fetchPlaylistDataAsync(playlistId));
     }
 
     private List<SpotifySong> joinAllFutures(List<CompletableFuture<List<SpotifySong>>> futures) {
@@ -173,7 +178,8 @@ public class PlaylistService {
                 .toList();
     }
 
-    private List<CompletableFuture<List<SpotifySong>>> fetchPlaylistDataAsync(String playlistId, int totalTracks) {
+    private List<CompletableFuture<List<SpotifySong>>> fetchPlaylistDataAsync(String playlistId) {
+        int totalTracks = getTotalTracks(playlistId);
         return IntStream.range(0, (totalTracks + PL_REQ_LIMIT_VALUE - 1) / PL_REQ_LIMIT_VALUE)
                 .mapToObj(index -> CompletableFuture.supplyAsync(() -> fetchPlaylistFromSpotify(playlistId, index * PL_REQ_LIMIT_VALUE)))
                 .toList();
@@ -188,23 +194,42 @@ public class PlaylistService {
                 .toList();
     }
 
-    private Song convertToEntitySong(SpotifySong spotifySong, Playlist playlist) {
+    private Song getOrCreateSong(SpotifySong spotifySong) {
+        return songRepository.findBySpotifyId(spotifySong.getId())
+                .orElseGet( () -> createSong(spotifySong));
+    }
+
+    private Song createSong(SpotifySong spotifySong){
         String searchInput = searchService
                 .getSongSearchInputForSlskd(spotifySong);
-        return Song.builder()
+        Song song = Song.builder()
                 .searchId(UUID.randomUUID())
                 .name(spotifySong.getName())
                 .artists(String.join(ConfigurationFinals.ARTIST_DIVIDER,spotifySong.getArtists()))
                 .searchInput(searchInput)
-                .playlist(playlist)
                 .spotifyId(spotifySong.getId())
                 .status(SongStatus.WAITING)
+                .attempts(0)
                 .lastCheck(0)
+                .added(System.currentTimeMillis())
                 .build();
+        songRepository.save(song);
+        return song;
     }
 
-    public PlaylistStatus getPlaylistQueueStatus(String playlistId){
-        return queueService.getPlaylistQueueStatus(playlistId);
+    public void updateSongStatus(Song song){
+        log.debug("[updateSongStatus] - Song is saved in DB: {}",song.getSearchInput());
+        songRepository.save(song);
+    }
+
+    public void savePlaylist(Playlist playlist){
+        log.debug("[savePlaylist] - Playlist is saved in DB: {}",playlist.toString());
+        playlistRepository.save(playlist);
+    }
+
+    public Playlist getPlaylistById(String playlistId){
+        return playlistRepository.findBySpotifyId(playlistId)
+                .orElse(new Playlist());
     }
 
 }

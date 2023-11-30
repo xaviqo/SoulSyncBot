@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
-import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
 
 import java.io.File;
@@ -46,7 +46,10 @@ public class JsonBackupRepository<T> {
             }
             objectMapper.writeValue(this.DB,jsonNode);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SoulSyncException(
+                    SoulSyncError.ERROR_READING_JSON_CFG,
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
         }
         loadData();
     }

@@ -9,7 +9,7 @@ import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.rest.AccountRequest;
 import tech.xavi.soulsync.dto.rest.SignInResponse;
 import tech.xavi.soulsync.entity.Account;
-import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.repository.AccountRepository;
 
 import static tech.xavi.soulsync.configuration.constants.ConfigurationFinals.DEFAULT_ADMIN_PASS;

@@ -4,8 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
+import tech.xavi.soulsync.entity.sub.SongStatus;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 @AllArgsConstructor
@@ -14,9 +17,8 @@ import java.util.UUID;
 @Getter @Setter
 @Builder
 public class Song {
-    @Id @GeneratedValue
-    int id;
-    @Column
+
+    @Id @Column
     String spotifyId;
     @Column
     String name;
@@ -33,15 +35,17 @@ public class Song {
     String filename;
     @Column
     long size;
+    @Builder.Default
     @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "playlist_id")
-    Playlist playlist;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "song")
+    Set<PlaylistSongRelation> playlist = new HashSet<>();
     @Builder.Default
     @Column
     int attempts = 1;
     @Column
     long lastCheck;
+    @Column
+    long added;
 
     public void addAttempt(){
         this.setAttempts(this.getAttempts()+1);
@@ -54,8 +58,7 @@ public class Song {
     @Override
     public String toString() {
         return "Song{" +
-                "id=" + id +
-                ", spotifyId='" + spotifyId + '\'' +
+                " spotifyId='" + spotifyId + '\'' +
                 ", name='" + name + '\'' +
                 ", searchInput='" + searchInput + '\'' +
                 ", searchId=" + searchId +

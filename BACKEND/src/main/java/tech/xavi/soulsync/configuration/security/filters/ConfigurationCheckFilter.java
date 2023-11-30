@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
 import tech.xavi.soulsync.dto.rest.ApiErrorPayload;
-import tech.xavi.soulsync.entity.SoulSyncError;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
 import java.io.IOException;

@@ -67,9 +67,8 @@ export default {
         this.playlist.stats = null;
       }
     })
-    this.$subscribe( (mutation) => {
-      const refresh = mutation.events.key === 'call';
-      if (refresh && this.playlist.id) {
+    this.$subscribe( (mutation, state) => {
+      if (state.interval.sec === 0) {
         this.fetchStats(this.playlist.id);
       }
     });

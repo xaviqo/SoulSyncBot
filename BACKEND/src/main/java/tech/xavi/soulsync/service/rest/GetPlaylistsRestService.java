@@ -3,17 +3,13 @@ package tech.xavi.soulsync.service.rest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.rest.PlaylistDataTable;
-import tech.xavi.soulsync.entity.PlaylistStatus;
 import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.SongStatus;
+import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.bot.PlaylistService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -23,9 +19,8 @@ public class GetPlaylistsRestService {
     private final SongRepository songRepository;
     private final PlaylistService playlistService;
 
-    public List<Song> getSongsFromPlaylist(String playlistId){
-        return songRepository
-                .getSongsByPlaylistId(playlistId);
+    public Set<Song> getSongsFromPlaylist(String playlistId){
+        return playlistService.getPlaylistById(playlistId).getSongs();
     }
 
     public List<PlaylistDataTable> getDataTablePlaylistsInfo(){
@@ -36,9 +31,6 @@ public class GetPlaylistsRestService {
                     int totalCompletedOrCopied =
                             getTotalSongsByStatus(pl.getSpotifyId(),SongStatus.COMPLETED)
                                     + getTotalSongsByStatus(pl.getSpotifyId(),SongStatus.COPIED);
-                    PlaylistStatus status = (totalCompletedOrCopied >= pl.getLastTotalTracks())
-                            ? PlaylistStatus.COMPLETED
-                            : playlistService.getPlaylistQueueStatus(pl.getSpotifyId());
                     playlists.add(
                             PlaylistDataTable
                                     .builder()
@@ -47,7 +39,6 @@ public class GetPlaylistsRestService {
                                     .cover(pl.getCover())
                                     .lastUpdate(pl.getLastUpdate())
                                     .total(pl.getLastTotalTracks())
-                                    .status(status)
                                     .totalSucceeded(totalCompletedOrCopied)
                                     .build()
                     );
@@ -58,10 +49,8 @@ public class GetPlaylistsRestService {
     public Map<SongStatus,Integer> getAllStatusByPlaylistId(String playlistId){
         Map<SongStatus,Integer> playlistStatus = new HashMap<>();
         for (SongStatus status : SongStatus.values()) {
-            playlistStatus.put(
-                    status,
-                    getTotalSongsByStatus(playlistId,status)
-            );
+            int statusTotal = getTotalSongsByStatus(playlistId,status);
+            playlistStatus.put(status, statusTotal);
         }
         return playlistStatus;
     }

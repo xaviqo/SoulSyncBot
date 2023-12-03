@@ -10,10 +10,7 @@ import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -56,6 +53,7 @@ public class QueueService {
             activeProcesses.add(process);
             process.start();
         }
+        log.debug("[initProcesses] A total of '{}' simultaneous processes are ready:",simultaneousProcesses);
     }
 
     private void doProcess(Song song) {
@@ -77,8 +75,9 @@ public class QueueService {
         songIdsQueue.remove(song.getSpotifyId());
     }
 
-    public void stopProcesses(){
+    public void rebootProcesses(){
         activeProcesses.forEach(Thread::interrupt);
+        this.initProcesses();
     }
 
     public void updateQueue(){
@@ -93,6 +92,10 @@ public class QueueService {
                                 if (!isInQueue) addSongToQueue(song);
                             });
                 });
+    }
+
+    public Set<String> getSongsInQueueIds(){
+        return songIdsQueue;
     }
 
     private void addSongToQueue(Song song){

@@ -51,14 +51,19 @@ public class RunningTaskService {
         log.debug("[configureTask] - Interval between tasks has been updated: {} minutes",interval);
     }
 
-    protected void runScheduledTask(){
-        log.debug("[runScheduledTask] - Task started");
-        queueService.printQueueStatus();
-        downloadService.updateSongsStatus();
-        playlistService.updatePlaylistsFromSpotify();
-        queueService.updateQueue();
-        relocateService.moveFinishedPlaylistsSongs();
-        log.debug("[runScheduledTask] - Task finished");
+    public void runScheduledTask(){
+        //log.debug("[runScheduledTask] - Task started");
+        //queueService.printQueueStatus();
+        //downloadService.updateSongsStatus();
+        //playlistService.updatePlaylistsFromSpotify();
+        //queueService.updateQueue();
+        //relocateService.moveFinishedPlaylistsSongs();
+        //log.debug("[runScheduledTask] - Task finished");
+    }
+
+    public void rebootScheduledTask(){
+        scheduledTask.cancel(true);
+        configureTask();
     }
 
     private SoulSyncConfiguration.App getConfiguration(){

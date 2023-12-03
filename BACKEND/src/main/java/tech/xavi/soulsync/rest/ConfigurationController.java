@@ -2,6 +2,7 @@ package tech.xavi.soulsync.rest;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.constants.EndPoint;
@@ -36,5 +37,10 @@ public class ConfigurationController {
         return ResponseEntity.ok(cfgRestService.getFieldsBySection(section));
     }
 
+    @PostMapping(EndPoint.CFG_REBOOT_BOT)
+    public ResponseEntity<?> reboot(){
+        cfgRestService.rebootBot();
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
 
 }

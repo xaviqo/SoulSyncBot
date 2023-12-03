@@ -7,8 +7,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import tech.xavi.soulsync.service.auth.AccountService;
-import tech.xavi.soulsync.service.configuration.HealthService;
-import tech.xavi.soulsync.service.rest.ConfigurationRestService;
 
 @EnableScheduling
 @Log4j2
@@ -16,21 +14,16 @@ import tech.xavi.soulsync.service.rest.ConfigurationRestService;
 @SpringBootApplication
 public class SoulSyncApplication implements CommandLineRunner {
 
-	private final HealthService healthService;
 	private final AccountService accountService;
-	private final ConfigurationRestService configurationRestService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SoulSyncApplication.class, args);
 	}
 
 	@Override
-	public void run(String... args){
+	public void run(String... args) {
 		accountService.createDefaultAdmin();
 		printSplashScreen();
-		configurationRestService.checkApisConfiguration(
-				healthService.initLogCheck()
-		);
 	}
 	private void printSplashScreen(){
 		log.info("    ________  __  ____   _____  ___  _______");

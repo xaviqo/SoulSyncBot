@@ -43,24 +43,4 @@ public class HealthService {
         return allTrue;
     }
 
-    public Map<String,Boolean> initLogCheck(){
-        Map<String,Boolean> apisStatus = getHealthStatus();
-        log.info(
-                "[healthCheck] - SLSKD API CONNECTION CHECK ----> {}",
-                apisStatus.get("spotify-response") ? "SUCCESS" : "FAILED"
-        );
-        log.info(
-                "[healthCheck] - SLSKD API CREDENTIALS CHECK ----> {}",
-                apisStatus.get("spotify-cfg-ok") ? "SUCCESS" : "FAILED"
-        );
-        log.info(
-                "[healthCheck] - SPOTIFY API CONNECTION CHECK ----> {}",
-                apisStatus.get("slskd-response") ? "SUCCESS" : "FAILED"
-        );
-        log.info(
-                "[healthCheck] - SPOTIFY API CREDENTIALS CHECK ----> {}",
-                apisStatus.get("slskd-cfg-ok") ? "SUCCESS" : "FAILED"
-        );
-        return apisStatus;
-    }
 }

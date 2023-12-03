@@ -6,26 +6,12 @@
           <div class="w-2rem h-2rem surface-50 border-1 border-black-alpha-90 flex align-items-center justify-content-center mr-3">
             <i class="pi pi-chevron-right" style="font-size: 1.2rem"></i>
           </div>
-          <div class="flex align-items-center">
+          <div class="hidden md:flex align-items-center">
             Add new playlist
           </div>
         </div>
         <div class="col font-normal text-base pt-3">
-          <div class="card flex flex-wrap justify-content-center gap-3">
-            <div class="flex align-items-center pr-2">
-              <Button
-                  icon="pi pi-info"
-                  severity="secondary"
-                  rounded
-                  text
-                  size="small"
-                  v-tooltip.left="info.avoidDuplicates"
-                  style="width: .6rem; height: 1rem; cursor: default"
-                  class="mr-1"
-              />
-              <Checkbox v-model="payload.avoidDuplicates" inputId="ingredient1" binary />
-              <label for="ingredient1" class="ml-2"> Avoid duplicates </label>
-            </div>
+          <div class="card flex flex-wrap justify-content-end gap-3">
             <div class="flex align-items-center">
               <Button
                   icon="pi pi-info"
@@ -34,7 +20,7 @@
                   text
                   size="small"
                   v-tooltip.left="info.update"
-                  style="width: .6rem; height: 1rem; cursor: default"
+                  style="width: .6rem; height: 1rem; cursor: default;"
                   class="mr-1"
               />
               <Checkbox v-model="payload.update" inputId="ingredient2" binary />

@@ -21,7 +21,6 @@ public class SoulSyncConfiguration {
 
     @Builder @Data @AllArgsConstructor @NoArgsConstructor
     public static class Api {
-        boolean isConfigured;
         String spotifyClientId;
         String spotifyClientSecret;
         String slskdUsername;

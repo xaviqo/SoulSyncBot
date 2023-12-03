@@ -3,6 +3,7 @@ package tech.xavi.soulsync.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import tech.xavi.soulsync.entity.sub.PlaylistType;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +22,9 @@ public class Playlist{
     String name;
     @Column
     String cover;
+    @Enumerated(EnumType.STRING)
+    @Column
+    PlaylistType type;
     @JsonIgnore
     @Builder.Default
     @OneToMany(mappedBy = "playlist", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -63,4 +67,5 @@ public class Playlist{
                 ", updatable=" + updatable +
                 '}';
     }
+
 }

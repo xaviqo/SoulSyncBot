@@ -33,6 +33,9 @@ import InputSwitch from "primevue/inputswitch";
 import InputNumber from "primevue/inputnumber";
 import ProgressSpinner from "primevue/progressspinner";
 import Dialog from "primevue/dialog";
+import ConfirmPopup from "primevue/confirmpopup";
+import ConfirmationService from 'primevue/confirmationservice';
+import Chart from 'primevue/chart';
 
 const emitter = mitt();
 const app  = createApp({render: ()=>h(App)});
@@ -86,6 +89,8 @@ app
     .component('Chips',Chips)
     .component('ProgressSpinner',ProgressSpinner)
     .component('Dialog',Dialog)
+    .component('ConfirmPopup',ConfirmPopup)
+    .component('Chart',Chart)
 
 app.directive('tooltip', Tooltip)
 
@@ -93,6 +98,7 @@ app
     .use(createPinia())
     .use(Vue3Mq,{preset: 'vuetify'})
     .use(PrimeVue)
+    .use(ConfirmationService)
     .use(router)
     .use(VueAxios, axios)
     .mount('#app')

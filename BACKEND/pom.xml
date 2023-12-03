@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>tech.xavi</groupId>
 	<artifactId>soulsync</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-Beta</version>
 	<name>soulsync</name>
 	<description>soulsync</description>
 	<properties>

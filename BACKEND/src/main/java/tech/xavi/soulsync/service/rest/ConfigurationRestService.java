@@ -2,27 +2,35 @@ package tech.xavi.soulsync.service.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.sub.ConfigurationField;
 import tech.xavi.soulsync.service.auth.AccountService;
+import tech.xavi.soulsync.service.bot.QueueService;
+import tech.xavi.soulsync.service.bot.RunningTaskService;
 import tech.xavi.soulsync.service.configuration.CfgFieldsService;
 import tech.xavi.soulsync.service.configuration.ConfigurationService;
 import tech.xavi.soulsync.service.configuration.HealthService;
 
 import java.util.*;
 
+@Log4j2
 @Service
 public class ConfigurationRestService {
     private final Map<ConfigurationField.Section,List<ConfigurationField>> CONFIGURATION_FIELDS;
     private final CfgFieldsService fieldsService;
     private final HealthService healthService;
     private final AccountService accountService;
+    private final QueueService queueService;
+    private final RunningTaskService runningTaskService;
     private final ObjectMapper objectMapper;
 
     public ConfigurationRestService(
             CfgFieldsService fieldsService,
             HealthService healthService,
             AccountService accountService,
+            QueueService queueService,
+            RunningTaskService runningTaskService,
             ObjectMapper objectMapper
     ) {
         Map<ConfigurationField.Section,List<ConfigurationField>> fieldsBySection = new HashMap<>();
@@ -33,7 +41,15 @@ public class ConfigurationRestService {
         this.fieldsService = fieldsService;
         this.healthService = healthService;
         this.accountService = accountService;
+        this.queueService = queueService;
+        this.runningTaskService = runningTaskService;
         this.objectMapper = objectMapper;
+    }
+
+    public void rebootBot(){
+        queueService.rebootProcesses();
+        runningTaskService.rebootScheduledTask();
+        log.debug("[rebootBot] - Processes and scheduled tasks are stopped and restarted");
     }
 
     public List<?> saveConfiguration(String sectionStr, List<Map<String,Object>> configValues) {

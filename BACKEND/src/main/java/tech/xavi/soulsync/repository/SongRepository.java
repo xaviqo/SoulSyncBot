@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.sub.SongStatus;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -17,7 +18,8 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
 
     Optional<Song> findBySpotifyId(String spotifyId);
 
-    Song findByFilename(String filename);
+    @Query("FROM Song s WHERE s.filename = :filename")
+    List<Song> findSongsByFilename(@Param("filename") String filename);
 
     @Query("SELECT count(1) FROM PlaylistSongRelation pls " +
             "WHERE pls.playlist.spotifyId = :id " +

@@ -38,9 +38,6 @@ public class ConfigurationService {
         return SoulSyncConfigurationServiceHolder.INSTANCE;
     }
 
-    public static boolean isSoulSyncConfigured(){
-        return ConfigurationService.instance().cfg().api().isConfigured();
-    }
 
     public SoulSyncConfiguration cfg(){
         return currentConfiguration.get();
@@ -111,7 +108,6 @@ public class ConfigurationService {
         switch (section){
             case API -> {
                 return SoulSyncConfiguration.Api.builder()
-                        .isConfigured(false)
                         .spotifyClientId(getProperty("api.spotify","client-id", String.class))
                         .spotifyClientSecret(getProperty("api.spotify","client-secret", String.class))
                         .slskdUsername(getProperty("api.slskd","username", String.class))

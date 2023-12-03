@@ -25,6 +25,8 @@ public interface PlaylistRepository extends JpaRepository<Playlist, String> {
             "p.spotifyId as spotifyId, " +
             "p.name as name, " +
             "p.cover as cover, " +
+            "p.type as type, " +
+            "p.added as added, " +
             "p.lastTotalTracks as lastTotalTracks, " +
             "p.lastUpdate as lastUpdate, " +
             "p.updatable as updatable " +

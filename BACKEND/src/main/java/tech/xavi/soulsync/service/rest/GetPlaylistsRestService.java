@@ -37,6 +37,8 @@ public class GetPlaylistsRestService {
                                     .name(pl.getName())
                                     .id(pl.getSpotifyId())
                                     .cover(pl.getCover())
+                                    .added(pl.getAdded())
+                                    .type(pl.getType())
                                     .lastUpdate(pl.getLastUpdate())
                                     .total(pl.getLastTotalTracks())
                                     .totalSucceeded(totalCompletedOrCopied)

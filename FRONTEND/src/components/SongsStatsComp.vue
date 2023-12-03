@@ -1,8 +1,8 @@
 <template>
-  <div class="border-1 border-black-alpha-90 shadow-2 w-full mt-1">
+  <div class="border-1 border-black-alpha-90 shadow-2 w-full m-2">
     <div class="w-full flex flex-wrap justify-content-evenly">
       <div class="col flex flex-wrap"
-           v-for="(value, name) in playlist.stats" :key="name"
+           v-for="(value, name) in stats" :key="name"
       >
         <div class="w-full">
           <strong>{{ capitalize(name) }}</strong>
@@ -36,7 +36,7 @@ export default {
             { params: { playlistId } }
         )
             .then( res => {
-              this.playlist.stats = res.data;
+              this.stats = res.data;
             })
             .catch( e => console.log(e))
       }
@@ -46,35 +46,29 @@ export default {
     }
   },
   data: () => ({
-    playlist: {
-      id: null,
-      name: '',
-      lastUpdate: 0,
-      total: 0,
-      stats: null,
-    }
+    stats: null
   }),
   created() {
-    this.emitter.on('load-stats', playlist => {
-      if (playlist != null) {
-        const { id, name, lastUpdate, total } = playlist;
-        this.playlist.name = name;
-        this.playlist.lastUpdate = lastUpdate;
-        this.playlist.id = id;
-        this.total = total;
-        this.fetchStats(id);
-      } else {
-        this.playlist.stats = null;
-      }
-    })
     this.$subscribe( (mutation, state) => {
       if (state.interval.sec === 0) {
-        this.fetchStats(this.playlist.id);
+        this.fetchStats(this.playlistId);
       }
     });
   },
   computed: {
     ...mapState(useUserCfgStore, ['isApiAlive','$subscribe'])
+  },
+  props: {
+    playlistId: String,
+    total: Number
+  },
+  watch: {
+    playlistId: {
+      handler(id){
+        this.fetchStats(id);
+      },
+      immediate: true
+    }
   }
 }
 </script>

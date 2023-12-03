@@ -43,8 +43,8 @@ spring:
   jpa:
     hibernate:
       #ddl-auto: validate
-      #ddl-auto: update
-      ddl-auto: create-drop
+      ddl-auto: update
+      #ddl-auto: create-drop
   security:
     user:
       password: none
@@ -57,4 +57,4 @@ logging:
           databind: DEBUG
     org:
       hibernate:
-        SQL: DEBUG
+        SQL: INFO

@@ -94,16 +94,30 @@ public class DownloadService {
         List<Song> songsToBeRestarted = new ArrayList<>();
         directories.forEach( dir -> {
             dir.getFiles().forEach( file -> {
-                Song song = songRepository.findByFilename(file.getFilename());
-                if (song != null) {
-                    if (file.getState().contains(DownloadStatus.SUCCEDED.getProgress())) {
-                        song.setStatus(SongStatus.COMPLETED);
-                        songRepository.save(song);
-                    } else if (!file.getState().contains(DownloadStatus.QUEDED.getProgress())) {
-                        songsToBeRestarted.add(song);
-                        deleteDownload(username,file.getId());
-                    }
+                List<Song> songs = songRepository.findSongsByFilename(file.getFilename());
+                boolean moreThanOneSongLinked = songs.size() > 1;
+                if (moreThanOneSongLinked) {
+                    log.warn("[updateSongsStatus] - A total of {} songs (with different Spotify IDs) " +
+                            "have been found with the same linked file",songs.size());
+                    log.warn("[updateSongsStatus] - File: {}",file.getFilename());
                 }
+                songs.forEach( song -> {
+                    if (song != null) {
+                        if (moreThanOneSongLinked) {
+                            log.warn("[updateSongsStatus] - Song with same file: {} - {}",
+                                    song.getName(),
+                                    song.getArtists()[0]
+                            );
+                        }
+                        if (file.getState().contains(DownloadStatus.SUCCEDED.getProgress())) {
+                            song.setStatus(SongStatus.COMPLETED);
+                            songRepository.save(song);
+                        } else if (!file.getState().contains(DownloadStatus.QUEDED.getProgress())) {
+                            songsToBeRestarted.add(song);
+                            deleteDownload(username,file.getId());
+                        }
+                    }
+                });
             });
         });
         return songsToBeRestarted;

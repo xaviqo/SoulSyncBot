@@ -16,9 +16,11 @@
       >
         <span class="mr-2">{{ message.info }}</span>
       </Message>
-      <div class="w-full p-2" style="max-width: 1350px">
-        <router-view/>
-      </div>
+      <main class="w-full flex justify-content-center">
+        <div class="flex flex-wrap justify-content-center" style="max-width: 1250px">
+          <router-view/>
+        </div>
+      </main>
     </div>
   </div>
 </template>

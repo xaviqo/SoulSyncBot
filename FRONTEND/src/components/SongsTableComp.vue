@@ -1,39 +1,38 @@
 <template>
-  <SongsStatsComp
-      v-show="playlist.songs.length > 1"
-  />
-  <div class="border-1 border-black-alpha-90 shadow-2 w-full mt-1">
-    <div
-        v-if="playlist.songs.length < 1"
-        class="text-xl bg-white text-gray-700 py-2 w-full text-center"
-    >
-      Choose a playlist to check the song statuses
+  <div class="w-full border-1 bg-white p-2 border-black-alpha-90 shadow-2 m-2">
+    <div class="flex justify-content-between">
+      <div class="flex">
+        <div class="ml-2 w-2rem h-2rem surface-50 border-1 border-black-alpha-90 flex align-items-center justify-content-center mr-3">
+          <i class="pi pi-list" style="font-size: 1.2rem"></i>
+        </div>
+        <div class="flex align-items-center text-xl font-bold">
+          Songs from {{ playlist.name }}
+        </div>
+      </div>
+      <div class="flex align-items-center">
+        <Button
+            @click="goBack()"
+            label="Explore Playlists"
+            icon="pi pi-chevron-left"
+        />
+      </div>
     </div>
+  </div>
+  <div class="border-1 border-black-alpha-90 shadow-2 w-full m-2">
     <DataTable
-        v-else
         :value="playlist.songs"
         class="p-datatable-sm"
         showGridlines
         paginator
-        :rows="5"
+        :rows="10"
         :rowsPerPageOptions="[5, 10, 20, 50]"
     >
-      <template #header>
-        <div class="flex flex-wrap align-items-center justify-content-between gap-2" v-if="playlist.lastUpdate > 0">
-          <span class="text-xl text-900 font-bold">Songs from {{ playlist.name }}</span>
-          <span>
-          <i class="pi pi-calendar mr-1" style="color: #708090"></i>
-          <strong class="mr-2">Last Update:</strong>
-          <span class="text-gray-500">{{ getTimestampFormatted(playlist.lastUpdate) }}</span>
-        </span>
-        </div>
-      </template>
       <Column header="Name" sortable>
         <template #body="slotProps">
           <strong>{{ slotProps.data.name }}</strong>
         </template>
       </Column>
-      <Column header="Artists" sortable>
+      <Column header="Artists">
         <template #body="slotProps">
           <Dropdown
               :options="slotProps.data.artists"
@@ -44,7 +43,7 @@
       </Column>
       <Column field="searchInput" header="Search" sortable>
       </Column>
-      <Column header="Status" sortable>
+      <Column field="status" header="Status" sortable>
         <template #body="slotProps">
           <div class="w-full flex justify-content-center align-items-center">
             <Button
@@ -56,7 +55,7 @@
           </div>
         </template>
       </Column>
-      <Column header="File" style="max-width: 20%" sortable>
+      <Column field="file" header="File" style="max-width: 20%" sortable>
         <template #body="slotProps">
         <span v-if="slotProps.data.filename">
           {{ getFile(slotProps.data.filename)  }}
@@ -66,7 +65,7 @@
         </span>
         </template>
       </Column>
-      <Column header="Size" style="width: 12%" sortable>
+      <Column field="size" header="Size" style="width: 12%" sortable>
         <template #body="slotProps">
           <div v-if="slotProps.data.size">
             {{ fromBytesToMB(slotProps.data.size)+'MB'  }}
@@ -76,7 +75,7 @@
         </span>
         </template>
       </Column>
-      <Column header="Last Check" sortable>
+      <Column field="lastCheck" header="Last Check" sortable>
         <template #body="slotProps">
           <span>
             {{ getElapsedTime(slotProps.data.lastCheck) }}
@@ -88,28 +87,42 @@
       <template #footer> <strong>Total: </strong>{{ playlist.songs.length }} songs. </template>
     </DataTable>
   </div>
+  <SongsStatsComp
+      :playlist-id="playlist.id"
+      :total="playlist.songs.length"
+  />
 </template>
 <script>
 import {mapState} from "pinia";
 import {useUserCfgStore} from "@/store/UserCfg";
-import SongsStatsComp from "@/components/SongsStatsComp.vue";
 import SongStatusIcons from "@/models/SongStatusIcons";
 import SongStatusSeverity from "@/models/SongStatusSeverity";
+import {soulmixin} from "@/mixins/soulmixin";
+import {FilterMatchMode, FilterOperator} from "primevue/api";
+import SongsStatsComp from "@/components/SongsStatsComp.vue";
 
 export default {
   name: "SongsTableComp",
   components: {SongsStatsComp},
+  mixins: [soulmixin],
+  props: {
+    plProp: Object
+  },
+  watch: {
+    plProp:  {
+      handler(newPl){
+        this.playlist = {
+          name: newPl.name,
+          lastUpdate: newPl.lastUpdate,
+          id: newPl.id,
+          songs: []
+        };
+        this.fetchSongs(newPl.id);
+      },
+      immediate: true
+    }
+  },
   methods: {
-    getTimestampFormatted(timestamp){
-      const date = new Date(timestamp);
-      const year = date.getFullYear();
-      const month = date.getMonth() + 1; // Los meses se cuentan desde 0 (enero) hasta 11 (diciembre)
-      const day = date.getDate();
-      const hours = date.getHours();
-      const minutes = date.getMinutes();
-      const seconds = date.getSeconds();
-      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    },
     getStatusIcon(status){
       return 'pi '+SongStatusIcons[status];
     },
@@ -139,18 +152,8 @@ export default {
         .catch( e => console.log(e))
       }
     },
-    getElapsedTime(timestamp) {
-      if (timestamp < 1) return 'Never';
-      const now = new Date();
-      const elapsedTimeInMilliseconds = now - timestamp;
-      const elapsedMinutes = Math.floor(elapsedTimeInMilliseconds / (1000 * 60));
-      if (elapsedMinutes < 1) {
-        return '< 1 min';
-      } else if (elapsedMinutes === 1) {
-        return '1 min';
-      } else {
-        return `${elapsedMinutes} mins`;
-      }
+    goBack(){
+      this.emitter.emit('load-songs', null);
     }
   },
   data: () => ({
@@ -159,21 +162,16 @@ export default {
       name: '',
       lastUpdate: 0,
       songs: []
+    },
+    filters: {
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+      name: { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+      'country.name': { operator: FilterOperator.AND, constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }] },
+      representative: { value: null, matchMode: FilterMatchMode.IN },
+      status: { operator: FilterOperator.OR, constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }] }
     }
   }),
   created() {
-    this.emitter.on('load-songs', playlist => {
-      if (playlist != null) {
-        this.emitter.emit('load-stats', playlist);
-        const { id, name, lastUpdate } = playlist;
-        this.playlist.name = name;
-        this.playlist.lastUpdate = lastUpdate;
-        this.playlist.id = id;
-        this.fetchSongs(id);
-      } else {
-        this.playlist.songs = [];
-      }
-    });
     this.$subscribe( (mutation, state) => {
       if (state.interval.sec === 0) {
         this.fetchSongs(this.playlist.id);

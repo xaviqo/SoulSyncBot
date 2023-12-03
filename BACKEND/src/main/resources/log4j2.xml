@@ -6,7 +6,7 @@
                     pattern="%-30d %p [%t] %-30.30C: %msg%n%throwable" />
         </Console>
 
-        <RollingFile name="File" fileName="./logs/soulsync-log.log" filePattern="./logs/soulsync-%d{-dd-MMMM-yyyy}-%i.log.gz">
+        <RollingFile name="File" fileName="logs/soulsync-log.log" filePattern="./logs/soulsync-%d{-dd-MMMM-yyyy}-%i.log.gz">
             <PatternLayout>
                 <pattern>%d %p [%t] %C: %msg%n%throwable</pattern>
             </PatternLayout>

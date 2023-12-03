@@ -1,5 +1,6 @@
 <template>
   <div class="w-full border-1 bg-white p-2 border-black-alpha-90 shadow-2 mt-2">
+    <ConfirmPopup></ConfirmPopup>
     <div class="flex justify-content-between">
       <div class="flex">
         <div class="w-2rem h-2rem surface-50 border-1 border-black-alpha-90 flex align-items-center justify-content-center mr-3">

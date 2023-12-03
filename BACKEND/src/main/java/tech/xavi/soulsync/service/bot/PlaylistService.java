@@ -36,7 +36,6 @@ public class PlaylistService {
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
 
-
     public PlaylistService(
             @Value("${tech.xavi.soulsync.gateway.request.spotify.tracks-per-playlist}") int limitVal,
             SpotifyGateway spotifyGateway,
@@ -100,7 +99,7 @@ public class PlaylistService {
                 .findById(playlistId)
                 .ifPresent( storedPlaylist -> {
                     updatePlaylistName(storedPlaylist);
-                    if (storedPlaylist.isUpdatable()) {
+                    if (storedPlaylist.isUpdatable() && passesUpdateThreshold(storedPlaylist)) {
                         List<SpotifySong> updatedPl = getPlaylistSongsFromSpotify(playlistId);
                         updatedPl.forEach( spotifySong -> {
                             if (!playlistAlreadyContainsSong(storedPlaylist,spotifySong)) {
@@ -115,10 +114,16 @@ public class PlaylistService {
                         if (hasNewSongs.get()) {
                             log.debug("[updatePlaylist] - Playlist {} has been updated with new tracks",storedPlaylist.getName());
                             storedPlaylist.setLastTotalTracks(storedPlaylist.getSongs().size());
-                            playlistRepository.save(storedPlaylist);
                         }
+                        storedPlaylist.setLastUpdate(System.currentTimeMillis());
+                        playlistRepository.save(storedPlaylist);
                     }
                 });
+    }
+
+    private boolean passesUpdateThreshold(Playlist playlist){
+        long plThreshold = playlist.getLastUpdate()+300000;
+        return plThreshold < System.currentTimeMillis();
     }
 
     private boolean playlistAlreadyContainsSong(Playlist storedPlaylist, SpotifySong song){

@@ -8,7 +8,7 @@ import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.entity.sub.Token;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
 
 import java.time.Instant;
 

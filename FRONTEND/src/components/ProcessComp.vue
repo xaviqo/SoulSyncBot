@@ -85,10 +85,12 @@ export default {
     ...mapState(useUserCfgStore, ['isApiAlive'])
   },
   data: () => ({
-    queue: []
+    queue: [],
+    interval: null
   }),
   methods: {
     reboot(event){
+      console.log(event)
       this.$confirm.require({
         target: event.currentTarget,
         message: 'Restarting the process will stop the running searches. Are you sure you want to proceed?',
@@ -122,8 +124,11 @@ export default {
   },
   created() {
     this.fetchQueue();
-    setInterval( () => this.fetchQueue(), 1000);
-  }
+    this.interval = setInterval( () => this.fetchQueue(), 5000);
+  },
+  beforeUnmount() {
+    clearInterval(this.interval);
+  },
 }
 </script>
 <style scoped>

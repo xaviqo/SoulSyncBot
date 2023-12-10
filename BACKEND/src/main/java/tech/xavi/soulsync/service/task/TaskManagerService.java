@@ -1,34 +1,35 @@
-package tech.xavi.soulsync.service.bot;
+package tech.xavi.soulsync.service.task;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
-import tech.xavi.soulsync.service.relocate.RelocateService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
+import tech.xavi.soulsync.service.main.PlaylistService;
+import tech.xavi.soulsync.service.files.RelocateService;
 
 import java.time.Duration;
 import java.util.concurrent.ScheduledFuture;
 
 @Log4j2
 @Service
-public class RunningTaskService {
+public class TaskManagerService {
 
-    private final QueueService queueService;
+    private final QueueManagerService queueManagerService;
     private final PlaylistService playlistService;
     private final DownloadService downloadService;
     private final RelocateService relocateService;
     private final TaskScheduler taskScheduler;
     private ScheduledFuture<?> scheduledTask;
 
-    public RunningTaskService(
-            QueueService queueService,
+    public TaskManagerService(
+            QueueManagerService queueManagerService,
             PlaylistService playlistService,
             DownloadService downloadService,
             RelocateService relocateService,
             TaskScheduler taskScheduler
     ) {
-        this.queueService = queueService;
+        this.queueManagerService = queueManagerService;
         this.playlistService = playlistService;
         this.downloadService = downloadService;
         this.relocateService = relocateService;
@@ -52,13 +53,13 @@ public class RunningTaskService {
     }
 
     public void runScheduledTask(){
-        //log.debug("[runScheduledTask] - Task started");
-        //queueService.printQueueStatus();
-        //downloadService.updateSongsStatus();
-        //playlistService.updatePlaylistsFromSpotify();
-        //queueService.updateQueue();
-        //relocateService.moveFinishedPlaylistsSongs();
-        //log.debug("[runScheduledTask] - Task finished");
+        log.debug("[runScheduledTask] - Task started");
+        queueManagerService.printQueueStatus();
+        downloadService.findStuckDownloads();
+        playlistService.updatePlaylistsFromSpotify();
+        queueManagerService.updateQueue();
+        relocateService.moveFinishedPlaylistsSongs();
+        log.debug("[runScheduledTask] - Task finished");
     }
 
     public void rebootScheduledTask(){

@@ -29,103 +29,26 @@
       <span >No playlists are currently available.</span>
     </div>
   </div>
-  <div v-else class="w-full flex flex-wrap gap-3 justify-content-center mt-2">
+  <div v-else
+       class="w-full flex flex-wrap gap-3"
+       :class="playlists.length > 1 ? 'justify-content-center' : ''"
+  >
     <template v-for="pl in playlists" :key="pl.id">
-      <div class="bg-white border-1 border-black-alpha-90 shadow-2" :style="mq.mdMinus ? 'width: 100%; margin: 0 10px' : 'width: 48.7%;'">
-        <div class="flex flex-nowrap justify-content-between m-2">
-          <div class="text-2xl flex flex-nowrap font-bold text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis" >
-            <div
-                class="cursor-pointer p-1 bg-blue-500 hover:bg-blue-600 text-white border-1 border-black-alpha-90 flex align-items-center justify-content-center mr-3"
-                @click="loadPlaylistInfo({
-                    name: pl.name,
-                    id: pl.id,
-                    lastUpdate: pl.lastUpdate,
-                    total: pl.total
-                  })"
-            >
-              <i class="pi pi-search" style="font-size: 1.2rem"></i>
-            </div>
-            <span>
-              {{ pl.name }}
-            </span>
-          </div>
-          <div class="flex flex-nowrap">
-            <ProgressBar
-                :value="getProgressBarValue(pl.total,pl.totalSucceeded)"
-                style="min-width: 7rem; min-height: 1.7rem"
-                class="border-1 border-black-alpha-90 ml-2"
-            />
-          </div>
-        </div>
-        <div class="flex flex-nowrap">
-          <div class="w-full grid p-2">
-            <div class="col-6 flex-nowrap">
-              <span class="text-900">
-                <i class="pi pi-calendar-plus" style="scale: .9"></i>
-                Added:
-              </span>
-              <span class="text-600">
-                {{ formatTimestamp(pl.added) }}
-              </span>
-            </div>
-            <div class="col-6 flex-nowrap">
-              <span class="text-900">
-                <i class="pi pi-clock" style="scale: .9"></i>
-                Updated:
-              </span>
-              <span class="text-600">
-                {{ getElapsedTime(pl.lastUpdate) }} ago
-              </span>
-            </div>
-            <div class="col-6 flex-nowrap">
-              <span class="text-900">
-                <i class="pi pi-plus-circle" style="scale: .9"></i>
-                Tracks in Playlist:
-              </span>
-              <span class="text-600">
-                {{ pl.total }}
-              </span>
-            </div>
-            <div class="col-6 flex-nowrap">
-              <span class="text-900">
-                <i class="pi pi-check-circle" style="scale: .9"></i>
-                Tracks Succeded:
-              </span>
-              <span class="text-600">
-                {{ pl.totalSucceeded }}
-              </span>
-            </div>
-            <div class="col-12" >
-              <Tag :value="pl.type" class="border-1 border-black-alpha-90 bg-gray-500" />
-            </div>
-          </div>
-          <div class="mr-2 mb-1">
-            <img
-                :src="pl.cover"
-                :alt="pl.id"
-                class="w-7rem shadow-2 border-1 border-black-alpha-90"
-            />
-          </div>
-        </div>
-      </div>
+      <PlaylistCardComp :pl="pl" :class="playlists.length < 2 ? 'ml-2':''" />
     </template>
   </div>
 </template>
 <script>
 import {mapState} from "pinia";
 import {useUserCfgStore} from "@/store/UserCfg";
-import {soulmixin} from "@/mixins/soulmixin";
+import PlaylistCardComp from "@/components/PlaylistCardComp.vue";
 
 export default {
   name: "PlaylistContainerComp",
-  inject: ["mq"],
-  mixins: [soulmixin],
+  components: {PlaylistCardComp},
   methods: {
-    getProgressBarValue(total, succeeded){
-      return Math.round(( succeeded / total ) * 100);
-    },
     fetchPlaylists(fetch){
-      if (fetch) {
+      if (fetch && this.isApiAlive) {
         this.axios.get('/playlist')
             .then( res => {
               this.waitUpdate = false;
@@ -134,22 +57,9 @@ export default {
             .catch( e => {
               console.log(e)
               this.playlists = [];
-            })
+            });
       }
-    },
-    formatTimestamp(ts){
-      const date = new Date(ts);
-      const d = date.getDate();
-      const mon = date.getMonth() + 1;
-      const y = date.getFullYear();
-      const h = date.getHours();
-      const min = date.getMinutes();
-      const s = date.getSeconds();
-      return `${d}/${mon}/${y} ${h}:${min}:${s}`;
-    },
-    loadPlaylistInfo(playlist) {
-      this.emitter.emit('load-songs', playlist);
-    },
+    }
   },
   data: () => ({
     playlists: [],
@@ -164,6 +74,9 @@ export default {
     });
     this.playlists = [];
     this.fetchPlaylists(true);
+    this.emitter.on('remove-playlist', (id) => {
+      this.playlists = this.playlists.filter( pl => pl.id !== id);
+    })
   },
   computed: {
     ...mapState(useUserCfgStore, [

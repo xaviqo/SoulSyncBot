@@ -1,9 +1,9 @@
-package tech.xavi.soulsync.service.bot;
+package tech.xavi.soulsync.service.task;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;

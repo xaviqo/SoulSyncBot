@@ -9,9 +9,6 @@ tech:
         token:
           exp-sec: 86400000
       gateway:
-        request:
-          spotify:
-            tracks-per-playlist: 20
         base-url:
           spotify:
             auth: https://accounts.spotify.com
@@ -21,13 +18,19 @@ tech:
             auth:
               get-token:
                 ep: /api/token
-            main:
+            playlist:
               get-tracks:
                 ep: /v1/playlists/{playlistId}/tracks
               get-playlist-data:
                 ep: /v1/playlists/{playlistId}/
               get-cover:
                 ep: /v1/playlists/{playlistId}/images
+            artist:
+              get-albums:
+                ep: /v1/artists/{artistId}/albums
+            album:
+              get-tracks:
+                ep: /v1/albums/{albumId}/
           slskd:
             health: /health
             login: /api/v0/session
@@ -43,8 +46,8 @@ spring:
   jpa:
     hibernate:
       #ddl-auto: validate
-      ddl-auto: update
-      #ddl-auto: create-drop
+      #ddl-auto: update
+      ddl-auto: create-drop
   security:
     user:
       password: none

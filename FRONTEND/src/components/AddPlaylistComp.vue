@@ -2,30 +2,12 @@
   <Card class="border-1 border-black-alpha-90 shadow-2 w-full">
     <template #title>
       <div class="grid">
-        <div class="col-4 flex flex-nowrap justify-content-start">
+        <div class="col-12 flex flex-nowrap justify-content-start">
           <div class="w-2rem h-2rem surface-50 border-1 border-black-alpha-90 flex align-items-center justify-content-center mr-3">
             <i class="pi pi-chevron-right" style="font-size: 1.2rem"></i>
           </div>
           <div class="hidden md:flex align-items-center">
             Add new playlist
-          </div>
-        </div>
-        <div class="col font-normal text-base pt-3">
-          <div class="card flex flex-wrap justify-content-end gap-3">
-            <div class="flex align-items-center">
-              <Button
-                  icon="pi pi-info"
-                  severity="secondary"
-                  rounded
-                  text
-                  size="small"
-                  v-tooltip.left="info.update"
-                  style="width: .6rem; height: 1rem; cursor: default;"
-                  class="mr-1"
-              />
-              <Checkbox v-model="payload.update" inputId="ingredient2" binary />
-              <label for="ingredient2" class="ml-2"> Autoupdate </label>
-            </div>
           </div>
         </div>
       </div>
@@ -62,15 +44,7 @@ export default {
   data: () => ({
     sending: false,
     payload: {
-      playlist: null,
-      avoidDuplicates: true,
-      avoidLive: true,
-      avoidRemix: true,
-      update: true
-    },
-    info: {
-      avoidDuplicates: 'Duplicate songs in the playlist will be added only once',
-      update: 'Automatically updates the playlist waiting for new additions'
+      playlist: null
     }
   }),
   methods: {
@@ -94,11 +68,6 @@ export default {
           });
       this.sending = false;
       this.payload.playlist = null;
-      this.payload = {
-        playlist: null,
-        avoidDuplicates: true,
-        update: true
-      };
     },
     loadIsMobile(){
     }

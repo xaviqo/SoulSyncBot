@@ -1,11 +1,12 @@
-package tech.xavi.soulsync.service.configuration;
+package tech.xavi.soulsync.service.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import tech.xavi.soulsync.entity.sub.ConfigurationField;
-import tech.xavi.soulsync.entity.sub.RelocateOption;
+import tech.xavi.soulsync.entity.sub.RelocateFinishedStrategy;
+import tech.xavi.soulsync.entity.sub.RelocateFolderStrategy;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.repository.JsonBackupRepository;
 
@@ -124,7 +125,9 @@ public class ConfigurationService {
                         .slskdDownloadsRoute(getProperty("app","slskd-downloads-route",String.class))
                         .userFilesRoute(getProperty("app","user-files-route",String.class))
                         .relocateFiles(getProperty("app","relocate-files",String.class).equals("true"))
-                        .moveOrCopyFiles(RelocateOption.getOption(getProperty("app","move-files-or-copy",String.class)))
+                        .relocateFiles(getProperty("app","relocate-files",String.class).equals("true"))
+                        .moveOrCopyFiles(RelocateFinishedStrategy.getOption(getProperty("app","move-files-or-copy",String.class)))
+                        .relocateFolderStrategy(RelocateFolderStrategy.getOption(getProperty("app","relocate-playlists-by",String.class)))
                         .renameCopiedFiles(getProperty("app","rename-copied-files",String.class).equals("true"))
                         .minimumMinutesBtwSongCheck(getProperty("app","minimum-minutes-between-song-check",Integer.class))
                         .build();

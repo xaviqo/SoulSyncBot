@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.bot;
+package tech.xavi.soulsync.service.task;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.log4j.Log4j2;
@@ -7,41 +7,43 @@ import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
-import tech.xavi.soulsync.repository.SongRepository;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
+import tech.xavi.soulsync.service.main.SongService;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 @Log4j2
 @Service
-public class QueueService {
+public class QueueManagerService {
 
     private final BlockingQueue<Song> songBlockingQueue;
+    private final Set<String> pausedPlaylists;
     private final Set<String> songIdsQueue;
     private final SearchService searchService;
     private final DownloadService downloadService;
-    private final PlaylistService playlistService;
     private final PauseService delayService;
-    private final SongRepository songRepository;
-    private Set<Thread> activeProcesses;
+    private final SongService songService;
+    private final Set<Thread> activeProcesses;
 
-    public QueueService(
+    public QueueManagerService(
             SearchService searchService,
             DownloadService downloadService,
-            PlaylistService playlistService,
             PauseService delayService,
-            SongRepository songRepository
+            SongService songService
     ) {
         this.songBlockingQueue = new ArrayBlockingQueue<>(1);
         this.songIdsQueue = Collections.synchronizedSet(new HashSet<>());
+        this.pausedPlaylists = Collections.synchronizedSet(new HashSet<>());
         this.searchService = searchService;
         this.downloadService = downloadService;
-        this.playlistService = playlistService;
         this.delayService = delayService;
-        this.songRepository = songRepository;
+        this.songService = songService;
         this.activeProcesses = new HashSet<>();
     }
 
@@ -68,7 +70,7 @@ public class QueueService {
         totalSec += performService("Init Seek", delayService::initSeek, searchInput);
         totalSec += performService("Search", () -> searchService.searchSong(song), searchInput);
         totalSec += performService("Download", () -> downloadService.prepareDownload(song), searchInput);
-        totalSec += performService("Update Song Status", () -> playlistService.updateSongStatus(song), searchInput);
+        totalSec += performService("Update Song Status", () -> songService.updateSongStatus(song), searchInput);
         totalSec += performService("Finish Seek", delayService::finishSeek, searchInput);
 
         log.debug("[doProcess] Finished seek process for search: '{}' - Total time elapsed {} sec",searchInput,totalSec);
@@ -82,7 +84,7 @@ public class QueueService {
 
     public void updateQueue(){
         log.debug("[runScheduledTask] - Scheduled task executed");
-        songRepository
+        songService
                 .findByStatus(SongStatus.WAITING)
                 .ifPresent( songSet -> {
                     songSet.stream()
@@ -129,7 +131,10 @@ public class QueueService {
     private void runner(){
         while (true){
             try {
-                doProcess(songBlockingQueue.take());
+                Song song = songBlockingQueue.take();
+                if (shouldDownloadSongByPauseFilter(song)) {
+                    doProcess(song);
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }
@@ -152,6 +157,27 @@ public class QueueService {
                 timeSeconds
         );
         return timeSeconds;
+    }
+
+    private boolean shouldDownloadSongByPauseFilter(Song song){
+        return songService
+                .getPlaylistIdsFromSongId(song.getSpotifyId())
+                .stream()
+                .filter(pl -> !isPlaylistPaused(pl))
+                .toList()
+                .isEmpty();
+    }
+
+    public void pausePlaylist(String playlistId){
+        pausedPlaylists.add(playlistId);
+    }
+
+    public void unpausePlaylist(String playlistId){
+        pausedPlaylists.remove(playlistId);
+    }
+
+    public boolean isPlaylistPaused(String plId){
+        return pausedPlaylists.contains(plId);
     }
 
     public void printQueueStatus(){

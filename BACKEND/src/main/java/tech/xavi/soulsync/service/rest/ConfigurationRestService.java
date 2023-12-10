@@ -6,11 +6,11 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.sub.ConfigurationField;
 import tech.xavi.soulsync.service.auth.AccountService;
-import tech.xavi.soulsync.service.bot.QueueService;
-import tech.xavi.soulsync.service.bot.RunningTaskService;
-import tech.xavi.soulsync.service.configuration.CfgFieldsService;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
-import tech.xavi.soulsync.service.configuration.HealthService;
+import tech.xavi.soulsync.service.config.CfgFieldsService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
+import tech.xavi.soulsync.service.config.HealthService;
+import tech.xavi.soulsync.service.task.QueueManagerService;
+import tech.xavi.soulsync.service.task.TaskManagerService;
 
 import java.util.*;
 
@@ -21,16 +21,16 @@ public class ConfigurationRestService {
     private final CfgFieldsService fieldsService;
     private final HealthService healthService;
     private final AccountService accountService;
-    private final QueueService queueService;
-    private final RunningTaskService runningTaskService;
+    private final QueueManagerService queueManagerService;
+    private final TaskManagerService taskManagerService;
     private final ObjectMapper objectMapper;
 
     public ConfigurationRestService(
             CfgFieldsService fieldsService,
             HealthService healthService,
             AccountService accountService,
-            QueueService queueService,
-            RunningTaskService runningTaskService,
+            QueueManagerService queueManagerService,
+            TaskManagerService taskManagerService,
             ObjectMapper objectMapper
     ) {
         Map<ConfigurationField.Section,List<ConfigurationField>> fieldsBySection = new HashMap<>();
@@ -41,14 +41,14 @@ public class ConfigurationRestService {
         this.fieldsService = fieldsService;
         this.healthService = healthService;
         this.accountService = accountService;
-        this.queueService = queueService;
-        this.runningTaskService = runningTaskService;
+        this.queueManagerService = queueManagerService;
+        this.taskManagerService = taskManagerService;
         this.objectMapper = objectMapper;
     }
 
     public void rebootBot(){
-        queueService.rebootProcesses();
-        runningTaskService.rebootScheduledTask();
+        queueManagerService.rebootProcesses();
+        taskManagerService.rebootScheduledTask();
         log.debug("[rebootBot] - Processes and scheduled tasks are stopped and restarted");
     }
 

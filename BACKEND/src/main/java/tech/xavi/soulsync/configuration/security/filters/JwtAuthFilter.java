@@ -7,16 +7,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.apache.http.HttpHeaders;
-import org.apache.http.entity.ContentType;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
-import tech.xavi.soulsync.dto.rest.ApiErrorPayload;
-import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.service.auth.JwtService;
 
 import java.io.IOException;
@@ -38,7 +34,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws IOException, ServletException {
-        Optional<String> accessToken = getAccessToken(request);
+        filterChain.doFilter(request, response);
+        /*Optional<String> accessToken = getAccessToken(request);
         if (accessToken.isPresent()) {
             String userEmail = jwtService.extractUsername(accessToken.get());
             UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
@@ -59,7 +56,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     )
             );
             response.getWriter().flush();
-        }
+        }*/
     }
 
     @Override

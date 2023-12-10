@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.configuration;
+package tech.xavi.soulsync.service.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

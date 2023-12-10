@@ -1,6 +1,7 @@
 package tech.xavi.soulsync.dto.gateway.spotify;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
@@ -18,10 +19,12 @@ public class SpotifySong {
         return track.getId();
     }
 
-    // We obtain better results
-    // if we only select the first artist.
     public String getFirstArtist() {
         return track.getArtists().get(0).getName();
+    }
+
+    public String getAlbum(){
+        return track.getAlbum().getName();
     }
 
     public List<String> getArtists(){
@@ -32,15 +35,27 @@ public class SpotifySong {
     }
 
     @Data
-    private static class Track {
+    public static class Track {
         private List<Artist> artists;
         private String name;
         private String id;
+        private Album album;
+
+        public void setAlbum(String name){
+            this.album = new Album(name);
+        }
+    }
+
+    @AllArgsConstructor
+    @Data
+    private static class Album {
+        private String name;
     }
 
     @Data
-    private static class Artist {
+    public static class Artist {
         private String name;
     }
+
 }
 

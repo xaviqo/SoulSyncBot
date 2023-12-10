@@ -7,8 +7,11 @@ public class EndPoint {
     public static final String LOGIN = VERSION+"/login";
 
     public static final String PLAYLIST = VERSION+"/playlist";
+
+    public static final String PL_TYPES = PLAYLIST+"/types";
     public static final String PL_GET_SONGS = PLAYLIST+"/songs";
     public static final String PL_GET_SONGS_STATS = PLAYLIST+"/stats";
+    public static final String PL_PAUSE_SEARCH = PLAYLIST+"/pause";
 
     public static final String CONFIGURATION = VERSION+"/configuration";
     public static final String CFG_GET_CONFIGURATION_FIELDS = CONFIGURATION+"/get";

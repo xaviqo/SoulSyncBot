@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import tech.xavi.soulsync.dto.gateway.GatewayRequest;
 import tech.xavi.soulsync.dto.gateway.slskd.*;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
 
 @Log4j2
 @Component

@@ -59,7 +59,8 @@ public class SoulSyncConfiguration {
         String slskdDownloadsRoute;
         String userFilesRoute;
         boolean relocateFiles;
-        RelocateOption moveOrCopyFiles;
+        RelocateFinishedStrategy moveOrCopyFiles;
+        RelocateFolderStrategy relocateFolderStrategy;
         boolean renameCopiedFiles;
 
         public String getSlskdDownloadsRoute() {
@@ -76,6 +77,11 @@ public class SoulSyncConfiguration {
             else
                 return route;
         }
+
+        public boolean shouldRelocateByDiscography(){
+            return getRelocateFolderStrategy().equals(RelocateFolderStrategy.DISCOGRAPHY);
+        }
+
     }
 
 

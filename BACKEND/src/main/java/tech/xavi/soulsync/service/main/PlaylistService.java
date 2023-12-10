@@ -1,77 +1,75 @@
-package tech.xavi.soulsync.service.bot;
+package tech.xavi.soulsync.service.main;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
-import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
+import tech.xavi.soulsync.dto.gateway.spotify.SpotifyAlbum;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
-import tech.xavi.soulsync.dto.rest.AddPlaylistReq;
+import tech.xavi.soulsync.dto.projection.PlaylistProjection;
 import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.entity.sub.SongStatus;
+import tech.xavi.soulsync.entity.sub.PlaylistType;
 import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
-import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.auth.AuthService;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@RequiredArgsConstructor
 @Log4j2
 @Service
 public class PlaylistService {
 
-    private final int PL_REQ_LIMIT_VALUE;
+    private static final int PL_UPDATE_THRESHOLD_MS = 1800000;
+    public static final int PL_REQ_LIMIT_VALUE = 20;
     private final SpotifyGateway spotifyGateway;
     private final AuthService authService;
-    private final SearchService searchService;
     private final PlaylistRepository playlistRepository;
-    private final SongRepository songRepository;
+    private final SongService songService;
 
-    public PlaylistService(
-            @Value("${tech.xavi.soulsync.gateway.request.spotify.tracks-per-playlist}") int limitVal,
-            SpotifyGateway spotifyGateway,
-            AuthService authService,
-            SearchService searchService,
-            PlaylistRepository playlistRepository,
-            SongRepository songRepository
-    ) {
-        this.PL_REQ_LIMIT_VALUE = limitVal;
-        this.spotifyGateway = spotifyGateway;
-        this.authService = authService;
-        this.searchService = searchService;
-        this.playlistRepository = playlistRepository;
-        this.songRepository = songRepository;
-    }
-
-    public Playlist createAndGetPlaylistEntity(String playlistId, List<SpotifySong> spotifyPlaylist, AddPlaylistReq request) {
+    public Playlist savePlaylist(String playlistId) {
         Playlist playlist = Playlist.builder()
                 .spotifyId(playlistId)
                 .cover(getCover(playlistId))
                 .name(getName(playlistId))
-                .updatable(request.update())
+                .updatable(true)
                 .lastUpdate(System.currentTimeMillis())
                 .added(System.currentTimeMillis())
+                .type(PlaylistType.PLAYLIST)
                 .build();
         playlistRepository.save(playlist);
-        addSongs(playlist,spotifyPlaylist);
         return playlist;
     }
 
-    public void addSongs(Playlist playlist, List<SpotifySong> spotifyPlaylist){
-        spotifyPlaylist.stream()
+    public Playlist saveAlbum(SpotifyAlbum album){
+        Playlist playlist = Playlist.builder()
+                .spotifyId(album.getId())
+                .cover(album.getCover())
+                .name(album.getName())
+                .updatable(false)
+                .lastUpdate(0)
+                .added(System.currentTimeMillis())
+                .type(PlaylistType.ALBUM)
+                .lastTotalTracks(album.getTotalTracks())
+                .build();
+        playlistRepository.save(playlist);
+        return playlist;
+    }
+
+    public void addSongsToPlaylist(Playlist playlist, List<SpotifySong> spotifySongList){
+        spotifySongList.stream()
                 .collect(Collectors
                         .toMap(
                                 SpotifySong::getId,
-                                this::getOrCreateSong,
+                                songService::getOrCreateSong,
                                 (existing, replace) -> existing)
                 )
                 .values()
@@ -108,7 +106,7 @@ public class PlaylistService {
                                         storedPlaylist.getName(),
                                         spotifySong.getName() + " - " + spotifySong.getFirstArtist()
                                 );
-                                storedPlaylist.getSongs().add(getOrCreateSong(spotifySong));
+                                storedPlaylist.getSongs().add(songService.getOrCreateSong(spotifySong));
                             }
                         });
                         if (hasNewSongs.get()) {
@@ -122,8 +120,8 @@ public class PlaylistService {
     }
 
     private boolean passesUpdateThreshold(Playlist playlist){
-        long plThreshold = playlist.getLastUpdate()+300000;
-        return plThreshold < System.currentTimeMillis();
+        long plThreshold = playlist.getLastUpdate()+PL_UPDATE_THRESHOLD_MS;
+        return plThreshold <= System.currentTimeMillis();
     }
 
     private boolean playlistAlreadyContainsSong(Playlist storedPlaylist, SpotifySong song){
@@ -199,42 +197,21 @@ public class PlaylistService {
                 .toList();
     }
 
-    private Song getOrCreateSong(SpotifySong spotifySong) {
-        return songRepository.findBySpotifyId(spotifySong.getId())
-                .orElseGet( () -> createSong(spotifySong));
+    public List<PlaylistProjection> fetchPlaylistsDatatable(){
+        return playlistRepository.fetchPlaylistsDatatable();
     }
 
-    private Song createSong(SpotifySong spotifySong){
-        String searchInput = searchService
-                .getSongSearchInputForSlskd(spotifySong);
-        Song song = Song.builder()
-                .searchId(UUID.randomUUID())
-                .name(spotifySong.getName())
-                .artists(String.join(ConfigurationFinals.ARTIST_DIVIDER,spotifySong.getArtists()))
-                .searchInput(searchInput)
-                .spotifyId(spotifySong.getId())
-                .status(SongStatus.WAITING)
-                .attempts(0)
-                .lastCheck(0)
-                .added(System.currentTimeMillis())
-                .build();
-        songRepository.save(song);
-        return song;
-    }
-
-    public void updateSongStatus(Song song){
-        log.debug("[updateSongStatus] - Song is saved in DB: {}",song.getSearchInput());
-        songRepository.save(song);
-    }
-
-    public void savePlaylist(Playlist playlist){
-        log.debug("[savePlaylist] - Playlist is saved in DB: {}",playlist.toString());
-        playlistRepository.save(playlist);
+    public boolean isPlaylistInDB(String playlistId){
+        return playlistRepository.playlistExists(playlistId) > 0;
     }
 
     public Playlist getPlaylistById(String playlistId){
         return playlistRepository.findBySpotifyId(playlistId)
                 .orElse(new Playlist());
+    }
+
+    public void removePlaylist(Playlist playlist){
+        playlistRepository.delete(playlist);
     }
 
 }

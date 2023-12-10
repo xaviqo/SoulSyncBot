@@ -10,36 +10,67 @@ import org.springframework.stereotype.Component;
 import tech.xavi.soulsync.dto.gateway.GatewayRequest;
 import tech.xavi.soulsync.dto.gateway.spotify.*;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+
+import static tech.xavi.soulsync.service.main.PlaylistService.PL_REQ_LIMIT_VALUE;
 
 @Log4j2
 @Component
 public class SpotifyGateway extends Gateway{
 
-    private final int PL_LIMIT_VALUE;
     private final String AUTH_GET_TOKEN_URL;
-    private final String MAIN_GET_TRACKS;
-    private final String MAIN_GET_DATA;
-    private final String MAIN_GET_COVER;
+    private final String PL_GET_TRACKS;
+    private final String PL_GET_DATA;
+    private final String PL_GET_COVER;
+    private final String ARTIST_GET_ALBUMS;
+    private final String ALBUM_GET_TRACKS;
+    private long retryThreshold;
+    private final Map<String,String> responsesMap;
 
 
     public SpotifyGateway(
             @Value("${tech.xavi.soulsync.gateway.base-url.spotify.auth}") String authBaseUrl,
             @Value("${tech.xavi.soulsync.gateway.base-url.spotify.main}") String mainBaseUrl,
             @Value("${tech.xavi.soulsync.gateway.path.spotify.auth.get-token.ep}") String authEpGetToken,
-            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-tracks.ep}") String mainEpGetPlaylist,
-            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-playlist-data.ep}") String mainEpPlaylistData,
-            @Value("${tech.xavi.soulsync.gateway.path.spotify.main.get-cover.ep}") String mainEpGetCover,
-            @Value("${tech.xavi.soulsync.gateway.request.spotify.tracks-per-playlist}") int limitVal,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.playlist.get-tracks.ep}") String mainEpGetPlaylist,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.playlist.get-playlist-data.ep}") String mainEpPlaylistData,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.artist.get-albums.ep}") String artistEpGetAlbums,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.album.get-tracks.ep}") String albumEpGetTracks,
+            @Value("${tech.xavi.soulsync.gateway.path.spotify.playlist.get-cover.ep}") String mainEpGetCover,
             ObjectMapper objectMapper
     ) {
         super(objectMapper);
         this.AUTH_GET_TOKEN_URL = authBaseUrl+authEpGetToken;
-        this.MAIN_GET_TRACKS = mainBaseUrl+mainEpGetPlaylist;
-        this.MAIN_GET_DATA = mainBaseUrl+mainEpPlaylistData;
-        this.MAIN_GET_COVER = mainBaseUrl+mainEpGetCover;
-        this.PL_LIMIT_VALUE = limitVal;
+        this.PL_GET_TRACKS = mainBaseUrl+mainEpGetPlaylist;
+        this.PL_GET_DATA = mainBaseUrl+mainEpPlaylistData;
+        this.PL_GET_COVER = mainBaseUrl+mainEpGetCover;
+        this.ARTIST_GET_ALBUMS = mainBaseUrl+artistEpGetAlbums;
+        this.ALBUM_GET_TRACKS = mainBaseUrl+albumEpGetTracks;
+        this.responsesMap = new HashMap<>();
+    }
+
+    @Override
+    public <U> U callMapped(ExternalApi api, GatewayRequest request, Class<U> responseClass) {
+        if (isRateLimitThresholdPassed()) {
+            HttpResponse<String> response = call(api,request);
+            if (response.getStatus() != 429) {
+                responsesMap.put(
+                        request.getUrl(),
+                        response.getBody()
+                );
+            } else {
+                int retryAfter = Integer.parseInt(response.getHeaders().get("retry-after").get(0));
+                setRateLimitThreshold(retryAfter);
+            }
+        }
+        return mapResponseBody(
+                api,
+                request,
+                responsesMap.get(request.getUrl()),
+                responseClass
+        );
     }
 
     public SpotifyPlaylistName getPlaylistName(String token, String playlistId){
@@ -47,9 +78,9 @@ public class SpotifyGateway extends Gateway{
                 ExternalApi.SPOTIFY,
                 GatewayRequest.builder()
                         .method(HttpMethod.GET)
-                        .url(MAIN_GET_DATA)
+                        .url(PL_GET_DATA)
                         .token(token)
-                        .routeParams(Map.entry("playlistId",playlistId))
+                        .routeParams(Map.of("playlistId",playlistId))
                         .queryStrings(Map.of("fields","name"))
                         .build(),
                 SpotifyPlaylistName.class
@@ -57,13 +88,13 @@ public class SpotifyGateway extends Gateway{
     }
 
     public SpotifyPlaylistCover[] getPlaylistCover(String token, String playlistId){
-        return callMapped(
+        return super.callMapped(
                 ExternalApi.SPOTIFY,
                 GatewayRequest.builder()
                         .method(HttpMethod.GET)
-                        .url(MAIN_GET_COVER)
+                        .url(PL_GET_COVER)
                         .token(token)
-                        .routeParams(Map.entry("playlistId",playlistId))
+                        .routeParams(Map.of("playlistId",playlistId))
                         .build(),
                 SpotifyPlaylistCover[].class
         );
@@ -74,9 +105,9 @@ public class SpotifyGateway extends Gateway{
                 ExternalApi.SPOTIFY,
                 GatewayRequest.builder()
                         .method(HttpMethod.GET)
-                        .url(MAIN_GET_DATA)
+                        .url(PL_GET_DATA)
                         .token(token)
-                        .routeParams(Map.entry("playlistId",playlistId))
+                        .routeParams(Map.of("playlistId",playlistId))
                         .queryStrings(Map.of("fields","tracks.total"))
                         .build(),
                 SpotifyPlaylistTotalTracks.class
@@ -85,20 +116,52 @@ public class SpotifyGateway extends Gateway{
 
     public SpotifyPlaylist getPlaylistTracks(String token, String playlistId, int offset) {
         final Map<String,Object> queryStrings = new HashMap<>() {{
-            put("fields", "items(track(name,artists(name),id))");
-            put("limit", PL_LIMIT_VALUE);
+            put("fields", "items(track(name,album(name),artists(name),id))");
+            put("limit", PL_REQ_LIMIT_VALUE);
             put("offset", offset);
         }};
         return callMapped(
                 ExternalApi.SPOTIFY,
                 GatewayRequest.builder()
                         .method(HttpMethod.GET)
-                        .url(MAIN_GET_TRACKS)
+                        .url(PL_GET_TRACKS)
                         .token(token)
-                        .routeParams(Map.entry("playlistId",playlistId))
+                        .routeParams(Map.of("playlistId",playlistId))
                         .queryStrings(queryStrings)
                         .build(),
                 SpotifyPlaylist.class
+        );
+    }
+
+    public SpotifyAlbum getAlbumTracks(String token, String albumId){
+        return super.callMapped(
+                ExternalApi.SPOTIFY,
+                GatewayRequest.builder()
+                        .method(HttpMethod.GET)
+                        .url(ALBUM_GET_TRACKS)
+                        .token(token)
+                        .routeParams(Map.of("albumId",albumId))
+                        .queryStrings(Map.of("limit","50"))
+                        .build(),
+                SpotifyAlbum.class
+        );
+    }
+
+    public SpotifyArtistAlbums getArtistAlbums(String token, String artistId){
+        final Map<String,Object> queryStrings = new HashMap<>() {{
+            put("include_groups", "album");
+            put("limit", 50);
+        }};
+        return super.callMapped(
+                ExternalApi.SPOTIFY,
+                GatewayRequest.builder()
+                        .method(HttpMethod.GET)
+                        .url(ARTIST_GET_ALBUMS)
+                        .token(token)
+                        .routeParams(Map.of("artistId",artistId))
+                        .queryStrings(queryStrings)
+                        .build(),
+                SpotifyArtistAlbums.class
         );
     }
 
@@ -127,4 +190,11 @@ public class SpotifyGateway extends Gateway{
         }
     }
 
+    private void setRateLimitThreshold(int retrySec) {
+        this.retryThreshold = Instant.now().getEpochSecond()+retrySec;
+    }
+
+    private boolean isRateLimitThresholdPassed() {
+        return this.retryThreshold < Instant.now().getEpochSecond();
+    }
 }

@@ -15,7 +15,7 @@ public class GatewayRequest {
     private final String basicCredentials;
     private final Object payload;
     private final Map<String,Object> queryStrings;
-    private final Map.Entry<String,String> routeParams;
+    private final Map<String,String> routeParams;
     @Builder.Default
     private final boolean appJson = true;
 

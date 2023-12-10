@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
-import tech.xavi.soulsync.dto.rest.ApiErrorPayload;
+import tech.xavi.soulsync.dto.service.ApiErrorPayload;
 
 @RestControllerAdvice
 public class ExceptionController {

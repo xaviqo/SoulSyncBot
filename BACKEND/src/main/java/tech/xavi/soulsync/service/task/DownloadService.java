@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.bot;
+package tech.xavi.soulsync.service.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -6,14 +6,16 @@ import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadRequest;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdDownloadStatus;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
-import tech.xavi.soulsync.entity.sub.DownloadStatus;
 import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.sub.DownloadStatus;
 import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.auth.AuthService;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -68,14 +70,14 @@ public class DownloadService {
         song.setStatus(SongStatus.WAITING);
     }
 
-    public void updateSongsStatus(){
-        log.debug("[updateSongsStatus] - Updating songs status...");
+    public void findStuckDownloads(){
+        log.debug("[findStuckDownloads] - Searching stuck downloads...");
         List<Song> songsToBeRestarted = new ArrayList<>();
         String token = authService.getSlskdToken().token();
         Arrays.stream(slskdGateway.getDownloadsStatus(token))
                 .forEach( status -> {
                     String username = status.getUsername();
-                    List<Song> songToAdd = updateStatusAndGetUnfinished(
+                    List<Song> songToAdd = findFinishedAndGetStuck(
                             status.getDirectories(),
                             username
                     );
@@ -83,11 +85,13 @@ public class DownloadService {
                         songsToBeRestarted.addAll(songToAdd);
                     }
                 });
-        log.debug("[updateSongsStatus] - Found a total of {} downloads stuck",songsToBeRestarted.size());
+        log.debug("[findStuckDownloads] - Found a total of {} downloads stuck",
+                songsToBeRestarted.size())
+        ;
         songsToBeRestarted.forEach(this::resetSongForDownload);
     }
 
-    private List<Song> updateStatusAndGetUnfinished(
+    private List<Song> findFinishedAndGetStuck(
             List<SlskdDownloadStatus.SlskdDirectory> directories,
             String username
     ) {
@@ -130,6 +134,7 @@ public class DownloadService {
 
     private void resetSongForDownload(Song song){
         log.debug("[resetSongForDownload] - Search restarted due to stuck download: {} - {}",song.getName(),song.getArtists()[0]);
+        song.setFilename(null);
         song.setSize(0);
         song.setStatus(SongStatus.WAITING);
         songRepository.save(song);

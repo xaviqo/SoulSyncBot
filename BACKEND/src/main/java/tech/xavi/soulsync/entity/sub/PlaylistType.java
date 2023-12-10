@@ -4,10 +4,8 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public enum PlaylistType {
-    PLAYLIST("Playlist"),
-    ALBUM("Album"),
-    DISCOGRAPHY("Discography")
+    PLAYLIST,
+    ALBUM
     ;
-    private final String name;
 
 }

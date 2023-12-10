@@ -1,11 +1,11 @@
-package tech.xavi.soulsync.service.configuration;
+package tech.xavi.soulsync.service.config;
 
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.repository.SongRepository;
-import tech.xavi.soulsync.service.bot.QueueService;
+import tech.xavi.soulsync.service.task.QueueManagerService;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -17,20 +17,19 @@ import java.util.stream.Collectors;
 public class MonitorService {
 
     private final String LOG_FILE_ROUTE = "./logs/soulsync-log.log";
-
     private final Resource currentLogFile;
-    private final QueueService queueService;
+    private final QueueManagerService queueManagerService;
     private final SongRepository songRepository;
 
-    public MonitorService(QueueService queueService, SongRepository songRepository) {
-        this.queueService = queueService;
+    public MonitorService(QueueManagerService queueManagerService, SongRepository songRepository) {
+        this.queueManagerService = queueManagerService;
         this.songRepository = songRepository;
         currentLogFile = new FileSystemResource(LOG_FILE_ROUTE);
     }
 
     public List<Song> getSongsInQueue(){
         List<Song> songsInQueue = new ArrayList<>();
-        queueService.getSongsInQueueIds().forEach( id -> {
+        queueManagerService.getSongsInQueueIds().forEach(id -> {
             songRepository
                     .findBySpotifyId(id)
                     .ifPresent(songsInQueue::add);

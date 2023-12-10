@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.bot;
+package tech.xavi.soulsync.service.task;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -9,7 +9,7 @@ import tech.xavi.soulsync.dto.gateway.slskd.SlskdFile;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
 
 import java.util.ArrayList;
 import java.util.List;

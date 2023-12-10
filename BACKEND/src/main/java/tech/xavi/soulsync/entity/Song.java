@@ -1,6 +1,6 @@
 package tech.xavi.soulsync.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import tech.xavi.soulsync.configuration.constants.ConfigurationFinals;
@@ -23,11 +23,13 @@ public class Song {
     @Column
     String name;
     @Column
+    String artists;
+    @Column
+    String album;
+    @Column
     String searchInput;
     @Column
     UUID searchId;
-    @Column
-    String artists;
     @Enumerated(EnumType.STRING)
     @Column
     SongStatus status;
@@ -35,17 +37,18 @@ public class Song {
     String filename;
     @Column
     long size;
-    @Builder.Default
-    @JsonIgnore
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "song")
-    Set<PlaylistSongRelation> playlist = new HashSet<>();
-    @Builder.Default
     @Column
-    int attempts = 1;
+    int attempts;
     @Column
     long lastCheck;
     @Column
     long added;
+    @Column
+    String copyRoute;
+    @JsonBackReference
+    @Builder.Default
+    @ManyToMany(mappedBy = "songs")
+    Set<Playlist> playlists = new HashSet<>();
 
     public void addAttempt(){
         this.setAttempts(this.getAttempts()+1);
@@ -85,4 +88,5 @@ public class Song {
     public int hashCode() {
         return Objects.hash(spotifyId);
     }
+
 }

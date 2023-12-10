@@ -1,15 +1,16 @@
-package tech.xavi.soulsync.service.relocate;
+package tech.xavi.soulsync.service.files;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import tech.xavi.soulsync.entity.*;
-import tech.xavi.soulsync.entity.sub.RelocateOption;
+import tech.xavi.soulsync.dto.service.RelocateInfo;
+import tech.xavi.soulsync.entity.Song;
+import tech.xavi.soulsync.entity.sub.RelocateFinishedStrategy;
 import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.repository.SongRepository;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,20 +38,23 @@ public class RelocateService {
     }
 
     public void moveFinishedPlaylistsSongs(){
-        String copyAction = getConfiguration().getMoveOrCopyFiles().getAction().toUpperCase();
+        String copyAction = getConfiguration().getMoveOrCopyFiles().name();
         AtomicInteger totalMoved = new AtomicInteger();
         playlistRepository
                 .findAll()
                 .forEach( playlist -> {
-                    String plFolderName = getPlaylistFolderName(playlist);
                     playlist.getSongs().stream()
                             .filter( song -> song.getStatus().equals(SongStatus.COMPLETED) )
                             .forEach( song -> {
-                                String originalFileAndFolder = getFileAndFolder(song.getFilename());
-                                String finalSongName = getSongTitleWithArtists(song);
-                                Path finalPath = moveFile(plFolderName,originalFileAndFolder,finalSongName);
+                                RelocateInfo relocateInfo = RelocateInfo.builder()
+                                        .playlistFolderName(getFormattedRoute(playlist.getName()))
+                                        .downloadFileAndFolder(getDownloadFileAndFolder(song.getFilename()))
+                                        .renamedFileName(getRenamedFileName(song))
+                                        .build();
+                                Path finalPath = moveFile(relocateInfo);
                                 if (!StringUtils.isEmpty(finalPath)){
                                     song.setStatus(SongStatus.COPIED);
+                                    song.setCopyRoute(finalPath.toAbsolutePath().toString());
                                     songRepository.save(song);
                                     totalMoved.getAndIncrement();
                                     log.debug(
@@ -75,10 +79,10 @@ public class RelocateService {
         );
     }
 
-    private Path moveFile(String playlistFolder, String originalFilePath, String finalSongName) {
+    private Path moveFile(RelocateInfo relocateInfo) {
         boolean isRenamed = getConfiguration().isRenameCopiedFiles();
         String downloadsDir = getConfiguration().getSlskdDownloadsRoute();
-        File downloadedFile = new File(downloadsDir + originalFilePath);
+        File downloadedFile = new File(downloadsDir + relocateInfo.getDownloadFileAndFolder());
 
         if (!downloadedFile.exists()) {
             log.debug("[moveFile] - File '{}' not found in the downloads directory '{}'",
@@ -87,16 +91,17 @@ public class RelocateService {
         }
 
         try {
-            Path playlistDirectory = Paths.get(playlistFolder);
-            if (!Files.exists(playlistDirectory)) {
-                Files.createDirectories(playlistDirectory);
+            String targetCopyDirectory = getTargetCopyDirectory(relocateInfo);
+            Path targetCopyPath = Paths.get(targetCopyDirectory);
+            if (!Files.exists(targetCopyPath)) {
+                Files.createDirectories(targetCopyPath);
             }
 
-            String finalFilePath = playlistFolder + finalSongName + (isRenamed ? getFileFormat(originalFilePath) : "");
-            Path sourcePath = Paths.get(downloadsDir + originalFilePath);
+            String finalFilePath = targetCopyDirectory + relocateInfo.getRenamedFileName() + (isRenamed ? getFileFormat(relocateInfo.getDownloadFileAndFolder()) : "");
+            Path sourcePath = Paths.get(downloadsDir + relocateInfo.getDownloadFileAndFolder());
             Path destinationPath = Paths.get(finalFilePath);
 
-            if (getConfiguration().getMoveOrCopyFiles().equals(RelocateOption.MOVE)) {
+            if (getConfiguration().getMoveOrCopyFiles().equals(RelocateFinishedStrategy.MOVE)) {
                 return Files.move(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
             } else {
                 return Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
@@ -107,7 +112,18 @@ public class RelocateService {
         }
     }
 
-    private String getSongTitleWithArtists(Song song) {
+    public String getTargetCopyDirectory(RelocateInfo relocateInfo){
+        boolean relocateByAlbum = relocateInfo.isAlbum() || getConfiguration().shouldRelocateByDiscography();
+        if (relocateByAlbum) {
+            return getFormattedRoute(
+              relocateInfo.getArtistName() + "/" +
+              relocateInfo.getAlbumName() + "/"
+            );
+        }
+        return relocateInfo.getPlaylistFolderName();
+    }
+
+    private String getRenamedFileName(Song song) {
         if (getConfiguration().isRenameCopiedFiles()) {
             StringBuilder songTitleWithArtists = new StringBuilder(song.getName());
             String[] artists = song.getArtists();
@@ -120,7 +136,7 @@ public class RelocateService {
         return getOriginalName(song.getFilename());
     }
 
-    private String getFileAndFolder(String folderAndFile) {
+    private String getDownloadFileAndFolder(String folderAndFile) {
         String[] arr = folderAndFile.split(SPLIT_BY_FOLDERS_REGEX);
         if (arr.length > 0)
             return arr[arr.length - 2]+"/"+arr[arr.length - 1]+"/";
@@ -136,17 +152,13 @@ public class RelocateService {
             return folderAndFile;
     }
 
-    private String getPlaylistFolderName(Playlist playlist){
+    private String getFormattedRoute(String folders){
         String userFilesRoute = getConfiguration().getUserFilesRoute();
-        return userFilesRoute
-                + playlist
-                .getName()
-                .replaceAll(PL_FOLDER_NAME_REGEX, "")
+        return userFilesRoute+folders.replaceAll(PL_FOLDER_NAME_REGEX, "")
                 .trim()
                 .toUpperCase()
                 +"/";
     }
-
 
     private String getFileFormat(String fileAndFolders){
         String[] arr = fileAndFolders.split(SPLIT_BY_FOLDERS_REGEX);

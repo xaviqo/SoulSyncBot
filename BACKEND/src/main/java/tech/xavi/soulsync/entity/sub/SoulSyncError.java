@@ -27,9 +27,10 @@ public enum SoulSyncError {
     SPOTIFY_TOKEN_CALL_ERROR(803,"An error occurred obtaining the Spotify token"),
     NULL_RESULT_EXCEPTION(804,"Slskd search ID is not available. Possibly expired"),
 
-
-    PLAYLIST_ID_NOT_VALID(900,"The provided spotify playlist is not valid"),
-    PLAYLIST_ALREADY_EXISTS(901,"Playlist '%s' already added in database")
+    NOT_A_URL(900,"The input provided does not seem to be a URL"),
+    URL_NOT_VALID(901,"Only Spotify URLs (Playlist, Artist or Album) are accepted"),
+    PLAYLIST_ID_NOT_VALID(902,"The provided spotify playlist is not valid"),
+    PLAYLIST_ALREADY_EXISTS(903,"Playlist '%s' already added in database")
     ;
 
     private final int code;

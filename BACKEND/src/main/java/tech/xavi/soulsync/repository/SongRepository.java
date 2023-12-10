@@ -21,12 +21,17 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
     @Query("FROM Song s WHERE s.filename = :filename")
     List<Song> findSongsByFilename(@Param("filename") String filename);
 
-    @Query("SELECT count(1) FROM PlaylistSongRelation pls " +
-            "WHERE pls.playlist.spotifyId = :id " +
-            "AND pls.song.status = :status")
+    @Query("SELECT count(1) FROM Song s " +
+            "JOIN s.playlists p WHERE p.spotifyId = :id " +
+            "AND s.status = :status")
     Integer countSongsByStatusByPlaylistId(
             @Param("id") String spotifyId,
             @Param("status") SongStatus status
     );
 
+    @Query("SELECT p.spotifyId " +
+            "FROM Song s " +
+            "JOIN s.playlists p " +
+            "WHERE s.spotifyId = :songId")
+    Set<String> findPlaylistIdsBySongId(@Param("songId") String songId);
 }

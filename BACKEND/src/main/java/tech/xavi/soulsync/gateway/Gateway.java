@@ -29,18 +29,27 @@ public class Gateway {
     }
 
     public <U> U callMapped(ExternalApi api, GatewayRequest request, Class<U> responseClass){
+        return mapResponseBody(
+                api,
+                request,
+                call(api,request).getBody(),
+                responseClass
+        );
+    }
+
+    public <U> U mapResponseBody(ExternalApi api, GatewayRequest request, String body, Class<U> responseClass) {
         try {
             return this.objectMapper.readValue(
-                    call(api,request),
+                    body,
                     responseClass
             );
-        } catch (JSONException | JsonProcessingException e) {
+        }  catch (JSONException | JsonProcessingException e) {
             handleJsonProcessingException(api, request, e);
         }
         return null;
     }
 
-    public String call(ExternalApi api, GatewayRequest request) {
+    public HttpResponse<String> call(ExternalApi api, GatewayRequest request) {
         try {
             HttpRequestWithBody unirestRequest = createUnirestRequest(api,request);
             return getResponse(api,unirestRequest);
@@ -54,13 +63,16 @@ public class Gateway {
         return null;
     }
 
-    private String getResponse(ExternalApi api, HttpRequestWithBody unirestRequest) throws UnirestException {
+    private HttpResponse<String> getResponse(ExternalApi api, HttpRequestWithBody unirestRequest) throws UnirestException {
         HttpResponse<String> response = unirestRequest.asString();
         int responseStatus = response.getStatus();
+        if (responseStatus == 429) {
+
+        }
         String responseBody = response.getBody();
         log.trace("{} Response status code: {}", api.getLoggerMethodPrefix(), responseStatus);
         log.trace("{} Complete response: {}", api.getLoggerMethodPrefix(), responseBody);
-        return responseBody;
+        return response;
     }
 
     private HttpRequestWithBody createUnirestRequest(ExternalApi api, GatewayRequest request) {
@@ -101,9 +113,7 @@ public class Gateway {
 
     private void handleRouteParams(HttpRequestWithBody unirestRequest, GatewayRequest request) {
         if (Objects.nonNull(request.getRouteParams())) {
-            String key = request.getRouteParams().getKey();
-            String val = request.getRouteParams().getValue();
-            unirestRequest.routeParam(key, val);
+            request.getRouteParams().forEach(unirestRequest::routeParam);
         }
     }
 

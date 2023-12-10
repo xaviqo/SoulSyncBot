@@ -15,7 +15,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, String> {
 
     Optional<Playlist> findBySpotifyId(String spId);
 
-
     @Query("SELECT p.spotifyId as spotifyId " +
             "FROM Playlist p " +
             "WHERE p.updatable = true")

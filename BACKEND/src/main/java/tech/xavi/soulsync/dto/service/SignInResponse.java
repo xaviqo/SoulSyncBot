@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.dto.rest;
+package tech.xavi.soulsync.dto.service;
 
 import lombok.Builder;
 

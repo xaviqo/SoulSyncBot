@@ -1,8 +1,9 @@
-package tech.xavi.soulsync.service.bot;
+package tech.xavi.soulsync.service.task;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchQuery;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResult;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchStatus;
@@ -11,11 +12,10 @@ import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
 import tech.xavi.soulsync.entity.sub.SoulSyncError;
-import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.repository.SongRepository;
-import tech.xavi.soulsync.service.configuration.ConfigurationService;
 import tech.xavi.soulsync.service.auth.AuthService;
+import tech.xavi.soulsync.service.config.ConfigurationService;
 
 import java.text.Normalizer;
 import java.util.Arrays;

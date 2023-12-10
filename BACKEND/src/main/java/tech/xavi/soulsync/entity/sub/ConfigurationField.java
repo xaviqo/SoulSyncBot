@@ -35,8 +35,9 @@ public enum ConfigurationField {
     TASK_INTERVAL_MIN("Minutes between scheduled tasks","intervalMinutesScheduledTask",Section.BOT,Type.NUMBER,"Minutes of waiting time between automatic search task",null,null,null),
     SLSKD_DW_ROUTE("Slskd download path","slskdDownloadsRoute",Section.BOT,Type.TEXT,"Path to completed downloads in Slskd",null,null,null),
     USER_DW_ROUTE("User music path","userFilesRoute",Section.BOT,Type.TEXT,"Path where to place the songs once the process is finished",null,null,null),
-    MOVE_OR_COPY_FILES("Move or Copy files","moveOrCopyFiles",Section.BOT,Type.SELECT,"Move or copy the relocated files (if you move the files, do not forget to keep sharing the downloaded files)",null,null,RelocateOption.values()),
+    MOVE_OR_COPY_FILES("Move or Copy files","moveOrCopyFiles",Section.BOT,Type.SELECT,"Move or copy the relocated files (if you move the files, do not forget to keep sharing the downloaded files)",null,null, RelocateFinishedStrategy.values()),
     RELOCATE_FILES("Relocate files","relocateFiles",Section.BOT,Type.BOOLEAN,"User path for storing songs divided by playlist",null,null,null),
+    RELOCATE_PLAYLIST_FOLDER("Relocate playlists folders by","relocateFolderStrategy",Section.BOT,Type.SELECT,"Copy downloads to folder with playlist name or by artist/album",null,null,RelocateFolderStrategy.values()),
     RENAME_COPIED_FILES("Rename moved/copied files","renameCopiedFiles",Section.BOT,Type.BOOLEAN,"Modify the name of the downloaded songs with the format [ SongName - Artists ] when they are relocated",null,null,null),
     ;
 

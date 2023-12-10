@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import tech.xavi.soulsync.configuration.constants.EndPoint;
 import tech.xavi.soulsync.entity.Song;
-import tech.xavi.soulsync.service.configuration.MonitorService;
+import tech.xavi.soulsync.service.config.MonitorService;
 
 import java.util.List;
 

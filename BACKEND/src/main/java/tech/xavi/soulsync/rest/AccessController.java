@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import tech.xavi.soulsync.configuration.constants.EndPoint;
-import tech.xavi.soulsync.dto.rest.AccountRequest;
-import tech.xavi.soulsync.dto.rest.SignInResponse;
+import tech.xavi.soulsync.dto.service.AccountRequest;
+import tech.xavi.soulsync.dto.service.SignInResponse;
 import tech.xavi.soulsync.service.auth.AccountService;
 
 @RequiredArgsConstructor

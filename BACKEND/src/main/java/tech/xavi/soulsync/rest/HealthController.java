@@ -5,7 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import tech.xavi.soulsync.configuration.constants.EndPoint;
-import tech.xavi.soulsync.service.configuration.HealthService;
+import tech.xavi.soulsync.service.config.HealthService;
 import tech.xavi.soulsync.service.rest.ConfigurationRestService;
 
 import java.util.Map;

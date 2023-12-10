@@ -1,13 +1,12 @@
 package tech.xavi.soulsync.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import tech.xavi.soulsync.entity.sub.PlaylistType;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -25,10 +24,6 @@ public class Playlist{
     @Enumerated(EnumType.STRING)
     @Column
     PlaylistType type;
-    @JsonIgnore
-    @Builder.Default
-    @OneToMany(mappedBy = "playlist", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<PlaylistSongRelation> songsRelation = new HashSet<>();
     @Column
     int lastTotalTracks;
     @Column
@@ -37,23 +32,18 @@ public class Playlist{
     boolean updatable;
     @Column
     long added;
-    public Set<Song> getSongs(){
-        return songsRelation.stream()
-                .map(PlaylistSongRelation::getSong)
-                .collect(Collectors.toSet());
-    }
+    @JsonManagedReference
+    @Builder.Default
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "playlist_songs",
+            joinColumns = @JoinColumn(name = "playlist_id"),
+            inverseJoinColumns = @JoinColumn(name = "song_id")
+    )
+    Set<Song> songs = new HashSet<>();
 
     public void addSong(Song song){
-        PlaylistSongRelationId relationId = PlaylistSongRelationId.builder()
-                .songSpotifyId(song.getSpotifyId())
-                .plSpotifyId(this.getSpotifyId())
-                .build();
-        PlaylistSongRelation relation = PlaylistSongRelation.builder()
-                .relationId(relationId)
-                .playlist(this)
-                .song(song)
-                .build();
-        songsRelation.add(relation);
+        this.songs.add(song);
     }
 
     @Override

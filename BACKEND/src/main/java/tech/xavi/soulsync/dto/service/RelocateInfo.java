@@ -12,6 +12,7 @@ public class RelocateInfo {
     private String renamedFileName;
     private String artistName;
     private String albumName;
+    private Integer albumRelease;
     private PlaylistType playlistType;
 
     public boolean isAlbum(){

@@ -1,6 +1,5 @@
 server:
   port: 14947
-
 tech:
   xavi:
     soulsync:
@@ -46,8 +45,8 @@ spring:
   jpa:
     hibernate:
       #ddl-auto: validate
-      #ddl-auto: update
-      ddl-auto: create-drop
+      ddl-auto: update
+      #ddl-auto: create-drop
   security:
     user:
       password: none

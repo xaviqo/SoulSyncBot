@@ -50,6 +50,9 @@ public class RelocateService {
                                         .playlistFolderName(getFormattedRoute(playlist.getName()))
                                         .downloadFileAndFolder(getDownloadFileAndFolder(song.getFilename()))
                                         .renamedFileName(getRenamedFileName(song))
+                                        .playlistType(playlist.getType())
+                                        .artistName(song.getArtists()[0])
+                                        .albumName(song.getAlbum())
                                         .build();
                                 Path finalPath = moveFile(relocateInfo);
                                 if (!StringUtils.isEmpty(finalPath)){

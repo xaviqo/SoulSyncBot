@@ -32,6 +32,8 @@ public class Playlist{
     boolean updatable;
     @Column
     long added;
+    @Column
+    int releaseYear;
     @JsonManagedReference
     @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)

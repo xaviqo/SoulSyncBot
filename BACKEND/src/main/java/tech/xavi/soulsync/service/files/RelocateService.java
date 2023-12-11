@@ -52,6 +52,7 @@ public class RelocateService {
                                         .renamedFileName(getRenamedFileName(song))
                                         .playlistType(playlist.getType())
                                         .artistName(song.getArtists()[0])
+                                        .albumRelease(playlist.getReleaseYear())
                                         .albumName(song.getAlbum())
                                         .build();
                                 Path finalPath = moveFile(relocateInfo);
@@ -118,9 +119,12 @@ public class RelocateService {
     public String getTargetCopyDirectory(RelocateInfo relocateInfo){
         boolean relocateByAlbum = relocateInfo.isAlbum() || getConfiguration().shouldRelocateByDiscography();
         if (relocateByAlbum) {
+            String albumYear = relocateInfo.getAlbumRelease() != null
+                    ? relocateInfo.getAlbumRelease() + "/"
+                    : "";
             return getFormattedRoute(
               relocateInfo.getArtistName() + "/" +
-              relocateInfo.getAlbumName() + "/"
+                      albumYear+relocateInfo.getAlbumName() + "/"
             );
         }
         return relocateInfo.getPlaylistFolderName();

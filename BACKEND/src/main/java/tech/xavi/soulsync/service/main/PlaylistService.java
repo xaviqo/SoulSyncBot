@@ -59,6 +59,7 @@ public class PlaylistService {
                 .added(System.currentTimeMillis())
                 .type(PlaylistType.ALBUM)
                 .lastTotalTracks(album.getTotalTracks())
+                .releaseYear(album.getReleaseYear())
                 .build();
         playlistRepository.save(playlist);
         return playlist;

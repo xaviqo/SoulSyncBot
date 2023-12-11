@@ -17,9 +17,14 @@ public class SpotifyAlbum {
     private String name;
     @JsonProperty("total_tracks")
     private int totalTracks;
+    @JsonProperty("release_date")
+    private String releaseDate;
 
     public String getCover(){
         return this.images[0].url;
+    }
+    public int getReleaseYear(){
+        return Integer.parseInt(this.releaseDate.split("-")[0]);
     }
 
     @Data

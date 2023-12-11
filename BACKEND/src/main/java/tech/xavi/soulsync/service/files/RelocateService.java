@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Service
 public class RelocateService {
 
-    private static final String PL_FOLDER_NAME_REGEX = "[^a-zA-Z0-9\\s]";
+    private static final String PL_FOLDER_NAME_REGEX = "[^a-zA-Z0-9\\s/]";
     private static final String SPLIT_BY_FOLDERS_REGEX = "[\\\\/]";
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;

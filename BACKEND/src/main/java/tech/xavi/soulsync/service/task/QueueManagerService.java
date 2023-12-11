@@ -159,13 +159,13 @@ public class QueueManagerService {
         return timeSeconds;
     }
 
-    private boolean shouldDownloadSongByPauseFilter(Song song){
-        return songService
-                .getPlaylistIdsFromSongId(song.getSpotifyId())
-                .stream()
-                .filter(pl -> !isPlaylistPaused(pl))
-                .toList()
-                .isEmpty();
+    private boolean shouldDownloadSongByPauseFilter(Song song) {
+        Set<String> plIdsWhereSongIsPresent = songService
+                .getPlaylistIdsFromSongId(song.getSpotifyId());
+        long totalPaused = plIdsWhereSongIsPresent.stream()
+                .filter(pausedPlaylists::contains)
+                .count();
+        return plIdsWhereSongIsPresent.size() != totalPaused;
     }
 
     public void pausePlaylist(String playlistId){

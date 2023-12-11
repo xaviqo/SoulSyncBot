@@ -15,7 +15,6 @@ import tech.xavi.soulsync.service.auth.AccountService;
 public class SoulSyncApplication implements CommandLineRunner {
 
 	private final AccountService accountService;
-	//private final AuthService authService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SoulSyncApplication.class, args);
@@ -25,7 +24,6 @@ public class SoulSyncApplication implements CommandLineRunner {
 	public void run(String... args) {
 		accountService.createDefaultAdmin();
 		printSplashScreen();
-		//System.out.println(authService.getSpotifyToken().token());
 	}
 	private void printSplashScreen(){
 		log.info("    ________  __  ____   _____  ___  _______");

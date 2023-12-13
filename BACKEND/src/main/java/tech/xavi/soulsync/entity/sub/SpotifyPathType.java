@@ -2,6 +2,8 @@ package tech.xavi.soulsync.entity.sub;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 
 @Getter
 @RequiredArgsConstructor
@@ -15,6 +17,9 @@ public enum SpotifyPathType {
         for (SpotifyPathType pathType : values()){
             if (requestUrl.contains(pathType.getPath())) return pathType;
         }
-        return null;
+        throw new SoulSyncException(
+                SoulSyncError.URL_NOT_VALID,
+                HttpStatus.BAD_REQUEST
+        );
     }
 }

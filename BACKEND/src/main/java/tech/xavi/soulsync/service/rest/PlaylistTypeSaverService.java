@@ -22,6 +22,12 @@ public class PlaylistTypeSaverService {
     private final AlbumService albumService;
 
     public void handleUserRequest(String id, SpotifyPathType type) {
+        if (playlistService.isPlaylistInDB(id)) {
+            throw new SoulSyncException(
+                    SoulSyncError.PLAYLIST_ALREADY_EXISTS.buildMessage(id),
+                    HttpStatus.BAD_REQUEST
+            );
+        }
         switch (type){
             case PLAYLIST -> handlePlaylistRequest(id);
             case ARTIST -> handleDiscographyRequest(id);
@@ -30,12 +36,6 @@ public class PlaylistTypeSaverService {
     }
 
     private void handlePlaylistRequest(String playlistId){
-        if (playlistService.isPlaylistInDB(playlistId)) {
-            throw new SoulSyncException(
-                    SoulSyncError.PLAYLIST_ALREADY_EXISTS.buildMessage(playlistId),
-                    HttpStatus.BAD_REQUEST
-            );
-        }
         Playlist playlist = playlistService.savePlaylist(playlistId);
         List<SpotifySong> playlistSongs = playlistService.getPlaylistSongsFromSpotify(playlistId);
         playlistService.addSongsToPlaylist(playlist,playlistSongs);

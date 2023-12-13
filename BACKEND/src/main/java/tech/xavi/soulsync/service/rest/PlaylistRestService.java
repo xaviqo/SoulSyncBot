@@ -34,29 +34,30 @@ public class PlaylistRestService {
                     HttpStatus.BAD_REQUEST
             );
         }
-
         SpotifyPathType pathType = SpotifyPathType.findPathTypeByURL(request.playlist());
-
-        if (Objects.isNull(pathType)) {
-            throw new SoulSyncException(
-                    SoulSyncError.URL_NOT_VALID,
-                    HttpStatus.BAD_REQUEST
-            );
-        }
-
-        String id = obtainIdFromRequest(request,pathType);
+        String id = obtainIdFromRequest(request.playlist(),pathType);
         playlistTypeSaverService.handleUserRequest(id,pathType);
+
     }
 
-    private String obtainIdFromRequest(AddPlaylistReq request, SpotifyPathType pathType) throws URISyntaxException {
+    private String obtainIdFromRequest(String requestInput, SpotifyPathType pathType) throws URISyntaxException {
         String typePath = pathType.getPath();
-        String requestInput = request.playlist();
         URI uri = new URI(requestInput);
         String path = uri.getPath();
-        if (path.substring(typePath.length()).contains("?")) {
-            return path.substring(0, path.indexOf("?"));
+
+        int typeIndex = path.indexOf(typePath);
+        if (typeIndex != -1) {
+            int startIndex = typeIndex + typePath.length();
+            int endIndex = path.indexOf("/", startIndex);
+
+            return (endIndex == -1)
+                    ? path.substring(startIndex)
+                    : path.substring(startIndex, endIndex);
         }
-        return path.substring(typePath.length());
+        throw new SoulSyncException(
+                SoulSyncError.URL_NOT_VALID,
+                HttpStatus.BAD_REQUEST
+        );
     }
 
     private boolean isValidURL(String string){

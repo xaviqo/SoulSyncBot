@@ -21,7 +21,8 @@ public class PlaylistTypeSaverService {
     private final PlaylistService playlistService;
     private final AlbumService albumService;
 
-    public void handleUserRequest(String id, SpotifyPathType type) {
+    public void
+    handleUserRequest(String id, SpotifyPathType type) {
         if (playlistService.isPlaylistInDB(id)) {
             throw new SoulSyncException(
                     SoulSyncError.PLAYLIST_ALREADY_EXISTS.buildMessage(id),

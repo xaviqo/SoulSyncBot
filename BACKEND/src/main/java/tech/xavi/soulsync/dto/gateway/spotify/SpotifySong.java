@@ -1,8 +1,10 @@
 package tech.xavi.soulsync.dto.gateway.spotify;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -34,15 +36,20 @@ public class SpotifySong {
                 .toList();
     }
 
+
     @Data
     public static class Track {
         private List<Artist> artists;
         private String name;
         private String id;
         private Album album;
-
+        @JsonProperty("album")
+        public void setAlbum(Album album){
+            this.album = album;
+        }
     }
 
+    @NoArgsConstructor
     @AllArgsConstructor
     @Data
     public static class Album {

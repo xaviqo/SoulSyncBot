@@ -41,7 +41,7 @@ public class SpotifySong {
         private String id;
         private Album album;
 
-        public void setAlbum(String name){
+        public void setAlbumStr(String name){
             this.album = new Album(name);
         }
     }

@@ -67,7 +67,7 @@ public class SongService {
         spotifySong.setTrack(new SpotifySong.Track());
         spotifySong.getTrack().setId(albumTrack.getId());
         spotifySong.getTrack().setName(albumTrack.getName());
-        spotifySong.getTrack().setAlbum(albumName);
+        spotifySong.getTrack().setAlbumStr(albumName);
         spotifySong.getTrack().setArtists(albumTrack.getArtists());
         return spotifySong;
     }

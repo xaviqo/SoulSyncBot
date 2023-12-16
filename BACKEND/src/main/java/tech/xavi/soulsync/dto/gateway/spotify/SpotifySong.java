@@ -41,14 +41,11 @@ public class SpotifySong {
         private String id;
         private Album album;
 
-        public void setAlbumStr(String name){
-            this.album = new Album(name);
-        }
     }
 
     @AllArgsConstructor
     @Data
-    private static class Album {
+    public static class Album {
         private String name;
     }
 

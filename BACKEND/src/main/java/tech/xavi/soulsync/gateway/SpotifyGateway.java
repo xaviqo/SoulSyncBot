@@ -1,6 +1,8 @@
 package tech.xavi.soulsync.gateway;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mashape.unirest.http.HttpMethod;
 import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
@@ -13,6 +15,7 @@ import tech.xavi.soulsync.dto.gateway.spotify.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static tech.xavi.soulsync.service.main.PlaylistService.PL_REQ_LIMIT_VALUE;
 
@@ -27,7 +30,7 @@ public class SpotifyGateway extends Gateway{
     private final String ARTIST_GET_ALBUMS;
     private final String ALBUM_GET_TRACKS;
     private long retryThreshold;
-    private final Map<String,String> responsesMap;
+    private final Cache<String,String> responsesCache;
 
 
     public SpotifyGateway(
@@ -48,7 +51,9 @@ public class SpotifyGateway extends Gateway{
         this.PL_GET_COVER = mainBaseUrl+mainEpGetCover;
         this.ARTIST_GET_ALBUMS = mainBaseUrl+artistEpGetAlbums;
         this.ALBUM_GET_TRACKS = mainBaseUrl+albumEpGetTracks;
-        this.responsesMap = new HashMap<>();
+        this.responsesCache = Caffeine.newBuilder()
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .build();
     }
 
     @Override
@@ -56,7 +61,7 @@ public class SpotifyGateway extends Gateway{
         if (isRateLimitThresholdPassed()) {
             HttpResponse<String> response = call(api,request);
             if (response.getStatus() != 429) {
-                responsesMap.put(
+                responsesCache.put(
                         request.getUrl(),
                         response.getBody()
                 );
@@ -68,7 +73,7 @@ public class SpotifyGateway extends Gateway{
         return mapResponseBody(
                 api,
                 request,
-                responsesMap.get(request.getUrl()),
+                responsesCache.getIfPresent(request.getUrl()),
                 responseClass
         );
     }

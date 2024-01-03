@@ -18,9 +18,9 @@ services:
       context: ../BACKEND
       dockerfile: Dockerfile
     environment:
-      - SOULSYNC_DATASOURCE_URL=jdbc:postgresql://db:5432/soulsync?currentSchema=public&ssl=false
-      - SOULSYNC_DATASOURCE_USER=soulsync
-      - SOULSYNC_DATASOURCE_PASS=soulsync
+      SOULSYNC_DATASOURCE_URL: jdbc:postgresql://db:5432/soulsync?currentSchema=public&ssl=false
+      SOULSYNC_DATASOURCE_USER: soulsync
+      SOULSYNC_DATASOURCE_PASS: soulsync
     ports:
       - 14947:14947
     depends_on:
@@ -31,8 +31,6 @@ services:
     build:
       context: ../FRONTEND
       dockerfile: Dockerfile
-    environment:
-      - VUE_APP_BACKEND_URL=http://localhost:14947
     ports:
       - "7316:7316"
   

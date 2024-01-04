@@ -63,6 +63,10 @@ public class AuthService {
         return slskdToken;
     }
 
+    public synchronized void renewTokens(){
+        slskdToken = null;
+        spotifyToken = null;
+    }
 
     private String getB64credentials(){
         String credentialString = getConfiguration().getSpotifyClientId() + ":" + getConfiguration().getSpotifyClientSecret();

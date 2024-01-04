@@ -8,6 +8,10 @@ The development is being done with SpringBoot for the backend and VueJS for the 
 
 Note that the bot is still under development, although it is already usable. If you have any questions or collaboration, don't hesitate to contact me a traves de mi portfolio.
 
+== Features
+
+== Acknowledgments
+
 == Captures
 
 .SoulSync home page

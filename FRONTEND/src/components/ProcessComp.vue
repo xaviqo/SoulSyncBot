@@ -58,13 +58,20 @@
       </div>
       <Card class="w-full border-1 border-black-alpha-90 shadow-2 mt-1">
         <template #content>
-          <div class="w-full flex justify-content-center">
+          <div class="w-full flex justify-content-between">
             <div
                 @click="reboot($event)"
                 class="m-2 p-3 border-1 border-black-alpha-90 bg-red-100 hover:bg-orange-100 cursor-pointer shadow-1 mr-4"
             >
               <i :class="'mr-2 pi pi-sync'" style="font-size: .9rem" />
               Reboot Queue
+            </div>
+            <div
+                @click="renewTokens()"
+                class="m-2 p-3 border-1 border-black-alpha-90 bg-red-100 hover:bg-orange-100 cursor-pointer shadow-1 mr-4"
+            >
+              <i :class="'mr-2 pi pi-sync'" style="font-size: .9rem" />
+              Renew Tokens
             </div>
           </div>
         </template>
@@ -90,13 +97,25 @@ export default {
   }),
   methods: {
     reboot(event){
-      console.log(event)
       this.$confirm.require({
         target: event.currentTarget,
         message: 'Restarting the process will stop the running searches. Are you sure you want to proceed?',
         icon: 'pi pi-exclamation-triangle',
         accept: () => this.sendReboot()
       });
+    },
+    renewTokens(){
+      this.axios.post('/configuration/renew-tokens')
+          .then( () => {
+            this.emitter.emit('show-alert',{
+              info: 'Tokens renewed',
+              icon: 'pi-info',
+              severity: 'success'
+            });
+          })
+          .catch( err => {
+            console.error(err)
+          });
     },
     fetchQueue(){
       this.axios.get('/monitor/queue')

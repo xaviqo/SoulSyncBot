@@ -45,11 +45,12 @@ spring:
   jpa:
     hibernate:
       #ddl-auto: validate
-      #ddl-auto: update
-      ddl-auto: create-drop
+      ddl-auto: update
+      #ddl-auto: create-drop
   security:
     user:
       password: none
+
 
 logging:
   level:
@@ -60,3 +61,12 @@ logging:
     org:
       hibernate:
         SQL: INFO
+
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"

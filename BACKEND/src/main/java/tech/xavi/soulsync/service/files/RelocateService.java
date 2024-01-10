@@ -1,6 +1,7 @@
 package tech.xavi.soulsync.service.files;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import tech.xavi.soulsync.dto.service.RelocateInfo;
@@ -28,16 +29,20 @@ public class RelocateService {
     private static final String SPLIT_BY_FOLDERS_REGEX = "[\\\\/]";
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
+    private final boolean IS_DEMO_MODE;
 
     public RelocateService(
+            @Value("${tech.xavi.soulsync.demo-mode.enabled}") String demoEnabled,
             PlaylistRepository playlistRepository,
             SongRepository songRepository
     ) {
+        this.IS_DEMO_MODE = demoEnabled.equals("true");
         this.playlistRepository = playlistRepository;
         this.songRepository = songRepository;
     }
 
     public void moveFinishedPlaylistsSongs(){
+        if (IS_DEMO_MODE || !getConfiguration().isRelocateFiles()) return;
         String copyAction = getConfiguration().getMoveOrCopyFiles().name();
         AtomicInteger totalMoved = new AtomicInteger();
         playlistRepository

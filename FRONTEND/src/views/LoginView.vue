@@ -1,6 +1,6 @@
 <template>
-  <div class="w-full h-full flex justify-content-center align-items-center">
-    <Card class="border-1 mt-5 border-black-alpha-90 shadow-2 p-3">
+  <div class="w-full my-6 flex justify-content-center align-items-center">
+    <Card class="border-1 border-black-alpha-90 shadow-2 p-3">
       <template #content>
         <div class="flex flex-column gap-4 mb-1">
           <div class="inline-flex flex-column gap-2">
@@ -35,6 +35,22 @@
       </template>
     </Card>
   </div>
+  <div class="w-full" v-if="demoMode.isDemoMode">
+    <Message
+        class="border-1 border-black-alpha-90 shadow-2 "
+        severity="info"
+        icon="pi pi-info-circle"
+        :closable="false"
+    >
+      <div class="m-1 lg:text-xl leading-6" style="line-height: 1.2;">
+        <strong>Demo mode: </strong>ON (You can play around as much as you want!)
+        <br>
+        <strong class="mt-1">Credentials: </strong> admin / admin
+        <br>
+        <strong>Next restart:</strong> {{ demoMode.nextReset }} minutes
+      </div>
+    </Message>
+  </div>
 </template>
 <script>
 import {mapActions} from "pinia";
@@ -46,14 +62,25 @@ export default {
     loginPayload: {
       user: null,
       pass: null
+    },
+    demoMode: {
+      isDemoMode: true,
+      nextReset: 0
     }
   }),
+  created() {
+    this.isDemoMode();
+  },
   methods: {
     reset(){
       this.loginPayload = {
         username: null,
         password: null
       };
+    },
+    isDemoMode(){
+      this.axios.get('/configuration/demo-enabled')
+          .then( res => this.demoMode = res.data );
     },
     send(){
       this.axios.post('/login',this.loginPayload)

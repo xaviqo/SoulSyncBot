@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.constants.EndPoint;
 import tech.xavi.soulsync.entity.sub.ConfigurationField;
 import tech.xavi.soulsync.service.auth.AuthService;
+import tech.xavi.soulsync.service.config.DemoService;
 import tech.xavi.soulsync.service.rest.ConfigurationRestService;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class ConfigurationController {
 
     private final ConfigurationRestService cfgRestService;
     private final AuthService authService;
+    private final DemoService demoService;
 
     @GetMapping(EndPoint.CFG_GET_CONFIGURATION_FIELDS)
     public ResponseEntity<List<ConfigurationField>> getConfigurationFields(@RequestParam String section){
@@ -40,15 +42,20 @@ public class ConfigurationController {
     }
 
     @PostMapping(EndPoint.CFG_RENEW_TKN)
-    public ResponseEntity<?> renewTokens(){
+    public ResponseEntity<Void> renewTokens(){
         authService.renewTokens();
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @PostMapping(EndPoint.CFG_REBOOT_BOT)
-    public ResponseEntity<?> reboot(){
+    public ResponseEntity<Void> reboot(){
         cfgRestService.rebootBot();
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping(EndPoint.CFG_DEMO_MODE_ENABLED)
+    public ResponseEntity<Map<String,Object>> isDemoMode(){
+        return ResponseEntity.ok(demoService.isDemoMode());
     }
 
 }

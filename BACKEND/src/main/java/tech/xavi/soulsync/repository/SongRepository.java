@@ -34,4 +34,7 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
             "JOIN s.playlists p " +
             "WHERE s.spotifyId = :songId")
     Set<String> findPlaylistIdsBySongId(@Param("songId") String songId);
+
+    @Query("DELETE From Song s WHERE s.added >= :stamp")
+    long deleteByAdded(@Param("stamp") long stamp);
 }

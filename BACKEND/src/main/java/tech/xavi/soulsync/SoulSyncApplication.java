@@ -7,6 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import tech.xavi.soulsync.service.auth.AccountService;
+import tech.xavi.soulsync.service.config.DemoService;
 
 @EnableScheduling
 @Log4j2
@@ -15,6 +16,7 @@ import tech.xavi.soulsync.service.auth.AccountService;
 public class SoulSyncApplication implements CommandLineRunner {
 
 	private final AccountService accountService;
+	private final DemoService demoService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SoulSyncApplication.class, args);

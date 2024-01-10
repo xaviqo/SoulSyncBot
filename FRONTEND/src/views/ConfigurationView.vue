@@ -29,6 +29,16 @@
     <MonitorComponent v-else-if="section === 'logs'"></MonitorComponent>
     <ProcessComp v-else-if="section === 'process'"></ProcessComp>
   </div>
+  <div class="m-1 w-full">
+    <Message
+        class="border-1 border-black-alpha-90 shadow-3"
+        severity="info"
+        icon="pi pi-info"
+        closable
+    >
+      Some configurations (Concurrent Song Downloads/Mins between tasks) require a process reboot from the "Process" section to be applied
+    </Message>
+  </div>
 </template>
 
 <script>
@@ -83,13 +93,6 @@ export default {
         this.cfgCard = card;
       }
     }
-  },
-  created() {
-    this.emitter.emit('show-alert',{
-      info: 'Some configurations (Concurrent Song Downloads/Mins between tasks) require a process reboot from the "Process" section to be applied',
-      icon: 'pi-info',
-      severity: 'info'
-    });
   }
 }
 </script>

@@ -19,6 +19,7 @@ public class EndPoint {
     public static final String CFG_RESET_SECTION = CONFIGURATION+"/reset";
     public static final String CFG_REBOOT_BOT = CONFIGURATION+"/reboot";
     public static final String CFG_RENEW_TKN = CONFIGURATION+"/renew-tokens";
+    public static final String CFG_DEMO_MODE_ENABLED = CONFIGURATION+"/demo-enabled";
 
     public static final String MONITOR = VERSION+"/monitor";
     public static final String MONITOR_GET_LOGS = MONITOR+"/log";

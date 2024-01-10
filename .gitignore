@@ -1,4 +1,5 @@
 .vscode/
+*.sql
 *.jar
 *.war
 *.ear

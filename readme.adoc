@@ -74,6 +74,8 @@ _Section in progress_
 
 === Spotify API keys
 
+- Crea una APP desde el dashboard de Spotify for Developers: https://developer.spotify.com/dashboard
+
 === Slskd API URL
 
 === Control Panel

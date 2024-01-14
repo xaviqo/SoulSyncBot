@@ -1,6 +1,7 @@
 package tech.xavi.soulsync.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -37,6 +38,7 @@ public interface PlaylistRepository extends JpaRepository<Playlist, String> {
             "WHERE p.spotifyId = :playlistId")
     Integer playlistExists(@Param("playlistId") String playlistId);
 
+    @Modifying
     @Query("DELETE From Playlist p WHERE p.added >= :stamp")
     long deleteByAdded(@Param("stamp") long stamp);
 

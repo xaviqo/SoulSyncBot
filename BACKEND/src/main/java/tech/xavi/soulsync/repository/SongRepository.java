@@ -1,6 +1,7 @@
 package tech.xavi.soulsync.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -35,6 +36,7 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
             "WHERE s.spotifyId = :songId")
     Set<String> findPlaylistIdsBySongId(@Param("songId") String songId);
 
+    @Modifying
     @Query("DELETE From Song s WHERE s.added >= :stamp")
     long deleteByAdded(@Param("stamp") long stamp);
 }

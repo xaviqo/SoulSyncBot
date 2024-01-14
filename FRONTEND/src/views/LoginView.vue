@@ -64,7 +64,7 @@ export default {
       pass: null
     },
     demoMode: {
-      isDemoMode: true,
+      isDemoMode: false,
       nextReset: 0
     }
   }),

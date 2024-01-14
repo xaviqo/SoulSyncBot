@@ -22,7 +22,7 @@ services:
       SOULSYNC_DATASOURCE_USER: soulsync
       SOULSYNC_DATASOURCE_PASS: soulsync
     ports:
-      - "14947:14947"
+      - "6743:6743"
     depends_on:
       - db
 

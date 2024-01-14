@@ -1,12 +1,12 @@
-= SoulSync BOT
+image::README/logo.png[align=center]
 
 == Description
 
-SoulSync is a bot to automate the downloading of music from the SoulSeek network. It uses the Spotify and Slskd APIs to manage downloads.
+*SoulSync* is a bot to automate the downloading of music from the SoulSeek network. It uses the link:https://developer.spotify.com/documentation/web-api[Spotify] and link:https://github.com/slskd/slskd[Slskd] APIs to manage downloads.
 
-The development is being done with SpringBoot for the backend and VueJS for the frontend, since they are the two technologies that I handle better. Although I am working on automating the deployment with docker, the file is not ready yet. If you have any questions about how to set it up, please contact me.
+The development is being done with SpringBoot for the backend and VueJS for the frontend, since they are the two technologies that I handle better. If you have any questions about how to set it up, please contact me.
 
-Note that the bot is still under development, although it is already usable. If you have any questions or collaboration, don't hesitate to contact me a traves de mi portfolio.
+*This bot is still under development*, although it is already a bit unstable. If you have any questions or would like to collaborate, don't hesitate to link:https://xavi.tech[contact me] via email or through this repository.
 
 == Installation
 
@@ -45,15 +45,50 @@ You can adapt some points of this file to your needs, for a deeper configuration
 * Backend - *be*: API listening port and Postgres connection data. If you modify the API listening port, you must create an .env file with the environment variable _VUE_APP_BACKEND_URL_ and the value of the selected port.
 * Frontend - *fe*: Express server listening port for the frontend.
 
+==== Build and compose
 
+Finally, we will build the docker images (we use --no-cache to ensure that we build them from 0):
+----
+docker-compose build --no-cache
+----
+
+image::README/docker-build.png[]
+
+And we will start the services:
+----
+docker-compose up
+----
+
+
+====
+*Attention!* It may take several minutes to start, as it has to download all the dependencies, compile and start the services.
+====
+
+Once started, we can visit our frontend (http://localhost:7316/) where we will be able to add from the control panel, the Spotify API keys and the Slskd URL to where we will send the search and download requests.
 
 === Standard installation
 
-== Control Panel
+_Section in progress_
+
+== Configuration
+
+=== Spotify API keys
+
+=== Slskd API URL
+
+=== Control Panel
+
+=== SpringBoot
+
+=== VueJS
+
+=== Logs
 
 == Features
 
 == Acknowledgments
+
+Soulseek community and Slskd
 
 == Captures
 

@@ -8,6 +8,49 @@ The development is being done with SpringBoot for the backend and VueJS for the 
 
 Note that the bot is still under development, although it is already usable. If you have any questions or collaboration, don't hesitate to contact me a traves de mi portfolio.
 
+== Installation
+
+====
+This guide is focused on the installation on a Linux system, on other OS some steps may differ.
+====
+
+In order to run the bot correctly, you must first have an instance of Slskd running locally or on another remote machine.
+
+In the official Slskd repository you will get all the necessary information: https://github.com/slskd/slskd
+
+=== Install using Docker
+
+In order to install with docker, make sure you have Docker installed on your OS (https://docs.docker.com/engine/install/) and also Docker Compose (https://docs.docker.com/compose/install/)
+
+If you already have Docker and Slskd up and running, we can continue:
+
+==== Clone this repo on your machine
+
+----
+git clone https://github.com/xaviqo/SoulSyncBot.git
+----
+
+==== Move to the DOCKER directory
+
+----
+cd SoulSyncBot/DOCKER
+----
+
+==== Customize the YAML file if needed
+
+You can adapt some points of this file to your needs, for a deeper configuration of the application, you will have to do it from the properties and yaml files of the Java API or from the control panel once the bot has started.
+
+- *Services*
+* Database - *db*: You can change the port and authentication credentials to your preference, but you must also change them in the service configuration below (be).
+* Backend - *be*: API listening port and Postgres connection data. If you modify the API listening port, you must create an .env file with the environment variable _VUE_APP_BACKEND_URL_ and the value of the selected port.
+* Frontend - *fe*: Express server listening port for the frontend.
+
+
+
+=== Standard installation
+
+== Control Panel
+
 == Features
 
 == Acknowledgments

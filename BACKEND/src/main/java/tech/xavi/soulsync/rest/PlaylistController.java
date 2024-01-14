@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.constants.EndPoint;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.service.AddPlaylistReq;
 import tech.xavi.soulsync.dto.service.PausePlaylistReq;
 import tech.xavi.soulsync.dto.service.PlaylistDataTable;
@@ -12,6 +13,8 @@ import tech.xavi.soulsync.entity.Playlist;
 import tech.xavi.soulsync.entity.Song;
 import tech.xavi.soulsync.entity.sub.PlaylistType;
 import tech.xavi.soulsync.entity.sub.SongStatus;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
+import tech.xavi.soulsync.service.config.DemoService;
 import tech.xavi.soulsync.service.rest.PlaylistRestService;
 import tech.xavi.soulsync.service.rest.QueueRestService;
 
@@ -26,6 +29,7 @@ public class PlaylistController {
 
     private final PlaylistRestService playlistRestService;
     private final QueueRestService queueRestService;
+    private final DemoService demoService;
 
     @PostMapping(EndPoint.PLAYLIST)
     public ResponseEntity<Playlist> addPlaylist(@RequestBody AddPlaylistReq request) throws URISyntaxException {
@@ -43,6 +47,12 @@ public class PlaylistController {
 
     @DeleteMapping(EndPoint.PLAYLIST)
     public ResponseEntity<?> removePlaylist(@RequestParam String playlistId){
+        if (demoService.isDemoModeOn()){
+            throw new SoulSyncException(
+                    SoulSyncError.DELETE_DISABLED,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
         playlistRestService.removePlaylist(playlistId);
         queueRestService.pausePlaylist(playlistId,false);
         return new ResponseEntity<>(HttpStatus.OK);

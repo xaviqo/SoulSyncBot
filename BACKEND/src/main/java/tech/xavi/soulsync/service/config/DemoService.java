@@ -70,9 +70,13 @@ public class DemoService {
     public Map<String,Object> isDemoMode(){
         int minForNextReset = 60 - LocalTime.now().getMinute();
         return Map.of(
-                "isDemoMode", IS_DEMO,
+                "isDemoMode", isDemoModeOn(),
                 "nextReset", minForNextReset
         );
+    }
+
+    public boolean isDemoModeOn(){
+        return IS_DEMO;
     }
 
     private void resetAccounts() {

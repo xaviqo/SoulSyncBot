@@ -5,18 +5,18 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import tech.xavi.soulsync.service.auth.AccountService;
-import tech.xavi.soulsync.service.config.DemoService;
 
 @EnableScheduling
 @Log4j2
 @RequiredArgsConstructor
 @SpringBootApplication
-public class SoulSyncApplication implements CommandLineRunner {
+public class SoulSyncApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
 	private final AccountService accountService;
-	private final DemoService demoService;
 
 	public static void main(String[] args) {
 		SpringApplication.run(SoulSyncApplication.class, args);
@@ -34,4 +34,10 @@ public class SoulSyncApplication implements CommandLineRunner {
 		log.info(" /___/\\____/\\____/____/___/  /_/_/|_/\\___/  ");
 		log.info("");
 	}
+
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+		return builder.sources(SoulSyncApplication.class);
+	}
+
 }

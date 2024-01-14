@@ -5,7 +5,7 @@ services:
     container_name: db
     image: postgres:latest
     ports:
-      - 5432:5432
+      - "5432:5432"
     environment:
       POSTGRES_USER: soulsync
       POSTGRES_PASSWORD: soulsync
@@ -22,7 +22,7 @@ services:
       SOULSYNC_DATASOURCE_USER: soulsync
       SOULSYNC_DATASOURCE_PASS: soulsync
     ports:
-      - 14947:14947
+      - "14947:14947"
     depends_on:
       - db
 

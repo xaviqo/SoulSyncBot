@@ -40,6 +40,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, String> {
 
     @Modifying
     @Query("DELETE From Playlist p WHERE p.added >= :stamp")
-    long deleteByAdded(@Param("stamp") long stamp);
+    int deleteByAdded(@Param("stamp") long stamp);
 
 }

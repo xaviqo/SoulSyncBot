@@ -58,6 +58,7 @@ export default {
               icon: 'pi-check-circle',
               severity: 'success'
             });
+            this.emitter.emit('refresh-playlists');
           })
           .catch( (err) => {
             this.emitter.emit('show-alert',{

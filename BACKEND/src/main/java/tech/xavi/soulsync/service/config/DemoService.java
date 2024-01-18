@@ -50,12 +50,12 @@ public class DemoService {
         resetAccounts();
         log.info("[demoModeRestart] - Accounts restarted for demo mode");
 
-        long totalDeletedSongs = removeSongsFromPl();
+        int totalDeletedSongs = removeSongsFromPl();
         if (totalDeletedSongs > 0) {
             log.info("[demoModeRestart] - A total of {} songs have been removed from DB",totalDeletedSongs);
         }
 
-        long totalDeletedPl = removePlaylists();
+        int totalDeletedPl = removePlaylists();
         if (totalDeletedPl > 0) {
             log.info("[demoModeRestart] - A total of {} playlists have been removed from DB",totalDeletedPl);
         }
@@ -84,11 +84,13 @@ public class DemoService {
         accountService.createDefaultAdmin();
     }
 
-    private long removeSongsFromPl(){
+    @Transactional
+    private int removeSongsFromPl(){
         return songRepository.deleteByAdded(STAMP_THRESHOLD);
     }
 
-    private long removePlaylists(){
+    @Transactional
+    private int removePlaylists(){
         return playlistRepository.deleteByAdded(STAMP_THRESHOLD);
     }
 

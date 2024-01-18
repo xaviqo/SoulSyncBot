@@ -38,5 +38,5 @@ public interface SongRepository extends JpaRepository<Song, Integer> {
 
     @Modifying
     @Query("DELETE From Song s WHERE s.added >= :stamp")
-    long deleteByAdded(@Param("stamp") long stamp);
+    int deleteByAdded(@Param("stamp") long stamp);
 }

@@ -1,5 +1,6 @@
 package tech.xavi.soulsync.service.config;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -85,12 +86,12 @@ public class DemoService {
     }
 
     @Transactional
-    private int removeSongsFromPl(){
+    protected int removeSongsFromPl(){
         return songRepository.deleteByAdded(STAMP_THRESHOLD);
     }
 
     @Transactional
-    private int removePlaylists(){
+    protected int removePlaylists(){
         return playlistRepository.deleteByAdded(STAMP_THRESHOLD);
     }
 

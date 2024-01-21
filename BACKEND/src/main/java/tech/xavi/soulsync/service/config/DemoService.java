@@ -14,6 +14,7 @@ import java.io.File;
 import java.time.LocalTime;
 import java.util.Map;
 
+@Transactional
 @Log4j2
 @Service
 public class DemoService {
@@ -48,7 +49,6 @@ public class DemoService {
     public void demoModeRestart() {
         if (!IS_DEMO) return;
 
-        resetAccounts();
         log.info("[demoModeRestart] - Accounts restarted for demo mode");
 
         int totalDeletedSongs = removeSongsFromPl();
@@ -80,17 +80,10 @@ public class DemoService {
         return IS_DEMO;
     }
 
-    private void resetAccounts() {
-        accountRepository.deleteAll();
-        accountService.createDefaultAdmin();
-    }
-
-    @Transactional
     protected int removeSongsFromPl(){
         return songRepository.deleteByAdded(STAMP_THRESHOLD);
     }
 
-    @Transactional
     protected int removePlaylists(){
         return playlistRepository.deleteByAdded(STAMP_THRESHOLD);
     }

@@ -30,7 +30,12 @@
   <Card class="w-full border-1 border-black-alpha-90 shadow-2 mt-1">
     <template #content>
       <div v-if="isApiAlive" class="w-full h-full grid">
-        <template v-for="field in fields" :key="field.field">
+        <div v-if="demoMode" class="w-full text-xl text-gray-50 flex justify-content-center" style="text-align: center">
+          <div class="bg-gray-300 p-5 border-1 border-gray-200">
+            Disabled in <strong>demo mode</strong>
+          </div>
+        </div>
+        <template v-else v-for="field in fields" :key="field.field">
           <div class="col-6">
             <div class="border-left-1 border-gray-200 flex justify-content-start align-items-center p-1 w-full h-full capitalize">
               <i class="pi pi-chevron-right mr-1" style="font-size: .6rem; color: rgb(171,171,171)"></i>
@@ -128,7 +133,8 @@ export default {
     ...mapState(useUserCfgStore, ['isApiAlive'])
   },
   data: () => ({
-    fields: []
+    fields: [],
+    demoMode: false
   }),
   props: {
     section: Object,
@@ -198,10 +204,13 @@ export default {
           { params: { section: section.section } }
       )
       .then( res => {
+        this.demoMode = false;
         this.fields = res.data;
       })
       .catch( err => {
-        console.error(err)
+        if (err.response.data.code === 705) {
+          this.demoMode = true;
+        }
       })
     },
     capitalizeWords(str) {

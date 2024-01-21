@@ -17,7 +17,7 @@ public enum SoulSyncError {
     CFG_SECTION_NOT_FOUND(702,"Section '%s' is not valid"),
     CFG_FIELD_NOT_FOUND(703,"Field '%s' is not valid"),
     FIELD_VALUE_NOT_VALID(704,"Value '%s' is not valid for field '%s'. %s"),
-    DELETE_DISABLED(705,"Delete is disabled in demo mode"),
+    FUNCTION_DISABLED(705,"Function disabled in demo mode"),
 
     GATEWAY_FATAL_ERROR(800,"A fatal error has occurred while calling the %s API"),
     GATEWAY_CALL_ERROR(801,"An error occurred getting a response from the %s API"),

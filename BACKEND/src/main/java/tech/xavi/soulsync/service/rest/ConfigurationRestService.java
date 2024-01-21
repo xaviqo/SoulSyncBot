@@ -3,11 +3,15 @@ package tech.xavi.soulsync.service.rest;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.entity.sub.ConfigurationField;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.service.auth.AccountService;
 import tech.xavi.soulsync.service.config.CfgFieldsService;
 import tech.xavi.soulsync.service.config.ConfigurationService;
+import tech.xavi.soulsync.service.config.DemoService;
 import tech.xavi.soulsync.service.config.HealthService;
 import tech.xavi.soulsync.service.task.QueueManagerService;
 import tech.xavi.soulsync.service.task.TaskManagerService;
@@ -23,6 +27,7 @@ public class ConfigurationRestService {
     private final AccountService accountService;
     private final QueueManagerService queueManagerService;
     private final TaskManagerService taskManagerService;
+    private final DemoService demoService;
     private final ObjectMapper objectMapper;
 
     public ConfigurationRestService(
@@ -31,6 +36,7 @@ public class ConfigurationRestService {
             AccountService accountService,
             QueueManagerService queueManagerService,
             TaskManagerService taskManagerService,
+            DemoService demoService,
             ObjectMapper objectMapper
     ) {
         Map<ConfigurationField.Section,List<ConfigurationField>> fieldsBySection = new HashMap<>();
@@ -41,6 +47,7 @@ public class ConfigurationRestService {
         this.fieldsService = fieldsService;
         this.healthService = healthService;
         this.accountService = accountService;
+        this.demoService = demoService;
         this.queueManagerService = queueManagerService;
         this.taskManagerService = taskManagerService;
         this.objectMapper = objectMapper;
@@ -61,6 +68,12 @@ public class ConfigurationRestService {
 
     public List<ConfigurationField> saveJsonConfiguration(String sectionStr, List<Map<String,Object>> configValues){
         ConfigurationField.Section section = fieldsService.getSection(sectionStr);
+        if (demoService.isDemoModeOn() && section.equals(ConfigurationField.Section.API)) {
+            throw new SoulSyncException(
+                    SoulSyncError.FUNCTION_DISABLED,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
         List<ConfigurationField> fields = fieldsService.fieldsMapToConfigurationFields(configValues);
         fields.forEach( field -> {
             fieldsService.checkValidFieldValue(field);
@@ -85,6 +98,12 @@ public class ConfigurationRestService {
 
     public List<ConfigurationField> getFieldsBySection(String sectionStr){
         ConfigurationField.Section section = fieldsService.getSection(sectionStr);
+        if (demoService.isDemoModeOn() && section.equals(ConfigurationField.Section.API)) {
+            throw new SoulSyncException(
+                    SoulSyncError.FUNCTION_DISABLED,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
         List<ConfigurationField> fields = new ArrayList<>();
         for (ConfigurationField field : CONFIGURATION_FIELDS.get(section)) {
             fields.add(getFieldCurrentValue(field));
@@ -118,6 +137,12 @@ public class ConfigurationRestService {
     }
 
     private List<?> saveOrUpdateUser(List<Map<String,Object>> configValues){
+        if (demoService.isDemoModeOn()) {
+            throw new SoulSyncException(
+                    SoulSyncError.FUNCTION_DISABLED,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
         String username = (String) configValues.get(0).get("value");
         String password = (String) configValues.get(1).get("value");
         boolean isNewAccount = configValues.get(2).get("value").equals("true");

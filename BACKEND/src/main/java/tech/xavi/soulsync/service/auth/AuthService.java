@@ -1,33 +1,32 @@
 package tech.xavi.soulsync.service.auth;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdTokenRes;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyTokenRes;
 import tech.xavi.soulsync.entity.sub.SoulSyncConfiguration;
+import tech.xavi.soulsync.entity.sub.SoulSyncError;
 import tech.xavi.soulsync.entity.sub.Token;
 import tech.xavi.soulsync.gateway.SlskdGateway;
 import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.service.config.ConfigurationService;
+import tech.xavi.soulsync.service.config.DemoService;
 
 import java.time.Instant;
 
+@RequiredArgsConstructor
 @Log4j2
 @Service
 public class AuthService {
 
     private final SpotifyGateway spotifyGateway;
     private final SlskdGateway slskdGateway;
+    private final DemoService demoService;
     private Token spotifyToken;
     private Token slskdToken;
-
-    public AuthService(
-            SpotifyGateway spotifyGateway,
-            SlskdGateway slskdGateway
-    ) {
-        this.spotifyGateway = spotifyGateway;
-        this.slskdGateway = slskdGateway;
-    }
 
     public synchronized Token getSpotifyToken(){
         if (spotifyToken == null || isTokenExpired(spotifyToken)){
@@ -64,6 +63,12 @@ public class AuthService {
     }
 
     public synchronized void renewTokens(){
+        if (demoService.isDemoModeOn()) {
+            throw new SoulSyncException(
+                    SoulSyncError.FUNCTION_DISABLED,
+                    HttpStatus.BAD_REQUEST
+            );
+        }
         slskdToken = null;
         spotifyToken = null;
     }

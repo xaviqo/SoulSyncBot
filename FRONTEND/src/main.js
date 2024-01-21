@@ -62,6 +62,23 @@ axios.interceptors.request.use(
         Promise.reject(error)
     });
 
+axios.interceptors.response.use(
+    response => response,
+    error => {
+
+        if (error.response) {
+            emitter.emit('show-alert',{
+                info: error.response.data.message,
+                icon: 'pi-exclamation-circle',
+                severity: 'error'
+            });
+        }
+
+        return Promise.reject(error);
+    }
+);
+
+
 
 app.config.globalProperties.emitter = emitter
 app

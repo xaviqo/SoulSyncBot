@@ -49,7 +49,7 @@ public class PlaylistController {
     public ResponseEntity<?> removePlaylist(@RequestParam String playlistId){
         if (demoService.isDemoModeOn()){
             throw new SoulSyncException(
-                    SoulSyncError.DELETE_DISABLED,
+                    SoulSyncError.FUNCTION_DISABLED,
                     HttpStatus.BAD_REQUEST
             );
         }

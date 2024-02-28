@@ -66,6 +66,9 @@ public class Gateway {
     private HttpResponse<String> getResponse(ExternalApi api, HttpRequestWithBody unirestRequest) throws UnirestException {
         HttpResponse<String> response = unirestRequest.asString();
         int responseStatus = response.getStatus();
+        if (responseStatus == 429) {
+
+        }
         String responseBody = response.getBody();
         log.trace("{} Response status code: {}", api.getLoggerMethodPrefix(), responseStatus);
         log.trace("{} Complete response: {}", api.getLoggerMethodPrefix(), responseBody);

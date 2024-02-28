@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyAlbum;
-import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistCover;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.projection.PlaylistProjection;
 import tech.xavi.soulsync.entity.Playlist;
@@ -67,11 +66,10 @@ public class PlaylistService {
     }
 
     public void addSongsToPlaylist(Playlist playlist, List<SpotifySong> spotifySongList){
-        spotifySongList
-                .forEach(songService::checkHasIdBeforeAdding);
         spotifySongList.stream()
                 .collect(Collectors
-                        .toMap(SpotifySong::getId,
+                        .toMap(
+                                SpotifySong::getId,
                                 songService::getOrCreateSong,
                                 (existing, replace) -> existing)
                 )
@@ -166,11 +164,11 @@ public class PlaylistService {
                 .name();
     }
 
-    public String getCover(String playlistId) {
+    public String getCover(String playlistId){
         String token = authService.getSpotifyToken().token();
-        SpotifyPlaylistCover[] covers = spotifyGateway
-                .getPlaylistCover(token, playlistId);
-        return covers.length > 0 ? covers[0].url() : "";
+        return spotifyGateway
+                .getPlaylistCover(token,playlistId)[0]
+                .url();
     }
 
     public List<SpotifySong> getPlaylistSongsFromSpotify(String playlistId) {

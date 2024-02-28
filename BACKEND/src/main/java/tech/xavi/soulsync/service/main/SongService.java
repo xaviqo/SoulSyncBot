@@ -11,11 +11,8 @@ import tech.xavi.soulsync.entity.sub.SongStatus;
 import tech.xavi.soulsync.repository.SongRepository;
 import tech.xavi.soulsync.service.task.SearchService;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -26,7 +23,6 @@ public class SongService {
     private final SongRepository songRepository;
 
     public Song getOrCreateSong(SpotifySong spotifySong) {
-        log.info("song: {}",spotifySong.toString());
         return songRepository.findBySpotifyId(spotifySong.getId())
                 .orElseGet( () -> createSong(spotifySong));
     }
@@ -37,7 +33,6 @@ public class SongService {
     }
 
     public Song createSong(SpotifySong spotifySong){
-        log.info("Se crea cancion {}",spotifySong.toString());
         String searchInput = searchService
                 .getSongSearchInputForSlskd(spotifySong);
         Song song = Song.builder()
@@ -75,32 +70,6 @@ public class SongService {
         spotifySong.getTrack().setName(albumTrack.getName());
         spotifySong.getTrack().setArtists(albumTrack.getArtists());
         return spotifySong;
-    }
-
-    public void checkHasIdBeforeAdding(SpotifySong spotifySong){
-        if (spotifySong.getId() == null) {
-            spotifySong
-                    .getTrack()
-                    .setId(getAlphaNumId(spotifySong.getFirstArtist(),spotifySong.getName()));
-        }
-    }
-
-    private String getAlphaNumId(String str1, String str2) {
-        byte[] hash;
-        try {
-            hash = MessageDigest
-                    .getInstance("SHA-256")
-                    .digest((str1 + str2).getBytes());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        return hexString.substring(0, 16);
     }
 
 }

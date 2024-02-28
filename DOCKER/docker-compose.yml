@@ -22,10 +22,9 @@ services:
       SOULSYNC_DATASOURCE_USER: soulsync
       SOULSYNC_DATASOURCE_PASS: soulsync
     ports:
-      - "14947:14947"
+      - "6743:6743"
     depends_on:
       - db
-#      - slskd
 
   fe:
     container_name: fe
@@ -35,15 +34,18 @@ services:
     ports:
       - "7316:7316"
   
-#  slskd:
-#    container_name: slskd
-#    image: slskd/slskd
-#    ports:
-#      - "5030:5030"
-#      - "5031:5031"
-#      - "50300:50300"
-#    environment:
-#      - SLSKD_REMOTE_CONFIGURATION=true
-#    volumes:
-#      - /app:/app
-#    restart: always
+  # slskd:
+  #   container_name: slskd
+  #   image: slskd/slskd
+  #   ports:
+  #     - "5030:5030"
+  #     - "5031:5031"
+  #     - "50300:50300"
+  #   environment:
+  #     - SLSKD_REMOTE_CONFIGURATION=true
+  #   volumes:
+  #     - /app:/app
+  #   restart: always
+  #   soulseek:
+  #    username: soulsyncbot
+  #    password: soulsyncbot

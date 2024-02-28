@@ -5,13 +5,13 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.dto.projection.PlaylistProjection;
+import tech.xavi.soulsync.repository.AccountRepository;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.repository.SongRepository;
+import tech.xavi.soulsync.service.auth.AccountService;
 
 import java.io.File;
 import java.time.LocalTime;
-import java.util.List;
 import java.util.Map;
 
 @Transactional
@@ -19,44 +19,37 @@ import java.util.Map;
 @Service
 public class DemoService {
 
-    private final String CRON = "0 0 * * * *";
     private final boolean IS_DEMO;
     private final long STAMP_THRESHOLD;
     private final String SLSKD_DW_DIR;
     private final PlaylistRepository playlistRepository;
     private final SongRepository songRepository;
+    private final AccountRepository accountRepository;
+    private final AccountService accountService;
 
     public DemoService(
             @Value("${tech.xavi.soulsync.demo-mode.enabled}") String demoEnabled,
             @Value("${tech.xavi.soulsync.demo-mode.stamp-threshold}") String stampTh,
             @Value("${tech.xavi.soulsync.demo-mode.downloads-directory}") String dwDir,
             PlaylistRepository playlistRepository,
-            SongRepository songRepository
+            SongRepository songRepository,
+            AccountRepository accountRepository,
+            AccountService accountService
     ) {
         this.IS_DEMO = demoEnabled.equals("true");
         this.STAMP_THRESHOLD = Long.parseLong(stampTh);
         this.SLSKD_DW_DIR = dwDir;
         this.playlistRepository = playlistRepository;
         this.songRepository = songRepository;
-        log.info("[DemoService] - Threshold for deletion: {}",STAMP_THRESHOLD);
+        this.accountRepository = accountRepository;
+        this.accountService = accountService;
     }
 
-    @Scheduled(cron = CRON)
+    @Scheduled(cron = "0 0 * * * *")
     public void demoModeRestart() {
         if (!IS_DEMO) return;
 
-        log.info("[demoModeRestart] - Timestamp threshold for deletion: {}",STAMP_THRESHOLD);
-
-        getDeletionCandidates().forEach( pl -> {
-            log.info("[demoModeRestart] - The playlist exceeds the threshold '{}'. It will be deleted --> " +
-                    "[ID: {} | NAME: {} | TYPE: {} | ADDED: {}]",
-                    STAMP_THRESHOLD,
-                    pl.getSpotifyId(),
-                    pl.getName(),
-                    pl.getType(),
-                    pl.getAdded()
-            );
-        });
+        log.info("[demoModeRestart] - Accounts restarted for demo mode");
 
         int totalDeletedSongs = removeSongsFromPl();
         if (totalDeletedSongs > 0) {
@@ -93,10 +86,6 @@ public class DemoService {
 
     protected int removePlaylists(){
         return playlistRepository.deleteByAdded(STAMP_THRESHOLD);
-    }
-
-    protected List<PlaylistProjection> getDeletionCandidates(){
-        return playlistRepository.getDeletionCandidates(STAMP_THRESHOLD);
     }
 
     private long deleteFilesFromDir() {

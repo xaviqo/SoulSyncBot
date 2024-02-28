@@ -42,13 +42,4 @@ public interface PlaylistRepository extends JpaRepository<Playlist, String> {
     @Query("DELETE From Playlist p WHERE p.added >= :stamp")
     int deleteByAdded(@Param("stamp") long stamp);
 
-    @Query("SELECT " +
-            "p.spotifyId as spotifyId, " +
-            "p.name as name, " +
-            "p.type as type, " +
-            "p.added as added " +
-            "FROM Playlist p " +
-            "WHERE p.added >= :stamp")
-    List<PlaylistProjection> getDeletionCandidates(@Param("stamp") long stamp);
-
 }

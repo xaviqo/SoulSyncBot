@@ -1,15 +1,15 @@
 server:
-  port: 31667
+  port: 14947
 tech:
   xavi:
     soulsync:
-      cors-origin: https://soulsync.xavi.tech
+      cors-origin: http://localhost:7316
       demo-mode:
-        enabled: true
-        stamp-threshold: 1706600000000
-        downloads-directory: /home/rocky/slskd/app/downloads
+        enabled: false
+        stamp-threshold: 0
+        downloads-directory: /
       jwt:
-        issuer: SoulSyncAPIdemo
+        issuer: SoulSyncAPI
         token:
           exp-sec: 86400000
       gateway:
@@ -46,10 +46,22 @@ spring:
   datasource:
     url: ${SOULSYNC_DATASOURCE_URL:jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false}
     username: ${SOULSYNC_DATASOURCE_USER:soulsync}
-    password: ${SOULSYNC_DATASOURCE_PASS:1aKKsI7Wt0OEQ9v7y4w}
+    password: ${SOULSYNC_DATASOURCE_PASS:soulsync}
   jpa:
     hibernate:
-      #ddl-auto: none
       #ddl-auto: validate
       ddl-auto: update
       #ddl-auto: create-drop
+  security:
+    user:
+      password: none
+
+logging:
+  level:
+    com:
+      fasterxml:
+        jackson:
+          databind: INFO
+    org:
+      hibernate:
+        SQL: INFO

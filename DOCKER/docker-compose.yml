@@ -25,7 +25,7 @@ services:
       - "14947:14947"
     depends_on:
       - db
-      - slskd
+#      - slskd
 
   fe:
     container_name: fe

@@ -47,15 +47,20 @@ export default {
   name: "PlaylistContainerComp",
   components: {PlaylistCardComp},
   methods: {
-    fetchPlaylists(fetch){
+    fetchPlaylists(fetch) {
       if (fetch && this.isApiAlive) {
         this.axios.get('/playlist')
-            .then( res => {
+            .then(res => {
               this.waitUpdate = false;
+              res.data.forEach(pl => {
+                if (pl.cover === "") {
+                  pl.cover = "https://placehold.co/400x400/green/white";
+                }
+              });
               this.playlists = res.data;
             })
-            .catch( e => {
-              console.log(e)
+            .catch(e => {
+              console.log(e);
               this.playlists = [];
             });
       }

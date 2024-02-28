@@ -23,7 +23,8 @@
             <AppenderRef ref="Console" />
             <AppenderRef ref="File" />
         </Root>
-        <Logger name="tech.xavi.soulsync" level="DEBUG"/>
+
+        <Logger name="tech.xavi.soulsync" level="INFO"/>
     </Loggers>
 
 </Configuration>

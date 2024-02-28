@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.configuration.security.SoulSyncException;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyAlbum;
+import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistCover;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySong;
 import tech.xavi.soulsync.dto.projection.PlaylistProjection;
 import tech.xavi.soulsync.entity.Playlist;
@@ -17,6 +18,8 @@ import tech.xavi.soulsync.gateway.SpotifyGateway;
 import tech.xavi.soulsync.repository.PlaylistRepository;
 import tech.xavi.soulsync.service.auth.AuthService;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,6 +69,7 @@ public class PlaylistService {
     }
 
     public void addSongsToPlaylist(Playlist playlist, List<SpotifySong> spotifySongList){
+        spotifySongList.forEach(songService::checkHasIdBeforeAdding);
         spotifySongList.stream()
                 .collect(Collectors
                         .toMap(
@@ -166,10 +170,10 @@ public class PlaylistService {
 
     public String getCover(String playlistId){
         String token = authService.getSpotifyToken().token();
-        return spotifyGateway
-                .getPlaylistCover(token,playlistId)[0]
-                .url();
+        SpotifyPlaylistCover[] covers = spotifyGateway.getPlaylistCover(token, playlistId);
+        return covers.length > 0 ? covers[0].url() : "";
     }
+
 
     public List<SpotifySong> getPlaylistSongsFromSpotify(String playlistId) {
         return joinAllFutures(fetchPlaylistDataAsync(playlistId));

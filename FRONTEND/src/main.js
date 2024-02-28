@@ -40,7 +40,7 @@ import Chart from 'primevue/chart';
 const emitter = mitt();
 const app  = createApp({render: ()=>h(App)});
 
-axios.defaults.baseURL = process.env.VUE_APP_BACKEND_URL || 'http://localhost:14947/v1';
+axios.defaults.baseURL = 'http://localhost:6743/v1';
 
 axios.interceptors.request.use(
     async config => {

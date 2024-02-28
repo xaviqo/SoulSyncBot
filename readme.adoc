@@ -2,111 +2,95 @@ image::README/logo.png[align=center]
 
 == Description
 
-*SoulSync* is a bot to automate downloading music from the SoulSeek network. It leverages link:https://developer.spotify.com/documentation/web-api[Spotify API] and link:https://github.com/slskd/slskd[Slskd API] to manage downloads.
+*SoulSync* is a bot to automate the downloading of music from the SoulSeek network. It uses the link:https://developer.spotify.com/documentation/web-api[Spotify] and link:https://github.com/slskd/slskd[Slskd] APIs to manage downloads.
 
-The development has been done with _SpringBoot_ for the backend and _VueJS_ for the frontend.
+The development is being done with SpringBoot for the backend and VueJS for the frontend, since they are the two technologies that I handle better. If you have any questions about how to set it up, please contact me.
 
-*Please note that _SoulSync_ is currently under development*. If you have any questions or want to collaborate, feel free to link me at https://xavi.tech#contact[contact me] or through this repository.
+*This bot is still under development*, although it is already a bit unstable. If you have any questions or would like to collaborate, don't hesitate to link:https://xavi.tech[contact me] via email or through this repository.
 
-== Requirements
-
-* *SLDKD*: You need to have an instance of SLSKD running (link:https://github.com/slskd/slskd?tab=readme-ov-file#quick-start[Slskd Quick Start]) on your machine, Raspberry Pi, or VPS.
-
-* *Spotify account (free or premium)*: Needed to create an API KEY/SECRET API.
-
-* *Docker*: You must have docker installed (https://docs.docker.com/engine/install/) as well as Docker Compose (https://docs.docker.com/compose/install/).
+== Installation
 
 ====
-*If you have understood these requirements, you may continue :)*.
+This guide is focused on the installation on a Linux system, on other OS some steps may differ.
 ====
 
-== Installation with Docker
+In order to run the bot correctly, you must first have an instance of Slskd running locally or on another remote machine.
 
-* Clone the repository
+In the official Slskd repository you will get all the necessary information: https://github.com/slskd/slskd
+
+=== Install using Docker
+
+In order to install with docker, make sure you have Docker installed on your OS (https://docs.docker.com/engine/install/) and also Docker Compose (https://docs.docker.com/compose/install/)
+
+If you already have Docker and Slskd up and running, we can continue:
+
+==== Clone this repo on your machine
 
 ----
 git clone https://github.com/xaviqo/SoulSyncBot.git
 ----
 
-* Navigate to DOCKER directory
+==== Move to the DOCKER directory
 
 ----
 cd SoulSyncBot/DOCKER
 ----
 
-* Build the docker images* (we will use --no-cache to make sure we build them from scratch)
+==== Customize the YAML file if needed
 
-_* It may take several minutes to start, as it has to download all the dependencies, compile and start the_ services.
+You can adapt some points of this file to your needs, for a deeper configuration of the application, you will have to do it from the properties and yaml files of the Java API or from the control panel once the bot has started.
 
+- *Services*
+* Database - *db*: You can change the port and authentication credentials to your preference, but you must also change them in the service configuration below (be).
+* Backend - *be*: API listening port and Postgres connection data. If you modify the API listening port, you must create an .env file with the environment variable _VUE_APP_BACKEND_URL_ and the value of the selected port.
+* Frontend - *fe*: Express server listening port for the frontend.
+
+==== Build and compose
+
+Finally, we will build the docker images (we use --no-cache to ensure that we build them from 0):
 ----
 docker-compose build --no-cache
 ----
 
-* Start the services
+image::README/docker-build.png[]
 
+And we will start the services:
 ----
 docker-compose up
 ----
 
-== Minimum configuration required to operate
 
 ====
-*The default credentials are: admin/admin*. You can change them in the same panel once you are logged in.
+*Attention!* It may take several minutes to start, as it has to download all the dependencies, compile and start the services.
 ====
 
-* Log in to the bot:
+Once started, we can visit our frontend (http://localhost:7316/) where we will be able to add from the control panel, the Spotify API keys and the Slskd URL to where we will send the search and download requests.
 
-http://localhost:7316/ (credentials: admin/admin).
+=== Standard installation
 
-* Check that you have response from Slskd and Spotify:
+_Section in progress_
 
-.The 4 buttons should be green as shown in the image
-image::README/api-status.png[]
+== Configuration
 
-* Log in to the Spotify Developer dashboard. You can log in with your personal Spotify account: https://developer.spotify.com/dashboard
+=== Spotify API keys
 
-* Create an APP from the control panel by clicking the *Create App* button.
+- Crea una APP desde el dashboard de Spotify for Developers: https://developer.spotify.com/dashboard
 
-* Add an _App Name_ (e.g. "soulsync"), an _App Description_ (e.g. "description") and a _Redirect URI_. (e.g. "https://google.com"). *You can put whatever you want, we just need the API keys.
+=== Slskd API URL
 
-* Once created, go to the panel of the created app by clicking on it and press the *Settings* button at the top right.
+=== Control Panel
 
-* Copy API credentials
+=== SpringBoot
 
-image::README/spotify-dev.png[]
+=== VueJS
 
-* Paste them into the fields and save
-
-image::README/api-cred.png[]
-
-* Change also the Slskd URL and credentials if necessary (if you don't run it on your machine or you are not using the default user/password)
+=== Logs
 
 == Features
 
-* *File format settings* - Configure from the application panel the desired file format for your downloads (FLAC/MP3/OGG/AIFF...)
+== Acknowledgments
 
-* *Detecting Spotify playlist updates* - The bot will detect new additions to your spotify playlists and add them to the download queue
-
-* *Full synchronization with Navidrome or similar* - With the functionality to move downloaded files, you can organize your music by playlists or artist/disc with Navidrome or similar applications. To fully automate the process you can use my link:https://github.com/xaviqo/create-m3u-by-folders-bash[Bash script that generates playlists automatically].
-
-.Playlists from my personal Spotify on Navidrome. Obtained with the bot
-image::README/navidrome.png[]
-
-== Acknowledgements and links of interest
-
-* link:https://github.com/slskd/slskd[*Slskd Repository*] - *My gratitude towards this project is absolute*. Not only because I have been using their application for a long time, but also because their API has been fundamental for the development of the bot.
-
-* link:https://developer.spotify.com/documentation/web-api[*SoulSeek Reddit*] - Subreddit for P2P file-sharing client Soulseek
-
-* link:https://www.youtube.com/watch?v=c-TZKCsOWDw[*The other truth about PIRACY* (Spanish)] - Analysis on piracy, by a renowned communicator of the Spanish-speaking musical universe
-
-* link:https://xavi.tech[*My Personal Portfolio*] - Contact page and other projects
-
-== Final notes
-
-This is the first time I have made an application of this type. I have learned a lot during the development and there are things that I would now change, as well as ideas that I have not yet fully implemented. Therefore, I plan to make a new version of the application this year, with more features that will surely be liked.
-
-*I appreciate any comments, criticism or constructive advice.*
+Soulseek community and Slskd
 
 == Captures
 

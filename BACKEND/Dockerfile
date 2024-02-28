@@ -10,7 +10,7 @@ COPY mvnw .
 COPY .mvn/wrapper/ .mvn/wrapper/
 
 # Dar permisos de ejecución al script
-RUN chmod +x mvnw
+RUN chmod +x mvnw && sed -i 's/\r$//' mvnw
 
 # Empaquetar la aplicación
 RUN ./mvnw clean package -DskipTests

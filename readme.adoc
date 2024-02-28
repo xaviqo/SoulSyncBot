@@ -8,10 +8,12 @@ The development is being done with SpringBoot for the backend and VueJS for the 
 
 *This bot is still under development*, although it is already a bit unstable. If you have any questions or would like to collaborate, don't hesitate to link:https://xavi.tech[contact me] via email or through this repository.
 
+*🏴‍☠️ Share everything you download from others to keep the network alive 🏴‍☠️*
+
 == Installation
 
 ====
-This guide is focused on the installation on a Linux system, on other OS some steps may differ.
+This guide is focused on the installation on a Linux system, on other OS some steps may differ. 
 ====
 
 In order to run the bot correctly, you must first have an instance of Slskd running locally or on another remote machine.
@@ -44,10 +46,11 @@ You can adapt some points of this file to your needs, for a deeper configuration
 * Database - *db*: You can change the port and authentication credentials to your preference, but you must also change them in the service configuration below (be).
 * Backend - *be*: API listening port and Postgres connection data. If you modify the API listening port, you must create an .env file with the environment variable _VUE_APP_BACKEND_URL_ and the value of the selected port.
 * Frontend - *fe*: Express server listening port for the frontend.
+* link:https://github.com/slskd/slskd[Slskd] - *slskd*: Slskd service to which the bot will make requests (If you already have Slskd running on your machine, you can comment out this service)
 
 ==== Build and compose
 
-Finally, we will build the docker images (we use --no-cache to ensure that we build them from 0):
+Finally, we will build the docker images (we use --no-cache to ensure that we build them from scratch):
 ----
 docker-compose build --no-cache
 ----
@@ -74,8 +77,48 @@ _Section in progress_
 
 === Spotify API keys
 
-- Crea una APP desde el dashboard de Spotify for Developers: https://developer.spotify.com/dashboard
+- *Create a Spotify Developer Account*: Go to the Spotify Developer Dashboard (https://developer.spotify.com/dashboard) and sign in with your account (whether you are premium or not).
 
+* *Create a new App*:
+** Crea
+
+/*
+
+Here are the simple steps in English to create an app on Spotify for Developers:
+
+    Create a Spotify Developer Account:
+        Go to the Spotify Developer Dashboard (developer.spotify.com/dashboard) and sign up for a developer account if you haven't already.
+
+    Create a New App:
+        Once logged in, click on the "Create an App" button.
+        Fill in the required information for your app, such as its name and description.
+
+    Set Up Your App:
+        After creating your app, you'll receive a Client ID and Client Secret. These are needed to authenticate your app with Spotify's API.
+
+    Configure Your App:
+        Specify the redirect URIs for your app. This is where Spotify will redirect users after they authorize your app.
+
+    Add Required Scopes:
+        Choose the necessary scopes for your app's functionality. Scopes determine what actions your app can perform on behalf of the user.
+
+    Implement Authentication:
+        Use the provided Client ID and Client Secret to authenticate your app when making requests to the Spotify API. You'll typically use OAuth 2.0 for this.
+
+    Start Developing:
+        With your app set up and authenticated, you can now start developing its functionality using the Spotify API.
+
+    Test Your App:
+        Test your app thoroughly to ensure it functions as expected and complies with Spotify's developer guidelines.
+
+    Submit Your App for Review (Optional):
+        If you plan to distribute your app publicly or use certain Spotify features, you may need to submit it for review.
+
+    Go Live:
+        Once your app is ready and approved (if applicable), you can make it publicly available for users to enjoy.
+
+Remember to refer to Spotify's official documentation for detailed instructions and best practices throughout the development process.
+*/
 === Slskd API URL
 
 === Control Panel
@@ -88,9 +131,30 @@ _Section in progress_
 
 == Features
 
-== Acknowledgments
+* *File format settings* - Configure from the application panel the desired file format for your downloads (FLAC/MP3/OGG/AIFF...) 
 
-Soulseek community and Slskd
+* *Detecting Spotify playlist updates* - The bot will detect new additions to your spotify playlists and add them to the download queue
+
+* *Full synchronization with Navidrome or similar* - With the functionality to move downloaded files, you can organize your music by playlists or artist/disc with Navidrome or similar applications. To fully automate the process you can use my link:https://github.com/xaviqo/create-m3u-by-folders-bash[Bash script that generates playlists automatically]. 
+
+.Playlists from my personal Spotify on Navidrome. Obtained with the bot
+image::README/navidrome.png[]
+
+== Acknowledgements and links of interest
+
+* link:https://github.com/slskd/slskd[*Slskd Repository*] - *My gratitude towards this project is absolute*. Not only because I have been using their application for a long time, but also because their API has been fundamental for the development of the bot.
+
+* link:https://developer.spotify.com/documentation/web-api[*SoulSeek Reddit*] - Subreddit for P2P file-sharing client Soulseek
+
+* link:https://www.youtube.com/watch?v=c-TZKCsOWDw[*The other truth about PIRACY* (Spanish)] - Analysis on piracy, by a renowned communicator of the Spanish-speaking musical universe
+
+* link:https://xavi.tech[*My Personal Portfolio*] - Contact page and other projects
+
+== Final notes
+
+This is the first time I have made an application of this type. I have learned a lot during the development and there are things that I would now change, as well as ideas that I have not yet fully implemented. Therefore, I plan to make a new version of the application this year, with more features that will surely be liked.
+
+I appreciate any comments, criticism or constructive advice.
 
 == Captures
 

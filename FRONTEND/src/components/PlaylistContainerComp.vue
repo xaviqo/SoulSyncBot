@@ -52,6 +52,9 @@ export default {
         this.axios.get('/playlist')
             .then( res => {
               this.waitUpdate = false;
+              res.data.forEach( pl => {
+                if (pl.cover == "") pl.cover = "https://placehold.co/400x400/green/white";
+              })
               this.playlists = res.data;
             })
             .catch( e => {

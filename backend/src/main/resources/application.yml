@@ -1,0 +1,54 @@
+server:
+  port: 6743
+
+spring:
+  datasource:
+    #url: jdbc:mariadb://localhost:3306/soulsync?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=utf8
+    url: jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false
+    username: soulsync
+    password: soulsync
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        connection:
+          characterEncoding: utf8
+
+tech:
+  xavi:
+    soulsync:
+      gateway:
+        base-url:
+          spotify:
+            auth: https://accounts.spotify.com
+            main: https://api.spotify.com
+        path:
+          spotify:
+            auth:
+              get-token:
+                ep: /api/token
+            playlist:
+              get-playlist:
+                ep: /v1/playlists/{playlistId}
+              get-cover:
+                ep: /v1/playlists/{playlistId}/images
+            artist:
+              get-albums:
+                ep: /v1/artists/{artistId}/albums
+            album:
+              get-album:
+                ep: /v1/albums/{playlistId}
+          slskd:
+            health: /api/v0/session/enabled
+            login: /api/v0/session
+            search: /api/v0/searches
+            responses: /responses
+            download: /api/v0/transfers/downloads
+
+logging:
+  level:
+    org.springframework.web:
+      client:
+        RestTemplate: TRACE
+    com.fasterxml.jackson: INFO

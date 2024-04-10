@@ -1,0 +1,105 @@
+@startuml
+
+Class SlskdSong {
+    id long
+    spotifySong SpotifySong
+}
+
+Class SpotifySong {
+    id String
+    slskdSongs SlskdSong[]
+    name String
+    album String
+    artists String
+}
+
+Playlist "1..1" -- "0..N" PlaylistType
+Playlist "1..1" -- "0..N" RelocateStrategy
+Playlist "1..1" -- "0..N" Account
+Playlist "1..N" -- "0..N" SearchPolicyConfigurations
+
+Class Playlist {
+    id String
+    playlistType PlaylistType
+    relocateStrategy RelocateStrategy
+    owner Account
+    searchPolicyConfigurations SearchPolicyConfigurations[]
+    shouldRenameRelocated boolean
+    lastUpdate ZonedDateTime
+    spotifySong SpotifySong[]
+}
+
+Class SearchPolicyConfigurations {
+    id int
+    fileFormatsByComa String
+    wordToRemoveByComa String
+    minimumMp3Bitrate int
+    minimumMinutesPerRetry int
+    maxRetries int
+    searchInputStrategy SearchInputStrategyName
+}
+
+SearchPolicyConfigurations "1..1" -- "0..N" SearchInputStrategyName
+
+Enum SearchInputStrategyName {
+    STANDARD_STRATEGY,
+    ADD_WILDCARDS_TO_ARTIST,
+    ADD_ALBUM_INSTEAD_ARTIST
+}
+
+Enum RelocateStrategy {
+    BY_PLAYLIST,
+    BY_ARTIST,
+    BY_ALBUM
+}
+
+Enum PlaylistType {
+    PLAYLIST,
+    ALBUM
+}
+
+Class Account {
+    username String
+    password String
+    role Role
+    playlists Playlist[]
+}
+
+ConfigurationValue "0..N" -- "0..N" ConfigurationField
+ConfigurationField "1..1" -- "0..N" Section
+ConfigurationField "1..1" -- "0..N" DataType
+
+Class ConfigurationValue {
+    int id
+    configurationField ConfigurationField
+    String value
+}
+
+' if the section is null, then it is not shown in frontend
+Enum ConfigurationField {
+    fieldName String
+    isInitialSetupRequired boolean
+    section Section
+    dataType DataType
+    description String
+    min Integer
+    max Integer
+    defaultValues Object
+}
+
+Enum Section {
+        API,
+        FINDER,
+        BOT
+}
+
+Enum DataType {
+    TEXT,
+    ARRAY,
+    NUMBER,
+    RANGE,
+    SELECT,
+    BOOLEAN
+}
+
+@enduml

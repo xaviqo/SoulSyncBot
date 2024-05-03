@@ -2,35 +2,52 @@ package tech.xavi.soulsync.service.configuration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
-import tech.xavi.soulsync.entity.ConfigurationField;
+import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
-import tech.xavi.soulsync.repository.file.ConfigurationFieldRepository;
+import tech.xavi.soulsync.repository.datafile.ConfigurationFieldRepository;
+import tech.xavi.soulsync.repository.property.ConfigurationPropertyRepository;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Log4j2
+@RequiredArgsConstructor
 @Service
 public class ConfigurationFieldService {
 
+    private final ConfigurationPropertyRepository configurationPropertyRepository;
     private final ConfigurationFieldRepository configurationFieldRepository;
     private final ObjectMapper mapper;
 
-    public ConfigurationFieldService(
-            ConfigurationFieldRepository configurationFieldRepository,
-            ObjectMapper mapper
-    ) {
-        this.configurationFieldRepository = configurationFieldRepository;
-        this.mapper = mapper;
-    }
-
     public void saveFields(List<ConfigurationField> fields){
         fields.forEach(this::checkAndSave);
+    }
+
+    public <T> T getProperty(ConfigurationField cfgField, Class<T> clazz) {
+        return getProperty(
+                configurationPropertyRepository.getProperty(cfgField),
+                clazz
+        );
+    }
+
+    public <T> T getProperty(ConfigurationField cfgField) {
+        return (T) getProperty(
+                configurationPropertyRepository.getProperty(cfgField),
+                cfgField.getClazz()
+        );
+    }
+
+    public <T> T getProperty(Object value, Class<T> clazz) {
+        return (T) clazz.cast(value);
     }
 
     public ConfigurationField saveField(ConfigurationField field, Object value){
@@ -39,10 +56,26 @@ public class ConfigurationFieldService {
         return field;
     }
 
-    public List<ConfigurationField> getFromFields(ConfigurationField... fields){
+    public Set<ConfigurationField> getFieldsBySections(String sectionsByComa) {
+        return Arrays.stream(sectionsByComa.split(","))
+                .flatMap(section -> ConfigurationField.getAllBySection(section).stream())
+                .collect(Collectors.toSet());
+    }
+
+    public Set<ConfigurationField> getFieldsBySections(ConfigurationField.Section... section) {
+        return Stream.of(section)
+                .flatMap( s -> ConfigurationField.getAllBySection(s.name()).stream() )
+                .collect(Collectors.toSet());
+    }
+
+    private Set<ConfigurationField> getFromFields(ConfigurationField... fields){
         return Arrays.stream(fields)
                 .map(this::getFieldWithValue)
-                .toList();
+                .collect(Collectors.toSet());
+    }
+
+    public JsonNode getValue(ConfigurationField cfgField) {
+        return getFieldWithValue(cfgField).getValue();
     }
 
     public ConfigurationField getFieldWithValue(ConfigurationField field, Object valueIfNotPresent){
@@ -82,7 +115,6 @@ public class ConfigurationFieldService {
                     if (value.isNumber()) {break;}
                 case ARRAY:
                     if (value.isArray() && value.size() > 0) {break;}
-                    break;
                 case BOOLEAN:
                     if (value.isBoolean()) {break;}
                 case RANGE:

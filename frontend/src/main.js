@@ -17,6 +17,15 @@ import Message from "primevue/message";
 import Dialog from "primevue/dialog";
 import Steps from "primevue/steps";
 import ProgressSpinner from "primevue/progressspinner";
+import Dropdown from "primevue/dropdown";
+import InputGroup from "primevue/inputgroup";
+import FloatLabel from "primevue/floatlabel";
+import Chips from "primevue/chips";
+import InputNumber from "primevue/inputnumber";
+import Tooltip from "primevue/tooltip";
+import ToggleButton from "primevue/togglebutton";
+import ConfirmDialog from 'primevue/confirmdialog';
+import ConfirmationService from "primevue/confirmationservice";
 
 const emitter = mitt()
 const app = createApp(App)
@@ -25,6 +34,8 @@ const axiosInstance = axios.create({
     headers: {"Content-Type": "application/json"},
     baseURL: "/v2/api"
 });
+const LOGOUT_WHEN_TKN_ERROR = true;
+
 axiosInstance.interceptors.request.use(
     async config => {
         const token = localStorage
@@ -62,9 +73,10 @@ axiosInstance.interceptors.response.use(
         if (alertData?.message !== lastAlert?.message) {
             lastAlert = alertData;
             emitAlert(alertData);
-            if (errorMsg === "TOKEN_ERROR"){
+            if (LOGOUT_WHEN_TKN_ERROR && errorMsg === "TOKEN_ERROR"){
+                console.error(error);
                 localStorage.clear();
-                router.push("/login");
+                setTimeout(() => window.location.reload(), 1200);
             }
         }
         return error;
@@ -92,6 +104,15 @@ app
     .component('Dialog',Dialog)
     .component('Steps',Steps)
     .component('ProgressSpinner',ProgressSpinner)
+    .component('Dropdown',Dropdown)
+    .component('InputGroup',InputGroup)
+    .component('FloatLabel',FloatLabel)
+    .component('Chips',Chips)
+    .component('InputNumber',InputNumber)
+    .component('ToggleButton',ToggleButton)
+    .component('ConfirmDialog',ConfirmDialog)
+
+app.directive('tooltip',Tooltip)
 
 pinia.use(({ store }) => {
     store.$axios = app.config.globalProperties.$axios;
@@ -99,6 +120,7 @@ pinia.use(({ store }) => {
 });
 
 app.use(PrimeVue,{ripple:true})
+app.use(ConfirmationService)
 app.use(VueAxios, axios)
 app.use(pinia)
 app.use(router)

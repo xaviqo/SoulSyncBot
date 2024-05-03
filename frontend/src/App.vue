@@ -15,6 +15,7 @@
   </div>
   <InstallDialog
       :show-dialog="showInstallDialog"
+      v-if="showInstallDialog"
   />
   <Dialog
       v-model:visible="showLoadingDialog"
@@ -35,6 +36,7 @@
       </div>
     </template>
   </Dialog>
+  <ConfirmDialog></ConfirmDialog>
 </template>
 <script>
 import Header from "@/components/shared/Header.vue";
@@ -66,6 +68,10 @@ export default {
         'loading',
         loading => this.showLoading(loading)
     );
+    this.emitter.on(
+        'confirm',
+        confirm => this.showConfirm(confirm)
+    );
   },
   methods:{
     async isInstalled() {
@@ -74,6 +80,19 @@ export default {
       if (!isInstalled) {
         this.showInstallDialog = true;
       }
+    },
+    showConfirm(confirm){
+      const { header, message, reject, accept, listenerLabel } = confirm;
+      this.$confirm.require({
+        header: header,
+        message: message,
+        icon: 'pi pi-exclamation-circle',
+        rejectClass: 'p-button-secondary p-button-outlined',
+        rejectLabel: reject,
+        acceptLabel: accept,
+        accept: () => this.emitter.emit(listenerLabel,true),
+        reject: () => this.emitter.emit(listenerLabel,false)
+      });
     },
     showLoading(loading){
       const { show, text } = loading;
@@ -103,5 +122,14 @@ export default {
 }
 .p-message {
   z-index: 9999
+}
+.input-left-rounded {
+  border-radius: 5px 0 0 5px;
+}
+.input-left-squared {
+  border-radius: 0 5px 5px 0;
+}
+.input-right-squared {
+  border-radius: 5px 0 0 0;
 }
 </style>

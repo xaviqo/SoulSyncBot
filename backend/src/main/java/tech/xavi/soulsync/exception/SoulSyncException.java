@@ -34,7 +34,7 @@ public class SoulSyncException extends RuntimeException {
                     this.error.getMessage(),
                     errorValues
             );
-        return "Error message undefined";
+        return this.error.getMessage();
     }
 
 }

@@ -7,7 +7,7 @@ import tech.xavi.soulsync.configuration.globals.GatewayName;
 import tech.xavi.soulsync.dto.gateway.GatewayToken;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdTokenDto;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyTokenDto;
-import tech.xavi.soulsync.entity.ConfigurationField;
+import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.repository.gateway.SlskdGateway;
 import tech.xavi.soulsync.repository.gateway.SpotifyAuthGateway;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
@@ -66,16 +66,13 @@ public class GatewayTokenService {
 
     private GatewayToken getNewSlskdToken(){
         String slskdBaseUrl = configurationFieldService
-                .getFieldWithValue(ConfigurationField.SLSKD_API_URL)
-                .getValue()
+                .getValue(ConfigurationField.SLSKD_API_URL)
                 .asText();
         String username = configurationFieldService
-                .getFieldWithValue(ConfigurationField.SLSKD_USERNAME)
-                .getValue()
+                .getValue(ConfigurationField.SLSKD_USERNAME)
                 .asText();
         String password = configurationFieldService
-                .getFieldWithValue(ConfigurationField.SLSKD_PASSWORD)
-                .getValue()
+                .getValue(ConfigurationField.SLSKD_PASSWORD)
                 .asText();
         SlskdTokenDto slskdToken = slskdGateway
                 .baseUrl(slskdBaseUrl)

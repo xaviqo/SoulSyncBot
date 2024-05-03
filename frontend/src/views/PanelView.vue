@@ -1,5 +1,5 @@
 <template>
-  <main class="m-8">
+  <main class="w-full flex justify-content-center">
     <AddNewPlaylistCard/>
   </main>
 </template>

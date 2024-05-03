@@ -1,8 +1,9 @@
 package tech.xavi.soulsync.configuration.globals;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor @Getter
 public enum RelocateStrategy {
     BY_PLAYLIST("Relocate finished downloads by playlist"),
     BY_ARTIST("Relocate finished downloads by artist/album"),

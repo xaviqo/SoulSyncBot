@@ -9,7 +9,7 @@ import tech.xavi.soulsync.dto.playlist.AddPlaylistDto;
 import tech.xavi.soulsync.dto.playlist.AddResponseDto;
 import tech.xavi.soulsync.dto.shared.AlertData;
 import tech.xavi.soulsync.dto.shared.MessageSeverity;
-import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 
@@ -25,7 +25,7 @@ public class AddPlaylistService {
     public AddResponseDto handleAddPlaylistRequest(AddPlaylistDto request){
         RequestType requestType = getRequestType(request);
         String spotifyId = getSpotifyIdFromURL(request.url(),requestType);
-        if (playlistMainService.existPlaylistBySpotifyId(spotifyId)) {
+        if (playlistMainService.existsById(spotifyId)) {
             throw new SoulSyncException(
                     SoulSyncError.PLAYLIST_ALREADY_ADDED,
                     HttpStatus.BAD_REQUEST,
@@ -34,10 +34,15 @@ public class AddPlaylistService {
         }
         Playlist playlist = playlistCreationService.addNewPlaylist(
                 spotifyId,
-                requestType
+                requestType,
+                request.searchPolicy()
         );
+
         return AddResponseDto.builder()
-                .playlist(playlist)
+                .playlistType(playlist.getPlaylistType())
+                .playlistName(playlist.getName())
+                .playlistCover(playlist.getCover())
+                .totalTracks(playlist.getTotalTracks())
                 .alertData(AlertData.builder()
                         .message(getSuccessMessagePlaylistAdded(requestType,playlist))
                         .severity(MessageSeverity.SUCCESS)

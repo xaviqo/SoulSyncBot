@@ -3,7 +3,7 @@ package tech.xavi.soulsync.service.playlist;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.PlaylistType;
-import tech.xavi.soulsync.entity.Playlist;
+import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.repository.db.PlaylistRepository;
 
 import java.util.Set;
@@ -18,9 +18,9 @@ public class PlaylistMainService {
                 .findAllByPlaylistType(PlaylistType.PLAYLIST);
     }
 
-    public boolean existPlaylistBySpotifyId(String spotifyId) {
+    public boolean existsById(String id) {
         return playlistRepository
-                .existsBySpotifyId(spotifyId);
+                .existsById(id);
     }
 
     public Playlist savePlaylist(Playlist playlist) {

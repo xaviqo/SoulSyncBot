@@ -11,7 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import tech.xavi.soulsync.entity.Account;
+import tech.xavi.soulsync.entity.datafile.Account;
 
 import java.security.Key;
 import java.util.Collection;

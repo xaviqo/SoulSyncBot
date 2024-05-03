@@ -22,6 +22,7 @@ public enum SoulSyncError {
     SPOTIFY_ID_NOT_FOUND(MessageSeverity.ERROR,"Could not get the %s Id from the requested URL (%s)"),
     COVER_NOT_FOUND(MessageSeverity.WARN,"The playlist '%S' (%s) has no associated cover"),
     PLAYLIST_ALREADY_ADDED(MessageSeverity.WARN,"The playlist '%s' is already added"),
+    MINIMUM_SEARCH_POLICY(MessageSeverity.WARN, "It is not allowed to delete the last available search policy")
     ;
     private final MessageSeverity messageSeverity;
     private final String message;

@@ -11,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import tech.xavi.soulsync.repository.file.AccountRepository;
+import tech.xavi.soulsync.repository.datafile.AccountRepository;
 
 import java.util.Optional;
 

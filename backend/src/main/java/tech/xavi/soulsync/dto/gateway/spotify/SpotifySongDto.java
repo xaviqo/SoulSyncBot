@@ -2,10 +2,7 @@ package tech.xavi.soulsync.dto.gateway.spotify;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,12 +20,19 @@ public class SpotifySongDto {
     public String getId(){
         return track.getId();
     }
-
     public String getAlbum(){
         return track.getAlbum().getName();
     }
 
-    public Set<String> getArtists(){
+    public void setId(String id){
+        track.setId(id);
+    }
+
+    public Set<Artist> getArtists(){
+        return track.getArtists();
+    }
+
+    public Set<String> getArtistsAsString(){
         return track.getArtists()
                 .stream()
                 .map(Artist::getName)
@@ -55,7 +59,7 @@ public class SpotifySongDto {
         private String name;
     }
 
-    @Data
+    @Data @Getter @Setter
     public static class Artist {
         private String id;
         private String name;

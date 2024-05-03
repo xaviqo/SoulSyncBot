@@ -1,44 +1,119 @@
 <template>
-  <Toolbar>
-    <template #center>
-        <InputText
-            class="min-w-0"
-            type="text"
-            variant="filled"
-            v-model="playlistPayload.url"
-        />
-        <Button
-            severity="success"
-            label="Add Playlist"
-            type="button"
-            icon="pi pi-plus"
-            class="shadow-1 ml-4"
-            @click="submitPlaylist"
-        />
+  <Card class="lg:w-8 sm:w-12">
+    <template #content>
+      <div class="grid">
+        <InputGroup class="md:col-4 col-12">
+          <FloatLabel>
+            <Dropdown
+                :options="searchPolicies"
+                optionLabel="name"
+                placeholder=""
+                v-model="inputs.searchPolicy"
+                class="input-left-rounded"
+            />
+            <label
+                v-if="!inputs.searchPolicy"
+                for="url"
+            >
+              Select Download Policy
+            </label>
+          </FloatLabel>
+          <Button
+              :disabled="inputs.searchPolicy == null"
+              severity="secondary"
+              type="button"
+              icon="pi pi-cog"
+              class="shadow-1"
+              @click="showPolicyDialog(true)"
+          />
+          <Button
+              severity="secondary"
+              type="button"
+              icon="pi pi-plus"
+              class="shadow-1"
+              @click="showPolicyDialog(false)"
+          />
+        </InputGroup>
+        <InputGroup class="md:col-8 col-12">
+          <FloatLabel>
+            <InputText
+                id="url"
+                type="text"
+                variant="filled"
+                v-model="inputs.url"
+            />
+            <label
+                for="url"
+                v-if="!inputs.url"
+            >Playlist URL</label>
+          </FloatLabel>
+          <Button
+              severity="success"
+              type="button"
+              icon="pi pi-download"
+              class="shadow-1"
+              @click="submitPlaylist"
+          />
+        </InputGroup>
+      </div>
     </template>
-  </Toolbar>
+  </Card>
+  <SearchPolicyConfigurationDialog />
 </template>
 <script>
+import SearchPolicyConfigurationDialog from "@/components/panel/SearchPolicyConfigurationDialog.vue";
+import {request} from "axios";
+
 export default {
   name: 'AddNewPlaylistCard',
+  components: {SearchPolicyConfigurationDialog},
   data: () =>  ({
-    playlistPayload: {
-      url: null
-    }
+    searchPolicies: [],
+    inputs: { url: null, searchPolicy: null }
   }),
+  created() {
+    //this.inputs.searchPolicy = ;
+    this.fetchSearchPolicies();
+    this.emitter.on('fetch-policies', () => {
+      this.fetchSearchPolicies();
+    });
+  },
   methods: {
+    request,
     submitPlaylist() {
+      if (this.inputs.searchPolicy == null) {
+        this.emitter.emit('alert',{
+          severity: 'warn',
+          message: 'You must select a download policy'
+        });
+        return;
+      }
       this.emitter.emit('loading',{show: true, text: 'Loading playlist data...'});
-      if (this.playlistPayload.url) {
+      if (this.inputs.url) {
         return this.$axios
-            .post('/playlist', this.playlistPayload)
+            .post('/playlist', {
+              url : this.inputs.url,
+              searchPolicy : this.inputs.searchPolicy?.id
+            })
             .then( () => {
               this.emitter.emit('loading',{show: false});
-              this.playlistPayload.url = null;
+              this.inputs.url = null;
+              this.showPolicyDialog = true;
             })
       }
+    },
+    fetchSearchPolicies() {
+      this.$axios
+          .get('/playlist/search-policy')
+          .then(res => this.searchPolicies = res.data);
+    },
+    showPolicyDialog(isEditPolicy) {
+      const policyId = isEditPolicy
+          ? this.inputs.searchPolicy?.id
+          : null
+      this.emitter.emit('policies-dialog',policyId);
     }
-  }
+  },
 }
 </script>
 <style scoped>

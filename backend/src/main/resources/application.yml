@@ -1,5 +1,7 @@
 server:
   port: 6743
+  error:
+    path: /redirect
 
 spring:
   datasource:
@@ -17,6 +19,21 @@ spring:
 tech:
   xavi:
     soulsync:
+      cfg:
+        default:
+          search-policy:
+            sp-file-formats: mp3
+            sp-min-chars-per-word: 3
+            sp-words-to-remove: the,a,an,and,feat,with,of,in,on,at,by,for,to,featuring
+            sp-min-mp3-bitrate: 320
+            sp-minimum-mins-retry: 60
+            sp-max-retries: 0
+            sp-is-avoid-remix: true
+            sp-is-avoid-live: true
+          application:
+            app-auto-pause-adjustment: true
+            app-max-simultaneous-processes: 5
+            app-tracks-per-queue: 100
       gateway:
         base-url:
           spotify:
@@ -47,7 +64,6 @@ tech:
 
 logging:
   level:
-    org.springframework.web:
-      client:
-        RestTemplate: TRACE
+    tech.xavi.soulsync: DEBUG
+    org.springframework.web.client.RestTemplate: INFO
     com.fasterxml.jackson: INFO

@@ -13,10 +13,10 @@ import tech.xavi.soulsync.dto.account.SignInResponseDto;
 import tech.xavi.soulsync.dto.account.TokenDto;
 import tech.xavi.soulsync.dto.shared.AlertData;
 import tech.xavi.soulsync.dto.shared.MessageSeverity;
-import tech.xavi.soulsync.entity.Account;
+import tech.xavi.soulsync.entity.datafile.Account;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
-import tech.xavi.soulsync.repository.file.AccountRepository;
+import tech.xavi.soulsync.repository.datafile.AccountRepository;
 
 import java.util.Optional;
 

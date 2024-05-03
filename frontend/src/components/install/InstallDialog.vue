@@ -24,10 +24,10 @@
         >
           <div class="w-full flex align-content-center">
             <i class="pi pi-chevron-right mr-2 text-white-alpha-40" style="font-size: 1rem"></i>
-            <label for="username" class="text-primary-50 font-semibold">{{ field.fieldName.toUpperCase() }}</label>
+            <label :for="field.name" class="text-primary-50 font-semibold">{{ field.fieldName.toUpperCase() }}</label>
           </div>
           <InputText
-              id="username"
+              :id="field.name"
               class="w-full bg-white-alpha-20 border-none p-3 text-primary-50"
               v-model="field.value"
           ></InputText>

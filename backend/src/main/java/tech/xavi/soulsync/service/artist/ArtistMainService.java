@@ -2,7 +2,7 @@ package tech.xavi.soulsync.service.artist;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.entity.SpotifySong;
+import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.repository.db.ArtistRepository;
 
 import java.util.Set;

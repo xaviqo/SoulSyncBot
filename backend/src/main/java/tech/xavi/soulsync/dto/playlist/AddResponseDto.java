@@ -1,12 +1,15 @@
 package tech.xavi.soulsync.dto.playlist;
 
 import lombok.Builder;
+import tech.xavi.soulsync.configuration.globals.PlaylistType;
 import tech.xavi.soulsync.dto.shared.AlertData;
-import tech.xavi.soulsync.entity.Playlist;
 
 @Builder
 public record AddResponseDto(
-        Playlist playlist,
+        PlaylistType playlistType,
+        String playlistName,
+        String playlistCover,
+        int totalTracks,
         AlertData alertData
 ) {
 }

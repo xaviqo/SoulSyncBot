@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication @RequiredArgsConstructor @EnableScheduling
+@SpringBootApplication
+@ServletComponentScan
+@RequiredArgsConstructor
+@EnableScheduling
 public class SoulsyncApplication implements CommandLineRunner {
 
 	public static void main(String[] args) {

@@ -8,18 +8,20 @@ import tech.xavi.soulsync.configuration.globals.PlaylistType;
 import tech.xavi.soulsync.configuration.globals.RequestType;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistDto;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySongDto;
-import tech.xavi.soulsync.entity.Artist;
-import tech.xavi.soulsync.entity.Playlist;
-import tech.xavi.soulsync.entity.SpotifySong;
+import tech.xavi.soulsync.entity.datafile.DownloadList;
+import tech.xavi.soulsync.entity.db.Playlist;
+import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 import tech.xavi.soulsync.service.artist.ArtistMainService;
 import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
+import tech.xavi.soulsync.service.playlist.downloadlist.DownloadListCreationService;
 import tech.xavi.soulsync.service.song.SongMainService;
 import tech.xavi.soulsync.service.user.AccountService;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -35,50 +37,45 @@ public class PlaylistCreationService {
     private final ArtistMainService artistMainService;
     private final SongMainService songMainService;
     private final AccountService accountService;
+    private final DownloadListCreationService downloadListCreationService;
     private static final int MAX_SONGS_PER_REQUEST = 20;
 
-    public Playlist addNewPlaylist(String spotifyId, RequestType requestType){
-        SpotifyPlaylistDto spotifyPlaylistDto = spotifyGatewayService.
-                getPlaylistDetails(spotifyId, requestType);
-        Set<SpotifySong> spotifySongs = getTracklistFromSpotify(spotifyPlaylistDto,requestType);
+    public Playlist addNewPlaylist(String spotifyId, RequestType requestType, String searchPolicyId){
+        SpotifyPlaylistDto spotifyPlaylistDto = spotifyGatewayService
+                .getPlaylistDetails(spotifyId, requestType);
+        DownloadList downloadList = downloadListCreationService
+                .createDownloadList(spotifyId,searchPolicyId);
+        Set<SpotifySong> spotifySongs = getTracklist(spotifyPlaylistDto,requestType);
 
         artistMainService
                 .saveArtistsFromTracklist(spotifySongs);
         songMainService
                 .saveTracklist(spotifySongs);
 
-        return playlistMainService.savePlaylist(
-                Playlist.builder()
-                        .spotifyId(spotifyId)
-                        .name(spotifyPlaylistDto.getName())
-                        .totalTracks(spotifySongs.size())
-                        .cover(getPlaylistCoverUrl(spotifyPlaylistDto))
-                        .songs(spotifySongs)
-                        .owner(accountService.getCurrentUser().getUsername())
-                        .lastUpdate(System.currentTimeMillis())
-                        .playlistType(PlaylistType.getPlaylistType("playlist"))
-                        .build()
-        );
+        Playlist playlist = playlistMainService
+                .savePlaylist(Playlist.builder()
+                .id(spotifyId)
+                .name(spotifyPlaylistDto.getName())
+                .totalTracks(spotifySongs.size())
+                .cover(getPlaylistCoverUrl(spotifyPlaylistDto))
+                .songs(spotifySongs)
+                .owner(accountService.getCurrentUser().getUsername())
+                .lastUpdate(System.currentTimeMillis())
+                .playlistType(PlaylistType.getPlaylistType("playlist"))
+                .downloadLists(Set.of(downloadList))
+                .build());
+
+        downloadListCreationService
+                .createSlskdDownloads(playlist, downloadList);
+
+        return playlist;
     }
 
-    public Set<SpotifySong> getTracklistFromSpotify(SpotifyPlaylistDto playlistDto , RequestType requestType){
+    public Set<SpotifySong> getTracklist(SpotifyPlaylistDto playlistDto , RequestType requestType){
         return fetchFromSpotify(playlistDto,requestType)
                 .parallel()
-                .map( dto -> SpotifySong.builder()
-                        .spotifyId(dto.getId())
-                        .name(dto.getName())
-                        .album(dto.getAlbum())
-                        .artists(dto
-                                .getTrack()
-                                .getArtists()
-                                .stream()
-                                .parallel()
-                                .map(a -> Artist.builder()
-                                        .id(a.getId())
-                                        .name(a.getName())
-                                        .build() )
-                                .collect(Collectors.toSet()))
-                        .build())
+                .map(this::findAndReplaceNullSongAndArtistsIds)
+                .map(songMainService::createSpotifySong)
                 .collect(Collectors.toSet());
     }
 
@@ -112,4 +109,15 @@ public class PlaylistCreationService {
         return null;
     }
 
+    private SpotifySongDto findAndReplaceNullSongAndArtistsIds(SpotifySongDto dto){
+        if (dto.getId() == null)
+            dto.setId(UUID.randomUUID().toString());
+
+        dto.getArtists().forEach(artist -> {
+            if (artist.getId() == null)
+                artist.setId(UUID.randomUUID().toString());
+        });
+
+        return dto;
+    }
 }

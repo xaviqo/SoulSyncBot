@@ -1,14 +1,10 @@
 package tech.xavi.soulsync.service.task;
 
-import org.springframework.util.StopWatch;
-
 import java.util.concurrent.CompletableFuture;
 
 public interface Process {
 
-    StopWatch stopWatch = new StopWatch();
-
-    CompletableFuture<Long> execute();
+    CompletableFuture<Void> execute();
 
     String getTaskName();
 
@@ -16,13 +12,8 @@ public interface Process {
 
     int getOrder();
 
-    default void startTimer(){
-        stopWatch.start();
+    default CompletableFuture<Void> getCompletableFuture(){
+        return CompletableFuture.completedFuture(null);
     }
 
-    default CompletableFuture<Long> getElapsedSeconds(){
-        stopWatch.stop();
-        long elapsed = stopWatch.getTotalTimeMillis() / 1000;
-        return CompletableFuture.completedFuture(elapsed);
-    }
 }

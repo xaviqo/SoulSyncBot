@@ -15,7 +15,7 @@ import tech.xavi.soulsync.service.artist.ArtistMainService;
 import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
 import tech.xavi.soulsync.service.playlist.PlaylistCreationService;
 import tech.xavi.soulsync.service.playlist.PlaylistMainService;
-import tech.xavi.soulsync.service.song.SongMainService;
+import tech.xavi.soulsync.service.song.SongService;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -28,18 +28,17 @@ public class UpdatePlaylistProcess extends MaintenanceProcess {
 
     private final PlaylistMainService playlistMainService;
     private final ArtistMainService artistMainService;
-    private final SongMainService songMainService;
+    private final SongService songService;
     private final PlaylistCreationService playlistCreationService;
     private final SpotifyGatewayService spotifyGatewayService;
     @Getter private final int order = 10;
 
     @Override
-    public CompletableFuture<Long> execute() {
-        startTimer();
+    public CompletableFuture<Void> execute() {
         playlistMainService
                 .findAllByType(PlaylistType.PLAYLIST)
                 .forEach(this::updatePlaylist);
-        return getElapsedSeconds();
+        return CompletableFuture.completedFuture(null);
     }
 
     @Transactional
@@ -72,7 +71,7 @@ public class UpdatePlaylistProcess extends MaintenanceProcess {
                     .filter( spotifySong -> isNewSong(current,spotifySong) )
                     .collect(Collectors.toSet());
             artistMainService.saveArtistsFromTracklist(newSongs);
-            songMainService.saveTracklist(newSongs);
+            songService.saveTracklist(newSongs);
             current.getSongs().addAll(newSongs);
         }
         return isTracklistUpdated;

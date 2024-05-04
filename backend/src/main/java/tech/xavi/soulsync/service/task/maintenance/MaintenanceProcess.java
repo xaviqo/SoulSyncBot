@@ -1,12 +1,19 @@
 package tech.xavi.soulsync.service.task.maintenance;
 
+import lombok.Getter;
+import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.service.task.Process;
 
 import java.util.concurrent.CompletableFuture;
 
+@Getter
 public abstract class MaintenanceProcess implements Process {
 
-    // DELETE COMPLETE, DELETE OLD SEARCHES
+    private final StopWatch stopWatch;
+
+    public MaintenanceProcess() {
+        this.stopWatch = new StopWatch();
+    }
 
     @Override
     public String getTaskType() {
@@ -14,7 +21,7 @@ public abstract class MaintenanceProcess implements Process {
     }
 
     @Override
-    public CompletableFuture<Long> execute() {
+    public CompletableFuture<Void> execute() {
         return null;
     }
 

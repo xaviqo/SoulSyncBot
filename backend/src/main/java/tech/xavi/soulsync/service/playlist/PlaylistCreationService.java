@@ -8,15 +8,15 @@ import tech.xavi.soulsync.configuration.globals.PlaylistType;
 import tech.xavi.soulsync.configuration.globals.RequestType;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistDto;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySongDto;
-import tech.xavi.soulsync.entity.datafile.DownloadList;
+import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 import tech.xavi.soulsync.service.artist.ArtistMainService;
 import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
-import tech.xavi.soulsync.service.playlist.downloadlist.DownloadListCreationService;
-import tech.xavi.soulsync.service.song.SongMainService;
+import tech.xavi.soulsync.service.download.downloadlist.DownloadListCreationService;
+import tech.xavi.soulsync.service.song.SongService;
 import tech.xavi.soulsync.service.user.AccountService;
 
 import java.util.List;
@@ -35,7 +35,7 @@ public class PlaylistCreationService {
     private final SpotifyGatewayService spotifyGatewayService;
     private final PlaylistMainService playlistMainService;
     private final ArtistMainService artistMainService;
-    private final SongMainService songMainService;
+    private final SongService songService;
     private final AccountService accountService;
     private final DownloadListCreationService downloadListCreationService;
     private static final int MAX_SONGS_PER_REQUEST = 20;
@@ -49,7 +49,7 @@ public class PlaylistCreationService {
 
         artistMainService
                 .saveArtistsFromTracklist(spotifySongs);
-        songMainService
+        songService
                 .saveTracklist(spotifySongs);
 
         Playlist playlist = playlistMainService
@@ -75,7 +75,7 @@ public class PlaylistCreationService {
         return fetchFromSpotify(playlistDto,requestType)
                 .parallel()
                 .map(this::findAndReplaceNullSongAndArtistsIds)
-                .map(songMainService::createSpotifySong)
+                .map(songService::createSpotifySong)
                 .collect(Collectors.toSet());
     }
 

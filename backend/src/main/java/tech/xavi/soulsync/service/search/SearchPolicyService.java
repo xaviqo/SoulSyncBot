@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class SearchPolicyMainService {
+public class SearchPolicyService {
 
     private final SearchPolicyRepository searchPolicyRepository;
 

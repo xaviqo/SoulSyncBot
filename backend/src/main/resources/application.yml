@@ -32,7 +32,7 @@ tech:
             sp-is-avoid-live: true
           application:
             app-auto-pause-adjustment: true
-            app-max-simultaneous-processes: 5
+            app-max-simultaneous-threads: 5
             app-tracks-per-queue: 100
       gateway:
         base-url:
@@ -64,6 +64,6 @@ tech:
 
 logging:
   level:
-    tech.xavi.soulsync: DEBUG
+    tech.xavi.soulsync: TRACE
     org.springframework.web.client.RestTemplate: INFO
     com.fasterxml.jackson: INFO

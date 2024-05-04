@@ -18,7 +18,7 @@ import tech.xavi.soulsync.entity.datafile.SearchPolicy;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 import tech.xavi.soulsync.service.integration.GatewayTokenService;
-import tech.xavi.soulsync.service.search.SearchPolicyMainService;
+import tech.xavi.soulsync.service.search.SearchPolicyService;
 import tech.xavi.soulsync.service.user.AccountService;
 
 import java.util.*;
@@ -30,7 +30,7 @@ import java.util.*;
 public class InitialSetupService implements CommandLineRunner {
 
     private final ConfigurationFieldService configurationFieldService;
-    private final SearchPolicyMainService searchPolicyMainService;
+    private final SearchPolicyService searchPolicyService;
     private final AccountService accountService;
     private final GatewayTokenService gatewayTokenService;
     private static final ConfigurationField[] INITIAL_SETUP_FIELDS = {
@@ -85,7 +85,7 @@ public class InitialSetupService implements CommandLineRunner {
     private void createDefaultSearchPolicyConfiguration() {
         final String DEFAULT = "Default";
 
-        if (searchPolicyMainService.containPolicyById(DEFAULT)) {
+        if (searchPolicyService.containPolicyById(DEFAULT)) {
             log.info("Search policy configuration loaded");
         } else {
             SearchPolicy defaultSearchPolicy = SearchPolicy.builder()
@@ -102,7 +102,7 @@ public class InitialSetupService implements CommandLineRunner {
                     .inputStrategy(SearchInputStrategy.STANDARD_STRATEGY)
                     .downloadPriority(DownloadPriority.NORMAL)
                     .build();
-            searchPolicyMainService.saveEntity(defaultSearchPolicy);
+            searchPolicyService.saveEntity(defaultSearchPolicy);
             log.warn("Search policy configuration not detected. Created default search policy with values from application.yml");
         }
     }

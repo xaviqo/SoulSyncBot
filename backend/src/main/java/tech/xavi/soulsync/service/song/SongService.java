@@ -10,7 +10,7 @@ import tech.xavi.soulsync.repository.db.SongRepository;
 import java.util.Set;
 
 @Service @RequiredArgsConstructor
-public class SongMainService {
+public class SongService {
 
     private final SongRepository songRepository;
 

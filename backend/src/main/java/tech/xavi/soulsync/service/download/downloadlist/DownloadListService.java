@@ -1,38 +1,38 @@
-package tech.xavi.soulsync.service.playlist.downloadlist;
+package tech.xavi.soulsync.service.download.downloadlist;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
-import tech.xavi.soulsync.entity.datafile.DownloadList;
+import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
 import tech.xavi.soulsync.repository.db.DownloadListRepository;
-import tech.xavi.soulsync.service.search.SearchPolicyMainService;
+import tech.xavi.soulsync.service.search.SearchPolicyService;
 
 import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
-public class DownloadListMainService {
+public class DownloadListService {
 
-    private final SearchPolicyMainService searchPolicyMainService;
+    private final SearchPolicyService searchPolicyService;
     private final DownloadListRepository downloadListRepository;
 
     public DownloadList save(DownloadList downloadList) {
         return downloadListRepository.save(downloadList);
     }
 
-    public DownloadList getNextDownloadList() {
+    public Optional<DownloadList> getNextDownloadList() {
         return downloadListRepository
                 .findAll()
                 .stream()
-                .min(DownloadPriority::compare)
-                .orElseThrow();
+                .filter(DownloadList::getIsActive)
+                .min(DownloadPriority::compare);
     }
 
     //private DownloadList get
 
     public SearchPolicy getDownloadListSearchPolicy(String searchPolicyId) {
-        return searchPolicyMainService.getPolicyById(searchPolicyId);
+        return searchPolicyService.getPolicyById(searchPolicyId);
     };
 
     private Optional<DownloadList> getDownloadListById(long id) {

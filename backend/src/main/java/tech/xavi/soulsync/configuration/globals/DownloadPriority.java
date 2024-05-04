@@ -1,6 +1,6 @@
 package tech.xavi.soulsync.configuration.globals;
 
-import tech.xavi.soulsync.entity.datafile.DownloadList;
+import tech.xavi.soulsync.entity.db.DownloadList;
 
 public enum DownloadPriority {
     HIGHEST,

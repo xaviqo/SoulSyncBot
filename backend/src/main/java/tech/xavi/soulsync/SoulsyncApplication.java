@@ -10,7 +10,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @ServletComponentScan
 @RequiredArgsConstructor
-@EnableScheduling
 public class SoulsyncApplication implements CommandLineRunner {
 
 	public static void main(String[] args) {

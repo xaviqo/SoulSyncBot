@@ -1,15 +1,15 @@
-package tech.xavi.soulsync.service.playlist.downloadlist;
+package tech.xavi.soulsync.service.download.downloadlist;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
-import tech.xavi.soulsync.entity.datafile.DownloadList;
+import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
 import tech.xavi.soulsync.entity.db.Playlist;
-import tech.xavi.soulsync.entity.db.SlskdDownload;
+import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.search.SearchInputService;
-import tech.xavi.soulsync.service.search.SearchPolicyMainService;
-import tech.xavi.soulsync.service.song.SlskdDownloadsService;
+import tech.xavi.soulsync.service.search.SearchPolicyService;
+import tech.xavi.soulsync.service.download.SlskdRequestService;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,13 +18,13 @@ import java.util.stream.Collectors;
 @Service
 public class DownloadListCreationService {
 
-    private final SlskdDownloadsService slskdDownloadsService;
-    private final DownloadListMainService downloadListMainService;
-    private final SearchPolicyMainService searchPolicyMainService;
+    private final SlskdRequestService slskdRequestService;
+    private final DownloadListService downloadListService;
+    private final SearchPolicyService searchPolicyService;
     private final SearchInputService searchInputService;
 
     public DownloadList createDownloadList(String playlistId, String searchPolicyId) {
-        return downloadListMainService.save(
+        return downloadListService.save(
                 DownloadList.builder()
                         .playlistId(playlistId)
                         .searchPolicy(searchPolicyId)
@@ -39,14 +39,14 @@ public class DownloadListCreationService {
             Playlist playlist,
             DownloadList downloadList
     ) {
-        SearchPolicy searchPolicy = searchPolicyMainService
+        SearchPolicy searchPolicy = searchPolicyService
                 .getPolicyById(downloadList.getSearchPolicy());
 
-        Set<SlskdDownload> slskdDownloads = playlist
+        Set<SlskdRequest> slskdRequests = playlist
                 .getSongs()
                 .stream()
                 .parallel()
-                .map( song -> SlskdDownload.builder()
+                .map( song -> SlskdRequest.builder()
                         .downloadList(downloadList)
                         .spotifySong(song)
                         .playlist(playlist)
@@ -56,7 +56,7 @@ public class DownloadListCreationService {
                         .build())
                 .collect(Collectors.toSet());
 
-        slskdDownloadsService
-                .saveAll(slskdDownloads);
+        slskdRequestService
+                .saveAll(slskdRequests);
     }
 }

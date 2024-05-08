@@ -100,8 +100,6 @@ public class AddPlaylistService {
         throw soulSyncException;
     }
 
-    // todo: maybe move this to static method @ RequestType enum
-    // also finish method for other request_types
     private String getSuccessMessagePlaylistAdded(RequestType requestType, Playlist playlist){
         return switch (requestType) {
             case PLAYLIST -> String.format(

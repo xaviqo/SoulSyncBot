@@ -2,6 +2,7 @@ package tech.xavi.soulsync.service.download.process;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
+import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 
 import java.util.Random;
@@ -37,6 +38,11 @@ public class SearchProcess extends SlskdProcess {
             throw new RuntimeException(e);
         }
         return execute();
+    }
+
+    @Override
+    public ProcessStatus getStatus()  {
+        return ProcessStatus.SEARCHING;
     }
 
     @Override

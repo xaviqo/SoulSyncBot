@@ -1,6 +1,6 @@
 package tech.xavi.soulsync.configuration.globals;
 
-public enum DownloadStatus {
+public enum ProcessStatus {
     WAITING,
     SEARCHING,
     DOWNLOADING,

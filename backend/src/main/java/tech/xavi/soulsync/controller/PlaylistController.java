@@ -1,22 +1,31 @@
 package tech.xavi.soulsync.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.globals.ApiRoutes;
 import tech.xavi.soulsync.dto.configuration.SearchPolicyDto;
 import tech.xavi.soulsync.dto.playlist.AddPlaylistDto;
 import tech.xavi.soulsync.dto.playlist.AddResponseDto;
+import tech.xavi.soulsync.dto.playlist.GetPlaylistDto;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
 import tech.xavi.soulsync.service.playlist.AddPlaylistService;
+import tech.xavi.soulsync.service.playlist.GetPlaylistService;
 import tech.xavi.soulsync.service.search.SearchPolicyService;
+
+import java.util.Set;
 
 @RestController @RequiredArgsConstructor
 public class PlaylistController {
 
+    private final GetPlaylistService getPlaylistService;
     private final AddPlaylistService addPlaylistService;
     private final SearchPolicyService searchPolicyService;
+
+    @GetMapping(ApiRoutes.EP_PLAYLIST)
+    public ResponseEntity<Set<GetPlaylistDto>> getAllPlaylists(){
+        return ResponseEntity.ok(getPlaylistService.getAllPlaylists());
+    }
 
     @PostMapping(ApiRoutes.EP_PLAYLIST)
     public ResponseEntity<AddResponseDto> addPlaylist(@RequestBody AddPlaylistDto addPlaylistRequest){
@@ -35,9 +44,7 @@ public class PlaylistController {
 
     @PostMapping(ApiRoutes.EP_SEARCH_POLICY)
     public ResponseEntity<SearchPolicyDto> upsertSearchPolicy(@RequestBody SearchPolicyDto searchPolicyReq){
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(searchPolicyService.upsert(searchPolicyReq));
+        return ResponseEntity.ok(searchPolicyService.upsert(searchPolicyReq));
     }
 
     @DeleteMapping(ApiRoutes.EP_SEARCH_POLICY + "/{id}")

@@ -27,7 +27,9 @@ public class DownloadManagerService {
     public DownloadManagerService(
             List<SlskdProcess> processes,
             ConfigurationFieldService cfgFieldService,
-            ThreadPoolTaskScheduler threadPoolTaskScheduler, SlskdRequestService slskdRequestService) {
+            ThreadPoolTaskScheduler threadPoolTaskScheduler,
+            SlskdRequestService slskdRequestService
+    ) {
         this.taskProcesses = processes
                 .stream()
                 .sorted(Comparator.comparingInt(Process::getOrder))
@@ -39,31 +41,42 @@ public class DownloadManagerService {
     }
 
     public void handleSlskdRequest(SlskdRequest slskdRequest) {
-        currentRequests
-                .add(slskdRequest);
-        taskProcesses
-                .forEach( slskdProcess -> {
-                    StopWatch stopWatch = new StopWatch();
-                    stopWatch.start();
-                    slskdProcess
-                            .execute(slskdRequest)
-                            .whenComplete((result, throwable) -> {
-                                stopWatch.stop();
-                                log.debug("Finished Process [{}] " +
-                                                ":: Task Type --> {} " +
-                                                ":: Task Name --> {} " +
-                                                ":: Time Elapsed --> {}",
-                                        slskdProcess.getTaskType(),
-                                        slskdProcess.getTaskName(),
-                                        stopWatch.getTotalTimeSeconds()+"s",
-                                        slskdRequest.getSearchInput()
-                                );
+        if (slskdRequest != null) {
+            currentRequests
+                    .add(slskdRequest);
+            taskProcesses
+                    .forEach( slskdProcess -> {
+                        StopWatch stopWatch =
+                                initProcess(slskdRequest,slskdProcess);
+                        slskdProcess
+                                .execute(slskdRequest)
+                                .whenComplete( (result, throwable) -> {
+                                    stopWatch.stop();
+                                    log.debug("Finished Process [{}] " +
+                                                    ":: Task Type --> {} " +
+                                                    ":: Task Name --> {} " +
+                                                    ":: Time Elapsed --> {}",
+                                            slskdProcess.getTaskType(),
+                                            slskdProcess.getTaskName(),
+                                            stopWatch.getTotalTimeSeconds()+"s",
+                                            slskdRequest.getSearchInput()
+                                    );
+
+                                });
                     });
-        });
-        slskdRequestService
-                .saveIncreasingAttempts(slskdRequest);
-        currentRequests
-                .remove(slskdRequest);
+            slskdRequestService
+                    .saveIncreasingAttempts(slskdRequest);
+            currentRequests
+                    .remove(slskdRequest);
+        }
+    }
+
+    private StopWatch initProcess(SlskdRequest request, SlskdProcess process) {
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+        request.setStatus(process.getStatus());
+        slskdRequestService.save(request);
+        return stopWatch;
     }
 
     public synchronized boolean isRequestSlotAvailable(){

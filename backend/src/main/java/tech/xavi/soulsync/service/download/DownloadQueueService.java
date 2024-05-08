@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
@@ -45,17 +46,19 @@ public class DownloadQueueService {
             downloadListService
                     .getNextDownloadList()
                     .ifPresent( downloadList -> {
-                        if (queue.isEmpty()) {
+                        if (queue.isEmpty())
                             updateQueue(downloadList);
-                        }
                         downloadManagerService
-                                .handleSlskdRequest(queue.poll());
-                        if (isDownloadListCompleted(downloadList)) {
+                                .handleSlskdRequest(getNextRequestFromQueue());
+                        if (isDownloadListCompleted(downloadList))
                             updateDownloadList(downloadList);
-                        }
                     });
         }
 
+    }
+
+    private SlskdRequest getNextRequestFromQueue() {
+        return queue.poll();
     }
 
     private void updateQueue(DownloadList downloadList) {
@@ -65,6 +68,7 @@ public class DownloadQueueService {
         Set<SlskdRequest> nextQueue = slskdRequestService
                 .getSongsQueue(downloadList)
                 .limit(queueLimit)
+                .filter( req -> req.getStatus().equals(ProcessStatus.WAITING) )
                 .collect(Collectors.toSet());
         queue.addAll(nextQueue);
     }

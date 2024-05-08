@@ -1,7 +1,7 @@
 <template>
   <Card class="lg:w-8 sm:w-12">
     <template #content>
-      <div class="grid">
+      <div class="grid -mt-1">
         <InputGroup class="md:col-4 col-12">
           <FloatLabel>
             <Dropdown
@@ -52,6 +52,7 @@
               type="button"
               icon="pi pi-download"
               class="shadow-1"
+              :disabled="!inputs.url"
               @click="submitPlaylist"
           />
         </InputGroup>
@@ -81,15 +82,8 @@ export default {
   methods: {
     request,
     submitPlaylist() {
-      if (this.inputs.searchPolicy == null) {
-        this.emitter.emit('alert',{
-          severity: 'warn',
-          message: 'You must select a download policy'
-        });
-        return;
-      }
-      this.emitter.emit('loading',{show: true, text: 'Loading playlist data...'});
-      if (this.inputs.url) {
+      if (this.isPlaylistRequestOk()) {
+        this.emitter.emit('loading',{show: true, text: 'Loading playlist data...'});
         return this.$axios
             .post('/playlist', {
               url : this.inputs.url,
@@ -98,7 +92,6 @@ export default {
             .then( () => {
               this.emitter.emit('loading',{show: false});
               this.inputs.url = null;
-              this.showPolicyDialog = true;
             })
       }
     },
@@ -112,6 +105,31 @@ export default {
           ? this.inputs.searchPolicy?.id
           : null
       this.emitter.emit('policies-dialog',policyId);
+    },
+    isPlaylistRequestOk(){
+      if (this.inputs.searchPolicy == null) {
+        this.emitter.emit('alert',{
+          severity: 'warn',
+          message: 'You must select a download policy'
+        });
+        return false;
+      }
+      if (!this.isUrl(this.inputs.url)) {
+        this.emitter.emit('alert',{
+          severity: 'warn',
+          message: 'You must provide a valid URL'
+        });
+        return false;
+      }
+      return true;
+    },
+    isUrl(str) {
+      try {
+        new URL(str);
+        return true;
+      } catch (e) {
+        return false;
+      }
     }
   },
 }

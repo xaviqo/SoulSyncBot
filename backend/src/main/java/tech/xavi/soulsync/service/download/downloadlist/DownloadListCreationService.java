@@ -3,6 +3,7 @@ package tech.xavi.soulsync.service.download.downloadlist;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
+import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
 import tech.xavi.soulsync.entity.db.Playlist;
@@ -53,6 +54,7 @@ public class DownloadListCreationService {
                         .searchInput(searchInputService.getSearchInput(song,searchPolicy))
                         .attempts(0L)
                         .added(System.currentTimeMillis())
+                        .status(ProcessStatus.WAITING)
                         .build())
                 .collect(Collectors.toSet());
 

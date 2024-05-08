@@ -1,5 +1,6 @@
 package tech.xavi.soulsync.service.download.process;
 
+import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.task.Process;
 
@@ -19,5 +20,9 @@ public abstract class SlskdProcess implements Process {
     @Override
     public String getTaskType() {
         return "SLSKD";
+    }
+
+    public ProcessStatus getStatus(){
+        return null;
     }
 }

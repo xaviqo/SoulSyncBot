@@ -7,15 +7,20 @@ import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.repository.db.PlaylistRepository;
 
 import java.util.Set;
+import java.util.stream.Stream;
 
 @Service @RequiredArgsConstructor
 public class PlaylistMainService {
 
     private final PlaylistRepository playlistRepository;
 
-    public Set<Playlist> findAllByType(PlaylistType type){
+    public Set<Playlist> findAll(){
+        return playlistRepository.findAll();
+    }
+
+    public Stream<Playlist> findAllByType(PlaylistType type){
         return playlistRepository
-                .findAllByPlaylistType(PlaylistType.PLAYLIST);
+                .findAllByPlaylistType(type);
     }
 
     public boolean existsById(String id) {

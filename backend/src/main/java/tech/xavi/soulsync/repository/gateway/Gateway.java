@@ -88,10 +88,11 @@ public abstract class Gateway {
             request.routeParams().forEach((key, value) -> {
                 if (key != null && value != null) {
                     String placeHolder = "{" + key + "}";
-                    uriBuilder.replacePath(uriBuilder
-                            .build()
-                            .getPath()
-                            .replace(placeHolder, value)
+                    uriBuilder.replacePath(
+                            Objects.requireNonNull(uriBuilder
+                                            .build()
+                                            .getPath())
+                                    .replace(placeHolder, value)
                     );
                 }
             });

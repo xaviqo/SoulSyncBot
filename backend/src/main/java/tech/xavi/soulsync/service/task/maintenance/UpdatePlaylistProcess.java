@@ -7,7 +7,6 @@ import lombok.extern.log4j.Log4j2;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 import tech.xavi.soulsync.configuration.globals.PlaylistType;
-import tech.xavi.soulsync.configuration.globals.RequestType;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistDto;
 import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.entity.db.SpotifySong;
@@ -43,10 +42,7 @@ public class UpdatePlaylistProcess extends MaintenanceProcess {
 
     @Transactional
     public void updatePlaylist(Playlist currentPlaylist){
-        SpotifyPlaylistDto updatedPlaylist = spotifyGatewayService.getPlaylistDetails(
-                currentPlaylist.getId(),
-                RequestType.PLAYLIST
-        );
+        SpotifyPlaylistDto updatedPlaylist = spotifyGatewayService.getPlaylistDetails(currentPlaylist.getId());
         if (updateName(updatedPlaylist,currentPlaylist) || updateTracklist(updatedPlaylist,currentPlaylist)) {
             currentPlaylist.setLastUpdate(System.currentTimeMillis());
             playlistMainService.savePlaylist(currentPlaylist);
@@ -65,7 +61,7 @@ public class UpdatePlaylistProcess extends MaintenanceProcess {
         if (isTracklistUpdated) {
             Hibernate.initialize(current.getSongs());
             Set<SpotifySong> newSongs = playlistCreationService
-                    .getTracklist(updated,RequestType.PLAYLIST)
+                    .getTracklist(updated)
                     .stream()
                     .parallel()
                     .filter( spotifySong -> isNewSong(current,spotifySong) )

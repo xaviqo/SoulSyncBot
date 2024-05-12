@@ -20,23 +20,12 @@ import java.util.Arrays;
 public class AddPlaylistService {
 
     private final PlaylistCreationService playlistCreationService;
+    private final AlbumCreationService albumCreationService;
     private final PlaylistMainService playlistMainService;
 
     public AddResponseDto handleAddPlaylistRequest(AddPlaylistDto request){
         RequestType requestType = getRequestType(request);
-        String spotifyId = getSpotifyIdFromURL(request.url(),requestType);
-        if (playlistMainService.existsById(spotifyId)) {
-            throw new SoulSyncException(
-                    SoulSyncError.PLAYLIST_ALREADY_ADDED,
-                    HttpStatus.BAD_REQUEST,
-                    spotifyId
-            );
-        }
-        Playlist playlist = playlistCreationService.addNewPlaylist(
-                spotifyId,
-                requestType,
-                request.searchPolicy()
-        );
+        Playlist playlist = handleByRequestType(request,requestType);
 
         return AddResponseDto.builder()
                 .playlistType(playlist.getPlaylistType())
@@ -44,10 +33,35 @@ public class AddPlaylistService {
                 .playlistCover(playlist.getCover())
                 .totalTracks(playlist.getTotalTracks())
                 .alertData(AlertData.builder()
-                        .message(getSuccessMessagePlaylistAdded(requestType,playlist))
+                        .message(getSuccessMessageByRequestType(requestType,playlist))
                         .severity(MessageSeverity.SUCCESS)
                         .build())
                 .build();
+    }
+
+    private Playlist handleByRequestType(AddPlaylistDto request, RequestType requestType){
+        String spotifyId = getSpotifyIdFromURL(request.url(),requestType);
+        if (playlistMainService.existsById(spotifyId))
+            throw new SoulSyncException(
+                    SoulSyncError.PLAYLIST_ALREADY_ADDED,
+                    HttpStatus.BAD_REQUEST,
+                    spotifyId
+            );
+
+        return switch (requestType){
+            case PLAYLIST -> playlistCreationService.addNewPlaylist(
+                    spotifyId,
+                    request.searchPolicy()
+            );
+            case ALBUM -> albumCreationService.addNewAlbum(
+                    spotifyId,
+                    request.searchPolicy()
+            );
+            case ARTIST -> albumCreationService.addNewDiscography(
+                    spotifyId,
+                    request.searchPolicy()
+            );
+        };
     }
 
     private RequestType getRequestType(AddPlaylistDto request) {
@@ -100,7 +114,7 @@ public class AddPlaylistService {
         throw soulSyncException;
     }
 
-    private String getSuccessMessagePlaylistAdded(RequestType requestType, Playlist playlist){
+    private String getSuccessMessageByRequestType(RequestType requestType, Playlist playlist){
         return switch (requestType) {
             case PLAYLIST -> String.format(
                         RequestType.PLAYLIST.getUserMessage(),
@@ -114,6 +128,7 @@ public class AddPlaylistService {
             case ALBUM -> String.format(
                     RequestType.ALBUM.getUserMessage(),
                     playlist.getName()
+
             );
         };
     }

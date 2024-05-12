@@ -4,9 +4,10 @@ public enum PlaylistType {
     PLAYLIST,
     ALBUM,
     SINGLE,
-    COMPILATION;
+    COMPILATION,
+    DISCOGRAPHY;
 
-    public static PlaylistType getPlaylistType(String type){
+    public static PlaylistType getType(String type){
         for (PlaylistType pt : values())
             if (pt.name().equalsIgnoreCase(type)) return pt;
         return PLAYLIST;

@@ -1,21 +1,84 @@
 package tech.xavi.soulsync.service.song;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistDto;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySongDto;
 import tech.xavi.soulsync.entity.db.Artist;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.repository.db.SongRepository;
+import tech.xavi.soulsync.service.artist.ArtistMainService;
+import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-@Service @RequiredArgsConstructor
+import static tech.xavi.soulsync.repository.gateway.SpotifyPlaylistGateway.MAX_SONGS_PER_REQUEST;
+@Log4j2 @Service @RequiredArgsConstructor
 public class SongService {
 
     private final SongRepository songRepository;
+    private final SpotifyGatewayService spotifyGatewayService;
+    private final ArtistMainService artistMainService;
 
-    public void saveTracklist(Set<SpotifySong> spotifySongs){
+    public Set<SpotifySong> getSongsFromPlaylist(SpotifyPlaylistDto playlistDto){
+        Set<SpotifySong> spotifySongs = fetchFromSpotify(playlistDto)
+                .parallel()
+                .map(this::findAndReplaceNullSongAndArtistsIds)
+                .map(this::createSpotifySong)
+                .collect(Collectors.toSet());
+
+        artistMainService
+                .saveArtistsFromTracklist(spotifySongs);
+
+        return saveTracklist(spotifySongs);
+    }
+
+    public Set<SpotifySong> mapAlbumSongs(SpotifySongDto[] songDtoArr) {
+        return Arrays.stream(songDtoArr)
+                .map(this::createSpotifySong)
+                .collect(Collectors.toSet());
+    }
+
+    private Stream<SpotifySongDto> fetchFromSpotify(SpotifyPlaylistDto playlistDto) {
+        int totalPageRequests = calculateTotalPageRequests(playlistDto.getTotalTracks());
+        return IntStream.range(0, totalPageRequests)
+                .parallel()
+                .mapToObj( index -> CompletableFuture.supplyAsync( () -> {
+                    int offset = index * MAX_SONGS_PER_REQUEST;
+                    return spotifyGatewayService
+                            .getPlaylistSongs(playlistDto.getId(), offset);
+                }))
+                .map(CompletableFuture::join)
+                .flatMap(List::stream);
+    }
+
+    private int calculateTotalPageRequests(long totalTracks) {
+        return (int) ((totalTracks + MAX_SONGS_PER_REQUEST - 1) / MAX_SONGS_PER_REQUEST);
+    }
+
+    private SpotifySongDto findAndReplaceNullSongAndArtistsIds(SpotifySongDto dto){
+        if (dto.getId() == null)
+            dto.setId(UUID.randomUUID().toString());
+
+        dto.getArtists().forEach(artist -> {
+            if (artist.getId() == null)
+                artist.setId(UUID.randomUUID().toString());
+        });
+
+        return dto;
+    }
+
+    private Set<SpotifySong> saveTracklist(Set<SpotifySong> spotifySongs){
         songRepository.saveAll(spotifySongs);
+        return spotifySongs;
     }
 
     public SpotifySong createSpotifySong(SpotifySongDto dto){

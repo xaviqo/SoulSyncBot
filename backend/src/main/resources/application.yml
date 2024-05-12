@@ -47,14 +47,12 @@ tech:
             playlist:
               get-playlist:
                 ep: /v1/playlists/{playlistId}
-              get-cover:
-                ep: /v1/playlists/{playlistId}/images
             artist:
-              get-albums:
+              get-discography:
                 ep: /v1/artists/{artistId}/albums
             album:
               get-album:
-                ep: /v1/albums/{playlistId}
+                ep: /v1/albums
           slskd:
             health: /api/v0/session/enabled
             login: /api/v0/session

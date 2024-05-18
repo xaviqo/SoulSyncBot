@@ -28,7 +28,7 @@ export const useUserStore = defineStore('login', {
         }
     },
     getters: {
-        isAuthenticated(state){
+        isAuthenticated(state) {
             return state.isUserAuthenticated;
         }
     }

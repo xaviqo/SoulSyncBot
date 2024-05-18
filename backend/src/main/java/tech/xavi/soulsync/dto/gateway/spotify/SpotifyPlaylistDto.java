@@ -13,7 +13,7 @@ import java.util.List;
 public class SpotifyPlaylistDto {
 
     private String id;
-    private SpotifyTrackContainerDto tracks;
+    private SpotifyPlaylistTrackContainerDto tracks;
     private List<SpotifyArtistDto> artists;
     private SpotifyImageDto[] images;
     private String name;

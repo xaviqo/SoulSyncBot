@@ -12,6 +12,7 @@ import tech.xavi.soulsync.dto.shared.MessageSeverity;
 import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
+import tech.xavi.soulsync.service.user.AccountService;
 
 import java.net.URI;
 import java.util.Arrays;
@@ -22,16 +23,19 @@ public class AddPlaylistService {
     private final PlaylistCreationService playlistCreationService;
     private final AlbumCreationService albumCreationService;
     private final PlaylistMainService playlistMainService;
+    private final AccountService accountService;
 
     public AddResponseDto handleAddPlaylistRequest(AddPlaylistDto request){
         RequestType requestType = getRequestType(request);
         Playlist playlist = handleByRequestType(request,requestType);
 
         return AddResponseDto.builder()
+                .id(playlist.getId())
+                .name(playlist.getName())
                 .playlistType(playlist.getPlaylistType())
-                .playlistName(playlist.getName())
-                .playlistCover(playlist.getCover())
+                .cover(playlist.getCover())
                 .totalTracks(playlist.getTotalTracks())
+                .owner(accountService.getCurrentUser().getUsername())
                 .alertData(AlertData.builder()
                         .message(getSuccessMessageByRequestType(requestType,playlist))
                         .severity(MessageSeverity.SUCCESS)
@@ -123,12 +127,11 @@ public class AddPlaylistService {
                 );
             case ARTIST -> String.format(
                         RequestType.ARTIST.getUserMessage(),
-                        playlist.getSongs().toArray()[0]
+                        playlist.getName()
                 );
             case ALBUM -> String.format(
                     RequestType.ALBUM.getUserMessage(),
                     playlist.getName()
-
             );
         };
     }

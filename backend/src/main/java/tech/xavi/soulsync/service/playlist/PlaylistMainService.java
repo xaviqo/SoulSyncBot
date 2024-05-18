@@ -25,6 +25,11 @@ public class PlaylistMainService {
                 .findAllByPlaylistType(type);
     }
 
+    public Stream<Playlist> findAllByParentId(String parentId){
+        return playlistRepository
+                .findAllByParentPlaylist(Playlist.builder().id(parentId).build());
+    }
+
     public Optional<Playlist> findById(String id){
         return playlistRepository.findById(id);
     }

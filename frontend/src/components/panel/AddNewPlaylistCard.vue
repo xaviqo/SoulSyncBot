@@ -1,5 +1,5 @@
 <template>
-  <Card class="lg:w-8 sm:w-12">
+  <Card class="w-full">
     <template #content>
       <div class="grid -mt-1">
         <InputGroup class="md:col-4 col-12">
@@ -63,7 +63,8 @@
 </template>
 <script>
 import SearchPolicyConfigurationDialog from "@/components/panel/SearchPolicyConfigurationDialog.vue";
-import {request} from "axios";
+import {mapActions} from "pinia";
+import {usePlaylistStore} from "@/store/playlist-calls";
 
 export default {
   name: 'AddNewPlaylistCard',
@@ -73,14 +74,12 @@ export default {
     inputs: { url: null, searchPolicy: null }
   }),
   created() {
-    //this.inputs.searchPolicy = ;
     this.fetchSearchPolicies();
     this.emitter.on('fetch-policies', () => {
       this.fetchSearchPolicies();
     });
   },
   methods: {
-    request,
     submitPlaylist() {
       if (this.isPlaylistRequestOk()) {
         this.emitter.emit('loading',{show: true, text: 'Loading playlist data...'});
@@ -89,7 +88,8 @@ export default {
               url : this.inputs.url,
               searchPolicy : this.inputs.searchPolicy?.id
             })
-            .then( () => {
+            .then( (res) => {
+              this.addPlaylist(res.data);
               this.emitter.emit('loading',{show: false});
               this.inputs.url = null;
             })
@@ -130,7 +130,8 @@ export default {
       } catch (e) {
         return false;
       }
-    }
+    },
+    ...mapActions(usePlaylistStore,['addPlaylist'])
   },
 }
 </script>

@@ -2,7 +2,10 @@ package tech.xavi.soulsync.service.song;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.dto.gateway.spotify.SpotifyAlbumDto;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistDto;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifySongDto;
 import tech.xavi.soulsync.entity.db.Artist;
@@ -28,7 +31,11 @@ public class SongService {
     private final SpotifyGatewayService spotifyGatewayService;
     private final ArtistMainService artistMainService;
 
-    public Set<SpotifySong> getSongsFromPlaylist(SpotifyPlaylistDto playlistDto){
+    public Page<SpotifySong> findByPlaylistsId(String playlistId, Pageable pageable) {
+        return songRepository.findByPlaylistsId(playlistId, pageable);
+    }
+
+    public Set<SpotifySong> fetchSongsFromSpotify(SpotifyPlaylistDto playlistDto){
         Set<SpotifySong> spotifySongs = fetchFromSpotify(playlistDto)
                 .parallel()
                 .map(this::findAndReplaceNullSongAndArtistsIds)
@@ -38,12 +45,23 @@ public class SongService {
         artistMainService
                 .saveArtistsFromTracklist(spotifySongs);
 
-        return saveTracklist(spotifySongs);
+        return saveSongs(spotifySongs);
     }
 
-    public Set<SpotifySong> mapAlbumSongs(SpotifySongDto[] songDtoArr) {
-        return Arrays.stream(songDtoArr)
-                .map(this::createSpotifySong)
+    public Set<SpotifySong> mapAlbumSongs(SpotifyAlbumDto spotifyAlbum) {
+        return Arrays.stream(spotifyAlbum.getTracks().items())
+                .map( track ->
+                        SpotifySong.builder()
+                                .spotifyId(track.getId())
+                                .name(track.getName())
+                                .album(spotifyAlbum.getName())
+                                .artists(track.getArtists().stream()
+                                        .map( ar -> Artist.builder()
+                                                .id(ar.getId())
+                                                .name(ar.getName())
+                                                .build())
+                                        .toList())
+                                .build())
                 .collect(Collectors.toSet());
     }
 
@@ -67,16 +85,14 @@ public class SongService {
     private SpotifySongDto findAndReplaceNullSongAndArtistsIds(SpotifySongDto dto){
         if (dto.getId() == null)
             dto.setId(UUID.randomUUID().toString());
-
         dto.getArtists().forEach(artist -> {
             if (artist.getId() == null)
                 artist.setId(UUID.randomUUID().toString());
         });
-
         return dto;
     }
 
-    private Set<SpotifySong> saveTracklist(Set<SpotifySong> spotifySongs){
+    public Set<SpotifySong> saveSongs(Set<SpotifySong> spotifySongs){
         songRepository.saveAll(spotifySongs);
         return spotifySongs;
     }

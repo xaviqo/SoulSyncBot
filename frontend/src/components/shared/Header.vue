@@ -1,8 +1,8 @@
 <template>
-  <header class="w-full flex justify-content-center mb-6">
-    <Toolbar class="w-full">
+  <header class="flex justify-content-center">
+    <Toolbar class="w-full p-4">
       <template #start>
-        <div class="w-full mr-4">
+        <div class="w-full mr-4 cursor-pointer" @click="this.$router.push('/')">
           <span>S O U L  <b>S Y N C</b></span>
         </div>
         <div class="flex align-items-center gap-2">
@@ -13,7 +13,7 @@
       </template>
       <template #end>
         <Button
-            icon="pi pi-angle-right"
+            icon="pi pi-sign-out"
             label="Log Out"
             severity="secondary"
             @click="logOut"

@@ -20,7 +20,7 @@ const routes = [
   {
     path: '/panel',
     name: 'panel-view',
-    component: () => import('../views/PanelView.vue'),
+    component: () => import('../views/MainView.vue'),
     beforeEnter: (to, from, next) => {
       if (isAuthenticated())
         next();
@@ -28,7 +28,21 @@ const routes = [
         next('/login');
     },
     meta: {
-      title: 'Bot Panel'
+      title: 'Manager'
+    }
+  },
+  {
+    path: '/playlist/:id',
+    name: 'playlist-view',
+    component: () => import('../views/PlaylistView.vue'),
+    beforeEnter: (to, from, next) => {
+      if (isAuthenticated())
+        next();
+      else
+        next('/login');
+    },
+    meta: {
+      title: "Playlist View",
     }
   },
   {

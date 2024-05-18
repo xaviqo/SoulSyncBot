@@ -12,7 +12,6 @@ import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.service.artist.ArtistMainService;
 import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
-import tech.xavi.soulsync.service.playlist.PlaylistCreationService;
 import tech.xavi.soulsync.service.playlist.PlaylistMainService;
 import tech.xavi.soulsync.service.song.SongService;
 
@@ -28,7 +27,6 @@ public class UpdatePlaylistProcess extends MaintenanceProcess {
     private final PlaylistMainService playlistMainService;
     private final ArtistMainService artistMainService;
     private final SongService songService;
-    private final PlaylistCreationService playlistCreationService;
     private final SpotifyGatewayService spotifyGatewayService;
     @Getter private final int order = 10;
 
@@ -60,14 +58,14 @@ public class UpdatePlaylistProcess extends MaintenanceProcess {
         boolean isTracklistUpdated = updated.getTotalTracks() != current.getTotalTracks();
         if (isTracklistUpdated) {
             Hibernate.initialize(current.getSongs());
-            Set<SpotifySong> newSongs = playlistCreationService
-                    .getTracklist(updated)
+            Set<SpotifySong> newSongs = songService
+                    .fetchSongsFromSpotify(updated)
                     .stream()
                     .parallel()
                     .filter( spotifySong -> isNewSong(current,spotifySong) )
                     .collect(Collectors.toSet());
             artistMainService.saveArtistsFromTracklist(newSongs);
-            songService.saveTracklist(newSongs);
+            songService.saveSongs(newSongs);
             current.getSongs().addAll(newSongs);
         }
         return isTracklistUpdated;

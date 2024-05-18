@@ -6,10 +6,12 @@ import tech.xavi.soulsync.dto.shared.AlertData;
 
 @Builder
 public record AddResponseDto(
+        String id,
         PlaylistType playlistType,
-        String playlistName,
-        String playlistCover,
+        String name,
+        String cover,
         int totalTracks,
+        String owner,
         AlertData alertData
 ) {
 }

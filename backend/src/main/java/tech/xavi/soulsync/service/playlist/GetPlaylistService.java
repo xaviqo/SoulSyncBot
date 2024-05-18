@@ -1,9 +1,18 @@
 package tech.xavi.soulsync.service.playlist;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.dto.playlist.GetPlaylistDto;
+import tech.xavi.soulsync.configuration.globals.PlaylistType;
+import tech.xavi.soulsync.dto.playlist.PlaylistOverviewDto;
+import tech.xavi.soulsync.entity.db.Playlist;
+import tech.xavi.soulsync.exception.SoulSyncError;
+import tech.xavi.soulsync.exception.SoulSyncException;
+import tech.xavi.soulsync.service.download.SlskdRequestService;
+import tech.xavi.soulsync.service.download.downloadlist.DownloadListService;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -11,19 +20,55 @@ import java.util.stream.Collectors;
 public class GetPlaylistService {
 
     private final PlaylistMainService playlistMainService;
+    private final DownloadListService downloadListService;
+    private final SlskdRequestService slskdRequestService;
+    private final AlbumCreationService albumCreationService;
 
-    public Set<GetPlaylistDto> getAllPlaylists() {
+    @Transactional
+    public Set<PlaylistOverviewDto> getPlaylistDiscography(String parentPlaylistId) throws SoulSyncException {
+        return playlistMainService
+                .findAllByParentId(parentPlaylistId)
+                .map(this::mapPlaylistOverviewDto)
+                .collect(Collectors.toSet());
+    }
+
+    public PlaylistOverviewDto getPlaylist(String id) {
+        return playlistMainService
+                .findById(id)
+                .map(this::mapPlaylistOverviewDto)
+                .orElseThrow( () -> new SoulSyncException(
+                        SoulSyncError.PLAYLIST_NOT_FOUND,
+                        HttpStatus.BAD_REQUEST,
+                        id
+                ));
+    }
+
+    public Set<PlaylistOverviewDto> getAllPlaylists() {
         return playlistMainService
                 .findAll()
                 .stream()
-                .map( playlist -> GetPlaylistDto.builder()
-                        .id(playlist.getId())
-                        .playlistType(playlist.getPlaylistType())
-                        .cover(playlist.getCover())
-                        .name(playlist.getName())
-                        .owner(playlist.getOwner())
-                        .totalTracks(playlist.getTotalTracks())
-                        .build())
+                .filter( pl -> Objects.isNull(pl.getParentPlaylist()) )
+                .map(this::mapPlaylistOverviewDto)
                 .collect(Collectors.toSet());
+    }
+
+    private String getPlaylistCover(Playlist playlist){
+        if (PlaylistType.DISCOGRAPHY.equals(playlist.getPlaylistType()))
+            return albumCreationService
+                    .getB64DiscographyCover(playlist.getName());
+        else
+            return playlist
+                    .getCover();
+    }
+
+    private PlaylistOverviewDto mapPlaylistOverviewDto(Playlist playlist){
+        return PlaylistOverviewDto.builder()
+                .id(playlist.getId())
+                .playlistType(playlist.getPlaylistType())
+                .cover(getPlaylistCover(playlist))
+                .name(playlist.getName())
+                .owner(playlist.getOwner())
+                .totalTracks(playlist.getTotalTracks())
+                .build();
     }
 }

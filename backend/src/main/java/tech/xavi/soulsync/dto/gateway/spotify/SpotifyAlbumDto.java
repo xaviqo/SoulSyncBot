@@ -15,7 +15,7 @@ public class SpotifyAlbumDto {
     @JsonProperty("album_type")
     String albumType;
     List<SpotifyArtistDto> artists;
-    SpotifyTrackContainerDto tracks;
+    SpotifyAlbumTrackContainerDto tracks;
     @JsonProperty("total_tracks")
     int totalTracks;
     SpotifyImageDto[] images;
@@ -24,4 +24,5 @@ public class SpotifyAlbumDto {
                 ? this.images[0].getUrl()
                 : null;
     }
+
 }

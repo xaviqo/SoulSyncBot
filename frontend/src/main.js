@@ -26,6 +26,10 @@ import Tooltip from "primevue/tooltip";
 import ToggleButton from "primevue/togglebutton";
 import ConfirmDialog from 'primevue/confirmdialog';
 import ConfirmationService from "primevue/confirmationservice";
+import Badge from "primevue/badge";
+import DataTable from "primevue/datatable";
+import Column from "primevue/column";
+import Carousel from "primevue/carousel";
 
 const emitter = mitt()
 const app = createApp(App)
@@ -79,7 +83,7 @@ axiosInstance.interceptors.response.use(
                 setTimeout(() => window.location.reload(), 1200);
             }
         }
-        return error;
+        throw error;
     }
 );
 
@@ -108,9 +112,13 @@ app
     .component('InputGroup',InputGroup)
     .component('FloatLabel',FloatLabel)
     .component('Chips',Chips)
+    .component('Badge',Badge)
     .component('InputNumber',InputNumber)
     .component('ToggleButton',ToggleButton)
     .component('ConfirmDialog',ConfirmDialog)
+    .component('DataTable',DataTable)
+    .component('Column',Column)
+    .component('Carousel',Carousel)
 
 app.directive('tooltip',Tooltip)
 

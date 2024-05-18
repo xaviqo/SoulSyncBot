@@ -12,4 +12,5 @@ public class SpotifyTrackDto {
     private List<SpotifyArtistDto> artists;
     private String id;
     private String name;
+    private SpotifyAlbumDto album;
 }

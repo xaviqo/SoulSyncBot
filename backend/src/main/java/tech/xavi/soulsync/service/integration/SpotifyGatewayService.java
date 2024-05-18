@@ -27,18 +27,18 @@ public class SpotifyGatewayService {
         return dto;
     }
 
-    public SpotifyAlbumDto[] getArtistDiscography(String artistId){
-        return spotifyPlaylistGateway.getArtistDiscography(
+    public List<SpotifyAlbumDto> getArtistDiscography(String artistId){
+        return List.of(spotifyPlaylistGateway.getArtistDiscography(
                 getToken(),
                 artistId
-        ).items();
+        ).items());
     }
 
     public SpotifyAlbumDto[] getAlbumWithTracks(String albumIdsByComa) {
         return spotifyPlaylistGateway.getAlbumsTracks(
                 getToken(),
                 albumIdsByComa
-        );
+        ).albums();
     }
 
     public List<SpotifySongDto> getPlaylistSongs(

@@ -1,6 +1,6 @@
 package tech.xavi.soulsync.dto.gateway.spotify;
 
-public record SpotifyTrackContainerDto(
+public record SpotifyPlaylistTrackContainerDto(
         SpotifySongDto[] items
 ) {
 }

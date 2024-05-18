@@ -14,6 +14,7 @@ public record GatewayRequest(
         String basicCredentials,
         Object payload,
         Map<String,Object> query,
-        Map<String,String> routeParams
+        Map<String,String> routeParams,
+        Map<String,String> requestParams
 ) {
 }

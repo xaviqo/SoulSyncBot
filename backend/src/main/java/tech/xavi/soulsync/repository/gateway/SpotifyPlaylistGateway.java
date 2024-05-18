@@ -7,10 +7,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import tech.xavi.soulsync.dto.gateway.GatewayRequest;
 import tech.xavi.soulsync.dto.gateway.GatewayToken;
-import tech.xavi.soulsync.dto.gateway.spotify.SpotifyAlbumDto;
-import tech.xavi.soulsync.dto.gateway.spotify.SpotifyDiscographyDto;
-import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistDto;
-import tech.xavi.soulsync.dto.gateway.spotify.SpotifyTrackContainerDto;
+import tech.xavi.soulsync.dto.gateway.spotify.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,20 +45,21 @@ public class SpotifyPlaylistGateway extends Gateway {
                         .method(HttpMethod.GET)
                         .token(token.token())
                         .path(GET_ARTIST_DISCOGRAPHY_PATH)
+                        .routeParams(Map.of("artistId",artistId))
                         .build(),
                 SpotifyDiscographyDto.class
         );
     }
 
-    public SpotifyAlbumDto[] getAlbumsTracks(GatewayToken token, String albumIdsByComa) {
+    public SpotifyAlbumContainerDto getAlbumsTracks(GatewayToken token, String albumIdsByComa) {
         return mappedCall(
                 GatewayRequest.builder()
                         .method(HttpMethod.GET)
                         .token(token.token())
                         .path(GET_ALBUM_PATH)
-                        .routeParams(Map.of("ids",albumIdsByComa))
+                        .query(Map.of("ids",albumIdsByComa))
                         .build(),
-                SpotifyAlbumDto[].class
+                SpotifyAlbumContainerDto.class
         );
     }
 
@@ -78,7 +76,7 @@ public class SpotifyPlaylistGateway extends Gateway {
         );
     }
 
-    public SpotifyTrackContainerDto getPlaylistSongs(GatewayToken token, String playlistId, int offset){
+    public SpotifyPlaylistTrackContainerDto getPlaylistSongs(GatewayToken token, String playlistId, int offset){
         final Map<String,Object> queryStrings = new HashMap<>() {{
             put("fields", SONG_FIELDS);
             put("limit", MAX_SONGS_PER_REQUEST);
@@ -92,7 +90,7 @@ public class SpotifyPlaylistGateway extends Gateway {
                         .routeParams(Map.of("playlistId",playlistId))
                         .query(queryStrings)
                         .build(),
-                SpotifyTrackContainerDto.class
+                SpotifyPlaylistTrackContainerDto.class
         );
     }
 

@@ -32,13 +32,15 @@ public class PlaylistCreationService {
         DownloadList downloadList = downloadListCreationService
                 .createDownloadList(spotifyId,searchPolicyId);
         Set<SpotifySong> spotifySongs = songService
-                .getSongsFromPlaylist(spotifyPlaylistDto);
+                .fetchSongsFromSpotify(spotifyPlaylistDto);
+        String playlistCover = playlistMainService
+                .getPlaylistCoverUrl(spotifyPlaylistDto.getImages());
         Playlist playlist = playlistMainService
                 .savePlaylist(Playlist.builder()
                 .id(spotifyId)
                 .name(spotifyPlaylistDto.getName())
                 .totalTracks(spotifySongs.size())
-                .cover(playlistMainService.getPlaylistCoverUrl(spotifyPlaylistDto.getImages()))
+                .cover(playlistCover)
                 .songs(spotifySongs)
                 .owner(accountService.getCurrentUser().getUsername())
                 .lastUpdate(System.currentTimeMillis())

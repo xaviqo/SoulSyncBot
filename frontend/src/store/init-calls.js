@@ -6,16 +6,14 @@ export const useInitStore = defineStore('init', {
         isInstalledVal: null
     }),
     actions: {
-        async checkInstall(){
+        async checkSetup(){
             if (this.isInstalledVal == null){
                 const res = await this.$axios.get('/cfg/is-installed');
-                this.isInstalledVal = res?.data?.isInstalled;
+                const isInst = res?.data?.isInstalled;
+                this.isInstalledVal = isInst;
+                return isInst;
             }
-        },
-        async install(payload){
-            return this.$axios
-                .post('/cfg/initial-setup',payload)
-                .then( res => res);
+            return false;
         }
     },
     getters: {

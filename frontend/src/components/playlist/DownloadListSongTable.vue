@@ -1,0 +1,114 @@
+<template>
+  <Card>
+    <template #content>
+      <DataTable :value="getDownloadListSongs.content"
+                 paginator
+                 :rows="getDownloadListSongs.size"
+                 :totalRecords="getDownloadListSongs.totalElements"
+                 :rowsPerPageOptions="[10, 15, 20, 30, 50]"
+                 lazy
+                 @page="onPage"
+                 size="small"
+      >
+        <Column header="Info">
+          <template #body="slotProps">
+            <Tag
+                class="cursor-pointer p-1 text-white border-round border-0 bg-blue-500 hover:bg-blue-400"
+                @click="showSongDialog(slotProps.data)"
+            >
+              <i class="pi pi-info-circle" style="font-size: 1.4em"></i>
+            </Tag>
+          </template>
+        </Column>
+        <Column field="status" header="Status">
+          <template #body="slotProps">
+            <Tag
+                :value="slotProps.data.status"
+                :severity="getSeverity(slotProps.data.status)"
+                class="w-full"
+            />
+          </template>
+        </Column>
+        <Column field="name" header="Name"></Column>
+        <Column field="album" header="Album"></Column>
+        <Column field="attempts" header="Attempts"></Column>
+        <Column field="bitRate" header="Bit Rate"></Column>
+        <Column field="size" header="Size">
+          <template #body="slotProps">
+            {{ getSize(slotProps.data.size) }}
+          </template>
+        </Column>
+        <Column field="lastCheck" header="Last Check">
+          <template #body="slotProps">
+            {{ getDate(slotProps.data.lastCheck) }}
+          </template>
+        </Column>
+      </DataTable>
+    </template>
+  </Card>
+  <SongDataDialog />
+</template>
+<script>
+import {mapActions, mapState} from "pinia";
+import {usePlaylistStore} from "@/store/playlist-calls";
+import {utilsMixin} from "@/mixin/utils";
+import SongDataDialog from "@/components/playlist/SongDataDialog.vue";
+
+export default {
+  name: "DownloadListSongTable",
+  components: {SongDataDialog},
+  mixins: [utilsMixin],
+  data: () => ({
+    showDialog: false,
+    songData: null
+  }),
+  props: {
+    downloadList: Object
+  },
+  watch: {
+    downloadList(newVal) {
+      if (newVal && newVal.id)
+        this.onPage(null);
+    }
+  },
+  methods: {
+    showSongDialog(data) {
+      this.emitter.emit('song-data-dialog', data);
+    },
+    getSeverity(status) {
+      switch (status) {
+        case 'COMPLETED':
+          return 'success';
+        case 'SEARCHING':
+        case 'FINDING_FILE':
+          return 'info';
+        case 'DOWNLOADING':
+          return 'warning';
+        case 'WAITING':
+          return null;
+      }
+    },
+    getDate(ts){
+      return this.timestampToDate(ts);
+    },
+    getSize(bits){
+      return this.bitsToSize(bits);
+    },
+    async onPage(event) {
+      await this.fetchDownloadListSongs(
+          this.downloadList?.id,
+          event?.page ? event.page : 1,
+          event?.size ? event.size : 10,
+      );
+    },
+    ...mapActions(usePlaylistStore, [
+      'fetchDownloadListSongs',
+    ])
+  },
+  computed: {
+    ...mapState(usePlaylistStore, {
+      getDownloadListSongs: 'getDownloadListSongs',
+    })
+  }
+}
+</script>

@@ -53,10 +53,8 @@ public class SpotifyGatewayService {
     }
 
     private GatewayToken getToken(){
-        GatewayToken tkn = gatewayTokenService
+        return gatewayTokenService
                 .getToken(GatewayName.SPOTIFY);
-        log.debug("Spotify token: {}", tkn);
-        return tkn;
     }
 
 

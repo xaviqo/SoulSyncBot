@@ -31,7 +31,7 @@ public class AlbumCreationService {
 
     private final SpotifyGatewayService spotifyGatewayService;
     private final DownloadListCreationService downloadListCreationService;
-    private final PlaylistMainService playlistMainService;
+    private final PlaylistService playlistService;
     private final ArtistMainService artistMainService;
     private final SongService songService;
     private final AccountService accountService;
@@ -48,15 +48,15 @@ public class AlbumCreationService {
                 .owner(accountService.getCurrentUser().getUsername())
                 .totalTracks(0)
                 .build();
-        playlistMainService.savePlaylist(parentPlaylist);
+        playlistService.savePlaylist(parentPlaylist);
 
         Set<String> idsByComa = getAlbumIdsGroupedByComa(getGroupedAlbumIds(albums));
         List<SpotifyAlbumDto> albumsWithTracks = idsByComa.stream()
                 .flatMap(ids -> Stream.of(spotifyGatewayService.getAlbumWithTracks(ids)))
-                .collect(Collectors.toList());
+                .toList();
 
         albumsWithTracks.forEach(album ->
-                playlistMainService.findById(album.getId())
+                playlistService.findById(album.getId())
                         .orElseGet(() -> createAlbumAndDownloadList(album, parentPlaylist, searchPolicyId))
         );
 
@@ -120,9 +120,9 @@ public class AlbumCreationService {
             Playlist parentPlaylist,
             String searchPolicyId
     ) {
-        DownloadList downloadList = downloadListCreationService.createDownloadList(album.getId(), searchPolicyId);
+        DownloadList downloadList = downloadListCreationService.getDownloadList(album.getId(), searchPolicyId);
         Playlist playlist = saveAlbum(album, parentPlaylist, downloadList);
-        downloadListCreationService.createSlskdDownloads(playlist, downloadList);
+        downloadListCreationService.createSlskdRequests(playlist, downloadList);
         return playlist;
     }
 
@@ -130,12 +130,12 @@ public class AlbumCreationService {
         Set<SpotifySong> playlistSongs = songService.mapAlbumSongs(albumDto);
         artistMainService.saveArtistsFromTracklist(playlistSongs);
         songService.saveSongs(playlistSongs);
-        return playlistMainService
+        return playlistService
                 .savePlaylist(Playlist.builder()
                         .id(albumDto.getId())
                         .name(albumDto.getName())
                         .totalTracks(albumDto.getTotalTracks())
-                        .cover(playlistMainService.getPlaylistCoverUrl(albumDto.getImages()))
+                        .cover(playlistService.getPlaylistCoverUrl(albumDto.getImages()))
                         .songs(playlistSongs)
                         .owner(accountService.getCurrentUser().getUsername())
                         .lastUpdate(System.currentTimeMillis())

@@ -29,7 +29,10 @@ import ConfirmationService from "primevue/confirmationservice";
 import Badge from "primevue/badge";
 import DataTable from "primevue/datatable";
 import Column from "primevue/column";
-import Carousel from "primevue/carousel";
+import DataView from "primevue/dataview";
+import Tag from "primevue/tag";
+import ProgressBar from "primevue/progressbar";
+import Divider from "primevue/divider";
 
 const emitter = mitt()
 const app = createApp(App)
@@ -118,7 +121,10 @@ app
     .component('ConfirmDialog',ConfirmDialog)
     .component('DataTable',DataTable)
     .component('Column',Column)
-    .component('Carousel',Carousel)
+    .component('DataView',DataView)
+    .component('Tag',Tag)
+    .component('ProgressBar',ProgressBar)
+    .component('Divider',Divider)
 
 app.directive('tooltip',Tooltip)
 

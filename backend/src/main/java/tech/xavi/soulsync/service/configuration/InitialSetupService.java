@@ -44,11 +44,6 @@ public class InitialSetupService implements CommandLineRunner {
             ConfigurationField.Section.SLSKD_DOWNLOAD
     };
 
-/*    @EventListener(ApplicationReadyEvent.class)
-    public void run()  {
-
-    }*/
-
     @Override
     public void run(String... args) throws Exception {
         createDefaultInstallation();
@@ -123,8 +118,10 @@ public class InitialSetupService implements CommandLineRunner {
     private void loadConfigurationBySection(ConfigurationField.Section... sections) {
         configurationFieldService
                 .getFieldsBySections(sections)
-                .forEach( field -> configurationFieldService
-                        .saveField(field, configurationFieldService.getProperty(field)) );
+                .forEach( field ->
+                        configurationFieldService
+                                .saveField(field, configurationFieldService.getProperty(field))
+                );
     }
 
     private void createDefaultUser(){

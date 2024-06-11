@@ -81,6 +81,7 @@ export default {
             delete policyConfiguration.id
             Object.keys(policyConfiguration)
                 .forEach(fieldName => {
+                  console.log(fieldName)
                   fields.find(f => {
                     return f.objectFieldName == fieldName
                   }).value = policyConfiguration[fieldName];

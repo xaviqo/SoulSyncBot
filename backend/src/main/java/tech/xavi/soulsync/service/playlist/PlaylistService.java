@@ -12,7 +12,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service @RequiredArgsConstructor
-public class PlaylistMainService {
+public class PlaylistService {
 
     private final PlaylistRepository playlistRepository;
 
@@ -44,7 +44,7 @@ public class PlaylistMainService {
     }
 
     public String getPlaylistCoverUrl(SpotifyImageDto[] spotifyImageArr){
-        if (spotifyImageArr.length > 0)
+        if (spotifyImageArr != null && spotifyImageArr.length > 0)
             return spotifyImageArr[0].getUrl();
         return null;
     }

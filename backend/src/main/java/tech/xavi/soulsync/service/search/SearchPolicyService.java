@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.configuration.SearchPolicyDto;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
+import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 import tech.xavi.soulsync.repository.datafile.SearchPolicyRepository;
@@ -23,6 +24,10 @@ public class SearchPolicyService {
             dto.setId(UUID.randomUUID().toString());
         saveEntity(dto);
         return dto;
+    }
+
+    public SearchPolicy getPolicyById(SlskdRequest slskdRequest) {
+        return getPolicyById(slskdRequest.getDownloadList().getSearchPolicy());
     }
 
     public SearchPolicy getPolicyById(String id) {

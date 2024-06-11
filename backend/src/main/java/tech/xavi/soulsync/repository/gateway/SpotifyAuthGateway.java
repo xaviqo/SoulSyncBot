@@ -19,7 +19,7 @@ public class SpotifyAuthGateway extends Gateway {
             @Value("${tech.xavi.soulsync.gateway.base-url.spotify.auth}") String authBaseUrl,
             @Value("${tech.xavi.soulsync.gateway.path.spotify.auth.get-token.ep}") String authEpGetToken
             ) {
-        super(restTemplate, objectMapper);
+        super(restTemplate, objectMapper,false);
         setBaseUrl(authBaseUrl);
         this.GET_TOKEN_PATH = authEpGetToken;
     }

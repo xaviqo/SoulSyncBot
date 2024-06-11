@@ -2,31 +2,38 @@ import {createRouter, createWebHistory} from 'vue-router'
 import {useUserStore} from "@/store/user-calls";
 
 const soulsyncTitle = 'SoulSync';
+
+const requireAuth = (to, from, next) => {
+  if (isAuthenticated()) {
+    next();
+  } else {
+    next('/playlist');
+  }
+};
+
+const requireNoAuth = (to, from, next) => {
+  if (isAuthenticated()) {
+    next('/playlist');
+  } else {
+    next();
+  }
+};
+
 const routes = [
   {
     path: '/login',
     name: 'login-view',
     component: () => import('../views/LoginView.vue'),
-    beforeEnter: (to, from, next) => {
-      if (isAuthenticated())
-        next('/panel');
-      else
-        next();
-    },
+    beforeEnter: requireNoAuth,
     meta: {
       title: 'Login Panel'
     }
   },
   {
-    path: '/panel',
+    path: '/playlist',
     name: 'panel-view',
     component: () => import('../views/MainView.vue'),
-    beforeEnter: (to, from, next) => {
-      if (isAuthenticated())
-        next();
-      else
-        next('/login');
-    },
+    beforeEnter: requireAuth,
     meta: {
       title: 'Manager'
     }
@@ -35,12 +42,16 @@ const routes = [
     path: '/playlist/:id',
     name: 'playlist-view',
     component: () => import('../views/PlaylistView.vue'),
-    beforeEnter: (to, from, next) => {
-      if (isAuthenticated())
-        next();
-      else
-        next('/login');
-    },
+    beforeEnter: requireAuth,
+    meta: {
+      title: "Playlist View",
+    }
+  },
+  {
+    path: '/playlist/:pl/download-list/:dl',
+    name: 'download-list-view',
+    component: () => import('../views/DownloadListView.vue'),
+    beforeEnter: requireAuth,
     meta: {
       title: "Playlist View",
     }

@@ -19,21 +19,21 @@ import java.util.stream.Collectors;
 @Service @RequiredArgsConstructor
 public class GetPlaylistService {
 
-    private final PlaylistMainService playlistMainService;
+    private final PlaylistService playlistService;
     private final DownloadListService downloadListService;
     private final SlskdRequestService slskdRequestService;
     private final AlbumCreationService albumCreationService;
 
     @Transactional
     public Set<PlaylistOverviewDto> getPlaylistDiscography(String parentPlaylistId) throws SoulSyncException {
-        return playlistMainService
+        return playlistService
                 .findAllByParentId(parentPlaylistId)
                 .map(this::mapPlaylistOverviewDto)
                 .collect(Collectors.toSet());
     }
 
     public PlaylistOverviewDto getPlaylist(String id) {
-        return playlistMainService
+        return playlistService
                 .findById(id)
                 .map(this::mapPlaylistOverviewDto)
                 .orElseThrow( () -> new SoulSyncException(
@@ -44,7 +44,7 @@ public class GetPlaylistService {
     }
 
     public Set<PlaylistOverviewDto> getAllPlaylists() {
-        return playlistMainService
+        return playlistService
                 .findAll()
                 .stream()
                 .filter( pl -> Objects.isNull(pl.getParentPlaylist()) )

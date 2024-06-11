@@ -32,7 +32,7 @@ public class SpotifyPlaylistGateway extends Gateway {
             @Value("${tech.xavi.soulsync.gateway.path.spotify.album.get-album.ep}") String pathGetAlbum,
             @Value("${tech.xavi.soulsync.gateway.path.spotify.artist.get-discography.ep}") String pathGetArtistsDisc
             ) {
-        super(restTemplate, objectMapper);
+        super(restTemplate, objectMapper,false);
         setBaseUrl(mainBaseUrl);
         this.GET_PLAYLIST_PATH = pathGetPlaylist;
         this.GET_ALBUM_PATH = pathGetAlbum;

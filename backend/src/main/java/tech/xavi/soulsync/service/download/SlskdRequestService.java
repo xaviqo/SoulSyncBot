@@ -1,12 +1,18 @@
 package tech.xavi.soulsync.service.download;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.globals.ProcessStatus;
+import tech.xavi.soulsync.dto.gateway.slskd.SlskdFile;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.repository.db.SlskdRequestRepository;
+import tech.xavi.soulsync.service.integration.SlskdGatewayService;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -14,7 +20,18 @@ import java.util.stream.Stream;
 @Service
 public class SlskdRequestService {
 
+    private final String COMPLETED_STATUS = "Completed, Succeeded";
     private final SlskdRequestRepository slskdRequestRepository;
+    private final SlskdGatewayService slskdGatewayService;
+
+    public Stream<SlskdFile> getCompletedDownloads() {
+        return slskdGatewayService
+                .getSlskdDownloads()
+                .flatMap( dws -> dws.directories()
+                        .stream()
+                        .flatMap( dir -> filterByCompletedStatus(dir.files()) )
+                );
+    }
 
     public Stream<SlskdRequest> getSongsQueue(DownloadList downloadList) {
         long retiesThreshold = downloadList.getAttempts();
@@ -28,16 +45,57 @@ public class SlskdRequestService {
         save(slskdRequest);
     }
 
+    public void setRequestToWaiting(SlskdRequest slskdRequest) {
+        slskdRequest.setStatus(ProcessStatus.WAITING);
+        slskdRequest.setSharedBy(null);
+        slskdRequest.setFilename(null);
+        slskdRequest.setSize(0);
+        slskdRequest.setBitRate(0);
+        save(slskdRequest);
+    }
+
+    public void setRequestToCompletedByFile(SlskdFile slskdFile) {
+        slskdRequestRepository
+                .updateStatusByFileAndUser(
+                        ProcessStatus.COMPLETED,
+                        slskdFile.filename(),
+                        slskdFile.username()
+                );
+    }
+
     public SlskdRequest save(SlskdRequest slskdRequest) {
         return slskdRequestRepository.save(slskdRequest);
+    }
+
+    public void sendRequest(SlskdRequest request) {
+        slskdGatewayService.initDownload(request);
     }
 
     public Iterable<SlskdRequest> saveAll(Collection<SlskdRequest> slskdRequests) {
         return slskdRequestRepository.saveAll(slskdRequests);
     }
 
-    private Set<SlskdRequest> getDownloadListSongs(DownloadList downloadList) {
+    public long countByDownloadList(DownloadList downloadList) {
+        return slskdRequestRepository.countByDownloadList(downloadList);
+    }
+
+    public long countBydownloadListAndStatus(DownloadList downloadList, ProcessStatus... status) {
+        return slskdRequestRepository.countByDownloadListAndStatuses(downloadList, status);
+    }
+
+    public Page<SlskdRequest> getDownloadListSongs(long downloadListId, Pageable pageable){
+        DownloadList dl = DownloadList.builder().downloadListId(downloadListId).build();
+        return slskdRequestRepository.findByDownloadList(dl,pageable);
+    }
+
+    public Set<SlskdRequest> getDownloadListSongs(DownloadList downloadList) {
         return slskdRequestRepository.findByDownloadList(downloadList);
+    }
+
+    private Stream<SlskdFile> filterByCompletedStatus(List<SlskdFile> files) {
+        return files
+                .stream()
+                .filter(file -> file.state().equals(COMPLETED_STATUS) );
     }
 
 }

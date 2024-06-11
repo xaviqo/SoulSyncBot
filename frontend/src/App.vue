@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-wrap mt-3 justify-content-center">
-    <div class="w-8 flex flex-wrap gap-3">
+    <div class="w-12 md:w-10 xl:w-8 flex flex-wrap gap-3 mx-3">
       <Header v-if="isAuthenticated" class="w-12"></Header>
       <transition-group name="p-message" tag="div" class="absolute mt-8 right-0" style="z-index: 9999">
         <Message
@@ -12,7 +12,7 @@
           {{ msg.message }}
         </Message>
       </transition-group>
-      <router-view class="w-12"/>
+      <router-view class="w-12" :key="$route.fullPath"/>
       <InstallDialog
           :show-dialog="showInstallDialog"
           v-if="showInstallDialog"

@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.service.task.maintenance;
+package tech.xavi.soulsync.service.process.maintenance;
 
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -12,7 +12,7 @@ import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.service.artist.ArtistMainService;
 import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
-import tech.xavi.soulsync.service.playlist.PlaylistMainService;
+import tech.xavi.soulsync.service.playlist.PlaylistService;
 import tech.xavi.soulsync.service.song.SongService;
 
 import java.util.Set;
@@ -24,15 +24,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UpdatePlaylistProcess extends MaintenanceProcess {
 
-    private final PlaylistMainService playlistMainService;
+    private final PlaylistService playlistService;
     private final ArtistMainService artistMainService;
     private final SongService songService;
     private final SpotifyGatewayService spotifyGatewayService;
     @Getter private final int order = 10;
 
-    @Override
-    public CompletableFuture<Void> execute() {
-        playlistMainService
+    @Override @org.springframework.transaction.annotation.Transactional
+    public CompletableFuture<Boolean> execute() {
+        playlistService
                 .findAllByType(PlaylistType.PLAYLIST)
                 .forEach(this::updatePlaylist);
         return CompletableFuture.completedFuture(null);
@@ -43,7 +43,7 @@ public class UpdatePlaylistProcess extends MaintenanceProcess {
         SpotifyPlaylistDto updatedPlaylist = spotifyGatewayService.getPlaylistDetails(currentPlaylist.getId());
         if (updateName(updatedPlaylist,currentPlaylist) || updateTracklist(updatedPlaylist,currentPlaylist)) {
             currentPlaylist.setLastUpdate(System.currentTimeMillis());
-            playlistMainService.savePlaylist(currentPlaylist);
+            playlistService.savePlaylist(currentPlaylist);
         }
     }
 

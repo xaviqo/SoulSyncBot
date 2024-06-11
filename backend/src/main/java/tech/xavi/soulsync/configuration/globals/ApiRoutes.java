@@ -24,8 +24,12 @@ public class ApiRoutes {
     public static final String EP_PLAYLIST = API_ROOT + "/playlist";
     public static final String EP_SEARCH_POLICY = EP_PLAYLIST + "/search-policy";
     public static final String EP_PLAYLIST_DISCOGRAPHY = EP_PLAYLIST + "/{id}/parent-playlists";
-    public static final String EP_PLAYLIST_DOWNLOADS = EP_PLAYLIST + "/{id}/download-lists";
+    public static final String EP_PLAYLIST_DOWNLOADS = EP_PLAYLIST + "/{playlistId}/download-lists";
     public static final String EP_PLAYLIST_SONGS = EP_PLAYLIST + "/{id}/songs";
+
+    // DOWNLOAD LIST
+    public static final String EP_DOWNLOAD_LIST = API_ROOT + "/download-list";
+    public static final String EP_DOWNLOAD_LIST_TRACKS = EP_DOWNLOAD_LIST + "/{downloadListId}/tracks";
 
     public static final RequestMatcher[] NO_FILTER_EPS = {
             new AntPathRequestMatcher(EP_HEALTH_CHECK, HttpMethod.GET.name()),

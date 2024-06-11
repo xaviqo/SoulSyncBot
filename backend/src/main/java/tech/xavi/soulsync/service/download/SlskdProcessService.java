@@ -7,8 +7,8 @@ import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
-import tech.xavi.soulsync.service.download.process.SlskdProcess;
-import tech.xavi.soulsync.service.task.Process;
+import tech.xavi.soulsync.service.process.Process;
+import tech.xavi.soulsync.service.process.download.SlskdProcess;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -16,21 +16,21 @@ import java.util.List;
 
 @Log4j2
 @Service
-public class DownloadManagerService {
+public class SlskdProcessService {
 
-    private final List<SlskdProcess> taskProcesses;
+    private final List<SlskdProcess> slskdProcesses;
     private final List<SlskdRequest> currentRequests;
     private final ConfigurationFieldService cfgFieldService;
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
     private final SlskdRequestService slskdRequestService;
 
-    public DownloadManagerService(
+    public SlskdProcessService(
             List<SlskdProcess> processes,
             ConfigurationFieldService cfgFieldService,
             ThreadPoolTaskScheduler threadPoolTaskScheduler,
             SlskdRequestService slskdRequestService
     ) {
-        this.taskProcesses = processes
+        this.slskdProcesses = processes
                 .stream()
                 .sorted(Comparator.comparingInt(Process::getOrder))
                 .toList();
@@ -42,32 +42,40 @@ public class DownloadManagerService {
 
     public void handleSlskdRequest(SlskdRequest slskdRequest) {
         if (slskdRequest != null) {
-            currentRequests
-                    .add(slskdRequest);
-            taskProcesses
-                    .forEach( slskdProcess -> {
-                        StopWatch stopWatch =
-                                initProcess(slskdRequest,slskdProcess);
-                        slskdProcess
-                                .execute(slskdRequest)
-                                .whenComplete( (result, throwable) -> {
-                                    stopWatch.stop();
-                                    log.debug("Finished Process [{}] " +
-                                                    ":: Task Type --> {} " +
-                                                    ":: Task Name --> {} " +
-                                                    ":: Time Elapsed --> {}",
-                                            slskdProcess.getTaskType(),
-                                            slskdProcess.getTaskName(),
-                                            stopWatch.getTotalTimeSeconds()+"s",
-                                            slskdRequest.getSearchInput()
-                                    );
+            currentRequests.add(slskdRequest);
 
-                                });
-                    });
-            slskdRequestService
-                    .saveIncreasingAttempts(slskdRequest);
-            currentRequests
-                    .remove(slskdRequest);
+            try {
+                executeProcesses(slskdRequest);
+            } finally {
+                slskdRequestService.saveIncreasingAttempts(slskdRequest);
+                currentRequests.remove(slskdRequest);
+            }
+        }
+    }
+
+    private void executeProcesses(SlskdRequest slskdRequest) {
+        for (SlskdProcess slskdProcess : slskdProcesses) {
+
+            StopWatch stopWatch = initProcess(slskdRequest, slskdProcess);
+            boolean isSuccess = slskdProcess.execute(slskdRequest).join();
+            stopWatch.stop();
+
+            log.info("Finished Process [{}] " +
+                            ":: Result --> {} " +
+                            ":: Task --> {} " +
+                            ":: Name --> {} " +
+                            ":: Elapsed --> {}",
+                    slskdProcess.getTaskType(),
+                    (isSuccess ? "SUCCESS" : "FAILURE"),
+                    slskdProcess.getTaskName(),
+                    slskdRequest.getSearchInput(),
+                    stopWatch.getTotalTimeSeconds() + "s"
+            );
+
+            if (!isSuccess) {
+                slskdRequestService.setRequestToWaiting(slskdRequest);
+                break;
+            }
         }
     }
 

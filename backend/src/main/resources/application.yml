@@ -10,8 +10,8 @@ spring:
     password: soulsync
   jpa:
     hibernate:
-      ddl-auto: create-drop
-      #ddl-auto: update
+      #ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         connection:
@@ -35,6 +35,9 @@ tech:
             app-auto-pause-adjustment: true
             app-max-simultaneous-threads: 5
             app-tracks-per-queue: 100
+            app-search-waiting-seconds: 60
+            app-total-records-per-batch: 50
+            app-maintenance-task-interval-mins: 5
       gateway:
         base-url:
           spotify:
@@ -58,8 +61,7 @@ tech:
             health: /api/v0/session/enabled
             login: /api/v0/session
             search: /api/v0/searches
-            responses: /responses
-            download: /api/v0/transfers/downloads
+            downloads: /api/v0/transfers/downloads
 
 logging:
   level:

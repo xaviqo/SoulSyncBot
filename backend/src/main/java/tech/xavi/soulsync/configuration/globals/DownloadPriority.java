@@ -13,7 +13,7 @@ public enum DownloadPriority {
 
     public static int compare(DownloadList dl1, DownloadList dl2) {
         return dl1.getPriorityRank() < dl2.getPriorityRank()
-                ? 1
-                : -1;
+                ? -1
+                : 1;
     }
 }

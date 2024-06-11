@@ -7,14 +7,12 @@ import java.util.Map;
 
 @Builder
 public record GatewayRequest(
-        String baseUrl,
         HttpMethod method,
         String path,
         String token,
         String basicCredentials,
         Object payload,
         Map<String,Object> query,
-        Map<String,String> routeParams,
-        Map<String,String> requestParams
+        Map<String,String> routeParams
 ) {
 }

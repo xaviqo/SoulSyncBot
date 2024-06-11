@@ -22,7 +22,7 @@ public class AddPlaylistService {
 
     private final PlaylistCreationService playlistCreationService;
     private final AlbumCreationService albumCreationService;
-    private final PlaylistMainService playlistMainService;
+    private final PlaylistService playlistService;
     private final AccountService accountService;
 
     public AddResponseDto handleAddPlaylistRequest(AddPlaylistDto request){
@@ -45,7 +45,7 @@ public class AddPlaylistService {
 
     private Playlist handleByRequestType(AddPlaylistDto request, RequestType requestType){
         String spotifyId = getSpotifyIdFromURL(request.url(),requestType);
-        if (playlistMainService.existsById(spotifyId))
+        if (playlistService.existsById(spotifyId))
             throw new SoulSyncException(
                     SoulSyncError.PLAYLIST_ALREADY_ADDED,
                     HttpStatus.BAD_REQUEST,

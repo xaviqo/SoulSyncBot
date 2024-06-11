@@ -1,38 +1,38 @@
 <template>
   <div class="flex flex-wrap gap-3">
-    <AddNewPlaylistCard
-        class="w-12"
-    />
-    <PlaylistCarousel
-        class="w-12"
-        :playlists="getPlaylists"
-    />
+    <AddNewPlaylistCard/>
+    <CardPLDataView :data="getPlaylists"/>
   </div>
 </template>
 <script>
 import AddNewPlaylistCard from "@/components/panel/AddNewPlaylistCard.vue";
-import PlaylistCarousel from "@/components/shared/PlaylistCarousel.vue";
 import {mapActions, mapState} from "pinia";
 import {usePlaylistStore} from "@/store/playlist-calls";
+import CardPLDataView from "@/components/shared/CardPLDataView.vue";
 
 export default {
   name: "MainView",
-  components: {PlaylistCarousel, AddNewPlaylistCard},
+  components: {CardPLDataView, AddNewPlaylistCard},
+  data: () => ({
+    layout: 'grid'
+  }),
   created() {
-    this.loadPlaylists();
+    this.fetchAllPlaylists();
   },
   methods: {
     ...mapActions(usePlaylistStore,[
-      'setSelectedPlaylist',
-      'getSelectedPlaylist',
-      'loadPlaylists'
+      'fetchAllPlaylists'
     ])
   },
   computed: {
-    ...mapState(usePlaylistStore,['getPlaylists'])
+    ...mapState(usePlaylistStore,[
+      'getPlaylists'
+    ])
   },
 }
 </script>
 <style scoped>
-
+.dview {
+  border-radius: 50px !important
+}
 </style>

@@ -8,6 +8,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import tech.xavi.soulsync.dto.gateway.GatewayRequest;
@@ -22,6 +23,7 @@ public abstract class Gateway {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    @Getter private final boolean shouldAddJsonContentTypeHeader;
     @Setter @Getter
     private String baseUrl;
 
@@ -62,11 +64,16 @@ public abstract class Gateway {
         final String BASIC_PREFIX = "Basic ";
         final HttpHeaders headers = new HttpHeaders();
 
-        //headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set(HttpHeaders.ACCEPT, MediaType.ALL_VALUE);
+
+        if (isShouldAddJsonContentTypeHeader())
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
         if (Objects.nonNull(request.token()))
             headers.set(HttpHeaders.AUTHORIZATION, BEARER_PREFIX + request.token());
         else if (Objects.nonNull(request.basicCredentials()))
             headers.set(HttpHeaders.AUTHORIZATION, BASIC_PREFIX + request.basicCredentials());
+
         return headers;
     }
 

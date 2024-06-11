@@ -1,14 +1,16 @@
 <template>
-    <PlaylistContainerCard
-        :playlists="discography"
-    />
+  <CardPLDataView
+      :data="discography"
+      />
 </template>
 <script>
-import PlaylistContainerCard from "@/components/shared/PlaylistCarousel.vue";
+
+
+import CardPLDataView from "@/components/shared/CardPLDataView.vue";
 
 export default {
   name: "PlaylistDiscography",
-  components: {PlaylistContainerCard},
+  components: {CardPLDataView},
   props:{
     playlistId: null
   },

@@ -2,14 +2,12 @@ package tech.xavi.soulsync.service.download.downloadlist;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.repository.db.DownloadListRepository;
 
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
@@ -29,11 +27,10 @@ public class DownloadListService {
                 .min(DownloadPriority::compare);
     }
 
-    @Transactional(readOnly = true)
-    public Set<DownloadList> getPlaylistDownloadLists(String playlistId){
+
+    public Stream<DownloadList> getPlaylistDownloadLists(String playlistId){
         return downloadListRepository
-                .findAllByPlaylistId(playlistId)
-                .collect(Collectors.toSet());
+                .findAllByPlaylistId(playlistId);
     }
 
 }

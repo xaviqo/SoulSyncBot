@@ -21,7 +21,7 @@ import java.util.Set;
 public class PlaylistCreationService {
 
     private final SpotifyGatewayService spotifyGatewayService;
-    private final PlaylistMainService playlistMainService;
+    private final PlaylistService playlistService;
     private final SongService songService;
     private final AccountService accountService;
     private final DownloadListCreationService downloadListCreationService;
@@ -30,12 +30,12 @@ public class PlaylistCreationService {
         SpotifyPlaylistDto spotifyPlaylistDto = spotifyGatewayService
                 .getPlaylistDetails(spotifyId);
         DownloadList downloadList = downloadListCreationService
-                .createDownloadList(spotifyId,searchPolicyId);
+                .getDownloadList(spotifyId,searchPolicyId);
         Set<SpotifySong> spotifySongs = songService
                 .fetchSongsFromSpotify(spotifyPlaylistDto);
-        String playlistCover = playlistMainService
+        String playlistCover = playlistService
                 .getPlaylistCoverUrl(spotifyPlaylistDto.getImages());
-        Playlist playlist = playlistMainService
+        Playlist playlist = playlistService
                 .savePlaylist(Playlist.builder()
                 .id(spotifyId)
                 .name(spotifyPlaylistDto.getName())
@@ -49,7 +49,7 @@ public class PlaylistCreationService {
                 .build());
 
         downloadListCreationService
-                .createSlskdDownloads(playlist, downloadList);
+                .createSlskdRequests(playlist, downloadList);
 
         return playlist;
     }

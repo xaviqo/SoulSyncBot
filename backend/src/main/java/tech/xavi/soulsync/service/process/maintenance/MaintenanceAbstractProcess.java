@@ -1,17 +1,14 @@
-package tech.xavi.soulsync.service.process.download;
+package tech.xavi.soulsync.service.process.maintenance;
 
+import lombok.Getter;
 import tech.xavi.soulsync.configuration.globals.ProcessStatus;
-import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.process.Process;
 
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class SlskdProcess implements Process {
-
-    public CompletableFuture<Boolean> execute(SlskdRequest slskdRequest) {
-        return CompletableFuture.completedFuture(null);
-    }
+@Getter
+public abstract class MaintenanceAbstractProcess implements Process {
 
     @Override
     public CompletableFuture<Boolean> execute() {
@@ -20,7 +17,7 @@ public abstract class SlskdProcess implements Process {
 
     @Override
     public String getTaskType() {
-        return "SLSKD";
+        return "MAINTENANCE";
     }
 
     public String getTaskName(){
@@ -32,4 +29,5 @@ public abstract class SlskdProcess implements Process {
     public ProcessStatus getStatus(){
         return null;
     }
+
 }

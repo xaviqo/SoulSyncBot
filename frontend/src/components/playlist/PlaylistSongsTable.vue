@@ -26,6 +26,9 @@ export default {
   props: {
     playlist: Object
   },
+  created() {
+    this.onPage(null);
+  },
   watch: {
     playlist(newVal) {
       if (newVal && newVal.id)

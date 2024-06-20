@@ -1,13 +1,14 @@
 <template>
-  <DataView :value="data" layout="grid" class="border-round-xl overflow-hidden">
+  <DataView :value="data" layout="grid" class="border-round-xl overflow-hidden" data-key="id">
     <template #grid="slotProps">
-      <div class="grid grid-nogutter">
+      <div class="grid grid-cols-12 grid-nogutter">
         <PlaylistCard
             v-for="pl in slotProps.items"
             :key="pl.id"
-            :class="(slotProps.items < 2) ? '' : 'lg:col-4 md:col-6 col-12'"
+            :class="getCardClass()"
             :playlist="pl"
         ></PlaylistCard>
+        <!--  -->
       </div>
     </template>
     <template #empty>
@@ -23,12 +24,26 @@
 import PlaylistCard from "@/components/shared/PlaylistCard.vue";
 
 export default {
-  name: "CardPLDataView",
+  name: "PlaylistDataView",
   components: {PlaylistCard},
   props: {
     data: Array
+  },
+  methods: {
+    getCardClass(){
+      const data = this.data;
+      if (data && data.length <= 1) {
+        return '';
+      } else if (data && data.length === 2) {
+        return 'lg:col-6 md:col-12 col-12'
+      } else {
+        return 'lg:col-4 md:col-6 col-12';
+      }
+    }
   }
 }
 </script>
 <style scoped>
 </style>
+<script setup lang="ts">
+</script>

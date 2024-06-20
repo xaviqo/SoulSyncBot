@@ -28,6 +28,11 @@ public class ConfigurationFieldService {
     private final ConfigurationFieldRepository configurationFieldRepository;
     private final ObjectMapper mapper;
 
+    public void saveDtoFields(List<ConfigurationFieldDto> fieldDtos) {
+        List<ConfigurationField> fields = mapToConfigurationField(fieldDtos);
+        saveFields(fields);
+    }
+
     public void saveFields(List<ConfigurationField> fields){
         fields.forEach(this::checkAndSave);
     }
@@ -56,10 +61,14 @@ public class ConfigurationFieldService {
         return field;
     }
 
-    public Set<ConfigurationField> getFieldsBySections(String sectionsByComa) {
-        return Arrays.stream(sectionsByComa.split(","))
+    public Set<ConfigurationField> getFieldsBySections(String sectionsByComa, boolean addValues) {
+        Set<ConfigurationField> fields = Arrays.stream(sectionsByComa.split(","))
                 .flatMap(section -> ConfigurationField.getAllBySection(section).stream())
                 .collect(Collectors.toSet());
+        if (addValues)
+            return getValueFromFields(fields);
+        else
+            return fields;
     }
 
     public Set<ConfigurationField> getFieldsBySections(ConfigurationField.Section... section) {
@@ -68,8 +77,8 @@ public class ConfigurationFieldService {
                 .collect(Collectors.toSet());
     }
 
-    private Set<ConfigurationField> getFromFields(ConfigurationField... fields){
-        return Arrays.stream(fields)
+    private Set<ConfigurationField> getValueFromFields(Set<ConfigurationField> fields){
+        return fields.stream()
                 .map(this::getFieldWithValue)
                 .collect(Collectors.toSet());
     }

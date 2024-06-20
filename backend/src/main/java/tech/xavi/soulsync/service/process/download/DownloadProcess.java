@@ -13,14 +13,14 @@ import java.util.concurrent.CompletableFuture;
 @Log4j2
 @Component
 @RequiredArgsConstructor
-public class DownloadProcess extends SlskdProcess {
+public class DownloadProcess extends SlskdAbstractProcess {
 
     private final SlskdRequestService slskdRequestService;
     @Getter private final int order = 30;
 
     @Override
     public CompletableFuture<Boolean> execute(SlskdRequest request) {
-        slskdRequestService.sendRequest(request);
+        slskdRequestService.sendDownloadRequest(request);
         return CompletableFuture.completedFuture(true);
     }
 

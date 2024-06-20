@@ -2,11 +2,9 @@ package tech.xavi.soulsync.service.download.downloadlist;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.repository.db.DownloadListRepository;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -19,12 +17,10 @@ public class DownloadListService {
         return downloadListRepository.save(downloadList);
     }
 
-    public Optional<DownloadList> getNextDownloadList() {
+    public Stream<DownloadList> getDownloadLists() {
         return downloadListRepository
                 .findAll()
-                .stream()
-                .filter(DownloadList::getIsActive)
-                .min(DownloadPriority::compare);
+                .stream();
     }
 
 

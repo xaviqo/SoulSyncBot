@@ -14,10 +14,7 @@ import tech.xavi.soulsync.repository.db.SongRepository;
 import tech.xavi.soulsync.service.artist.ArtistMainService;
 import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;

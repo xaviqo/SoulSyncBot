@@ -8,7 +8,7 @@ import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import tech.xavi.soulsync.service.process.Process;
-import tech.xavi.soulsync.service.process.download.SlskdProcess;
+import tech.xavi.soulsync.service.process.download.SlskdAbstractProcess;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,14 +18,14 @@ import java.util.List;
 @Service
 public class SlskdProcessService {
 
-    private final List<SlskdProcess> slskdProcesses;
+    private final List<SlskdAbstractProcess> slskdProcesses;
     private final List<SlskdRequest> currentRequests;
     private final ConfigurationFieldService cfgFieldService;
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
     private final SlskdRequestService slskdRequestService;
 
     public SlskdProcessService(
-            List<SlskdProcess> processes,
+            List<SlskdAbstractProcess> processes,
             ConfigurationFieldService cfgFieldService,
             ThreadPoolTaskScheduler threadPoolTaskScheduler,
             SlskdRequestService slskdRequestService
@@ -54,7 +54,7 @@ public class SlskdProcessService {
     }
 
     private void executeProcesses(SlskdRequest slskdRequest) {
-        for (SlskdProcess slskdProcess : slskdProcesses) {
+        for (SlskdAbstractProcess slskdProcess : slskdProcesses) {
 
             StopWatch stopWatch = initProcess(slskdRequest, slskdProcess);
             boolean isSuccess = slskdProcess.execute(slskdRequest).join();
@@ -79,7 +79,7 @@ public class SlskdProcessService {
         }
     }
 
-    private StopWatch initProcess(SlskdRequest request, SlskdProcess process) {
+    private StopWatch initProcess(SlskdRequest request, SlskdAbstractProcess process) {
         StopWatch stopWatch = new StopWatch();
         stopWatch.start();
         request.setStatus(process.getStatus());

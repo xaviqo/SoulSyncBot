@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StopWatch;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
-import tech.xavi.soulsync.service.process.maintenance.MaintenanceProcess;
+import tech.xavi.soulsync.service.process.maintenance.MaintenanceAbstractProcess;
 
 import java.util.Comparator;
 import java.util.List;
@@ -16,12 +16,12 @@ import java.util.List;
 public class MaintenanceProcessManagerService {
 
     private static final int RUN_RATE_SEC = 60;
-    private final List<MaintenanceProcess> maintenanceProcesses;
+    private final List<MaintenanceAbstractProcess> maintenanceProcesses;
     private final ConfigurationFieldService configurationFieldService;
     private long lastExecutionMs;
 
     public MaintenanceProcessManagerService(
-            List<MaintenanceProcess> processes,
+            List<MaintenanceAbstractProcess> processes,
             ConfigurationFieldService cfgFieldService)
     {
         this.maintenanceProcesses = processes
@@ -34,7 +34,7 @@ public class MaintenanceProcessManagerService {
     @Scheduled(fixedRate = RUN_RATE_SEC * 1000)
     protected void runMaintenance() {
         if (isCooldownOver()) {
-            for (MaintenanceProcess maintenanceProcess : maintenanceProcesses) {
+            for (MaintenanceAbstractProcess maintenanceProcess : maintenanceProcesses) {
                 StopWatch stopWatch = new StopWatch();
                 stopWatch.start();
                 maintenanceProcess.execute().join();

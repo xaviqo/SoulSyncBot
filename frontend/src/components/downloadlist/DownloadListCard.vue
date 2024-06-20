@@ -2,10 +2,10 @@
   <Card class="-my-1">
     <template #content>
       <div class="flex gap-3 align-items-center -my-2" v-if="downloadList">
-        <div class="w-2 flex justify-content-start gap-2">
-          <Button v-if="showGlass" icon="pi pi-search" class="mr-2" severity="success" @click="emitDownloadListAction('show')"/>
-          <Button icon="pi pi-cog" class="mr-2" severity="info" @click="emitDownloadListAction('policy')"/>
-          <Button icon="pi pi-trash" class="mr-2" severity="danger" @click="emitDownloadListAction('delete')"/>
+        <div class="w-2 flex justify-content-start gap-3">
+          <Button v-if="showGlass" icon="pi pi-search" class="mr-2" severity="success" @click="doAction('show')"/>
+          <Button v-else icon="pi pi-cog" class="mr-2" severity="info" @click="doAction('policy')"/>
+          <Button icon="pi pi-trash" class="mr-2" severity="danger" @click="doAction('delete')"/>
         </div>
         <div class="w-10 flex gap-3">
           <div class="w-2 flex flex-column gap-1">
@@ -59,6 +59,7 @@
           </div>
         </div>
       </div>
+      <DownloadListConfigurationDialog />
     </template>
   </Card>
 </template>
@@ -66,9 +67,11 @@
 <script>
 import PriorityColor from "@/model/PriorityColor";
 import {utilsMixin} from "@/mixin/utils";
+import DownloadListConfigurationDialog from "@/components/downloadlist/DownloadListConfigurationDialog.vue";
 
 export default {
   name: "DownloadListCard",
+  components: {DownloadListConfigurationDialog},
   mixins: [utilsMixin],
   computed: {
     PriorityColor() {
@@ -96,16 +99,19 @@ export default {
     getLastRetryDate(ts) {
       return this.timestampToDate(ts);
     },
-    emitDownloadListAction(action){
+    doAction(action) {
       switch (action) {
         case 'show':
           this.$router.push({
-            name : 'download-list-view',
+            name: 'download-list-view',
             params: {
               pl: this.playlistId,
               dl: this.downloadList?.id
             }
           });
+          break;
+        case 'policy':
+          this.emitter.emit('download-list-data-dialog', this.downloadList);
           break;
       }
     }

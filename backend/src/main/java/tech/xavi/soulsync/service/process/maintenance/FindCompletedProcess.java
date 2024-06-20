@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RequiredArgsConstructor
 @Component
-public class FindCompletedProcess extends MaintenanceProcess {
+public class FindCompletedProcess extends MaintenanceAbstractProcess {
 
     @Getter private final int order = 20;
     private final SlskdRequestService slskdRequestService;

@@ -16,12 +16,14 @@
             :id="field.name"
             v-model="field.value"
             class="input-right-squared"
+            :disabled="disabled"
         />
         <InputNumber
             v-else-if="field.dataType === FieldType.NUMBER"
             :id="field.name"
             v-model="field.value"
             class="input-right-squared"
+            :disabled="disabled"
         />
         <Dropdown
             v-else-if="field.dataType === FieldType.SELECT"
@@ -29,12 +31,14 @@
             :options="field.defaultValues"
             v-model="field.value"
             class="input-right-squared"
+            :disabled="disabled"
         />
         <ToggleButton
-            class="w-full border-1 border-100 input-left-rounded"
             v-else-if="field.dataType === FieldType.BOOLEAN"
+            class="w-full border-1 border-100 input-left-rounded"
             :id="field.name"
             v-model="field.value"
+            :disabled="disabled"
         />
         <Button
             class="input-left-squared"
@@ -58,7 +62,12 @@ export default {
   },
   props: {
     fields: {
-      type: Array
+      type: Array,
+      required: true
+    },
+    disabled: {
+      type: Boolean,
+      required: true
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <Card>
+  <Card class="w-full">
     <template #content>
       <DataTable :value="getDownloadListSongs.content"
                  paginator

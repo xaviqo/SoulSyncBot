@@ -55,7 +55,7 @@ export default {
           .post('/account/sign-in', this.loginPayload)
           .then(res => {
             this.userCalls.saveLoginResponse(res.data);
-            this.$router.push("/panel")
+            this.$router.push({ name : 'panel-view'});
           })
           .catch( () => { this.resetInputs() });
     },

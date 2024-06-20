@@ -2,13 +2,14 @@
   <header class="flex justify-content-center">
     <Toolbar class="w-full p-4">
       <template #start>
-        <div class="w-full mr-4 cursor-pointer" @click="this.$router.push('/')">
+        <div class="w-full mr-4 cursor-pointer" @click="goTo('panel-view')">
           <span>S O U L  <b>S Y N C</b></span>
         </div>
         <div class="flex align-items-center gap-2">
-          <Button label="Files" text plain />
-          <Button label="Edit" text plain />
-          <Button label="View" text plain />
+          <Button label="Playlists" text plain @click="goTo('panel-view')" />
+          <Button label="Configuration" text plain @click="goTo('configuration-view')" />
+          <Button label="Statistics" text plain @click="goTo('stats-view')" />
+          <Button label="Github" text plain @click="goToRepo()" />
         </div>
       </template>
       <template #end>
@@ -38,6 +39,12 @@ export default {
         message: 'Session successfully closed'
       });
       this.$router.push("/")
+    },
+    goTo(name) {
+      this.$router.push({ name })
+    },
+    goToRepo(){
+      window.open('https://github.com/xaviqo/SoulSyncBot', '_blank');
     }
   }
 }

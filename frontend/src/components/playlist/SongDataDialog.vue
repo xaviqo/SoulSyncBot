@@ -1,6 +1,7 @@
 <template>
   <Dialog
       v-model:visible="visible"
+      closable
       :header="getDialogName()"
       class="p-1 col-12 lg:col-10 xl:col-8"
       :pt="{

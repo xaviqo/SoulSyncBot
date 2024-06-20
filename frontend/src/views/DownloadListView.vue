@@ -22,8 +22,8 @@
 import {mapActions, mapState} from "pinia";
 import {usePlaylistStore} from "@/store/playlist-calls";
 import PlaylistBody from "@/components/shared/PlaylistBody.vue";
-import DownloadListDataView from "@/components/shared/DownloadListDataView.vue";
-import DownloadListSongTable from "@/components/playlist/DownloadListSongTable.vue";
+import DownloadListDataView from "@/components/downloadlist/DownloadListDataView.vue";
+import DownloadListSongTable from "@/components/downloadlist/DownloadListSongTable.vue";
 
 export default {
   name: "DownloadListView",

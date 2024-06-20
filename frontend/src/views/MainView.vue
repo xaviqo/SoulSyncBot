@@ -8,7 +8,7 @@
 import AddNewPlaylistCard from "@/components/panel/AddNewPlaylistCard.vue";
 import {mapActions, mapState} from "pinia";
 import {usePlaylistStore} from "@/store/playlist-calls";
-import CardPLDataView from "@/components/shared/CardPLDataView.vue";
+import CardPLDataView from "@/components/shared/PlaylistDataView.vue";
 
 export default {
   name: "MainView",

@@ -6,7 +6,7 @@
 <script>
 
 
-import CardPLDataView from "@/components/shared/CardPLDataView.vue";
+import CardPLDataView from "@/components/shared/PlaylistDataView.vue";
 
 export default {
   name: "PlaylistDiscography",

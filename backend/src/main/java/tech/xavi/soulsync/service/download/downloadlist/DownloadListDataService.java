@@ -25,7 +25,7 @@ public class DownloadListDataService {
                     long totalTracks = slskdRequestService
                             .countByDownloadList(list);
                     long totalCompleted = slskdRequestService
-                            .countBydownloadListAndStatus(list, ProcessStatus.COMPLETED, ProcessStatus.COPIED);
+                            .countByDownloadListAndStatus(list, ProcessStatus.COMPLETED, ProcessStatus.COPIED);
                     return DownloadListProcessDto.builder()
                             .id(list.getDownloadListId())
                             .policyId(list.getSearchPolicy())

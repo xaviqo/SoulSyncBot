@@ -23,7 +23,7 @@
   </DataView>
 </template>
 <script>
-import DownloadListCard from "@/components/playlist/DownloadListCard.vue";
+import DownloadListCard from "@/components/downloadlist/DownloadListCard.vue";
 
 export default {
   name: "DownloadListDataView",

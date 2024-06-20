@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 @Log4j2
 @Component
 @RequiredArgsConstructor
-public class SearchProcess extends SlskdProcess {
+public class SearchProcess extends SlskdAbstractProcess {
 
     private final SearchService searchService;
     @Getter private final int order = 10;

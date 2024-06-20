@@ -22,9 +22,18 @@ public class ConfigurationController {
     private final InitialSetupService initialSetupService;
     private final ConfigurationFieldService configurationFieldService;
 
+    @PostMapping(ApiRoutes.EP_FIELDS)
+    public ResponseEntity<Void> saveFieldsValue(@RequestBody List<ConfigurationFieldDto> fields){
+        configurationFieldService.saveDtoFields(fields);
+        return ResponseEntity.ok(null);
+    }
+
     @GetMapping(ApiRoutes.EP_FIELDS)
-    public ResponseEntity<Set<ConfigurationField>> getFieldsBySections(@RequestParam String sections){
-        return ResponseEntity.ok(configurationFieldService.getFieldsBySections(sections));
+    public ResponseEntity<Set<ConfigurationField>> getFieldsBySections(
+            @RequestParam String sections,
+            @RequestParam(required = false) boolean value
+    ){
+        return ResponseEntity.ok(configurationFieldService.getFieldsBySections(sections,value));
     }
 
     @GetMapping(ApiRoutes.EP_IS_INSTALLED)

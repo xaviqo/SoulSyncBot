@@ -7,7 +7,6 @@
             <Dropdown
                 :options="searchPolicies"
                 optionLabel="name"
-                placeholder=""
                 v-model="inputs.searchPolicy"
                 class="input-left-rounded"
             />

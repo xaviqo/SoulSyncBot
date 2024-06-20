@@ -33,6 +33,8 @@ import DataView from "primevue/dataview";
 import Tag from "primevue/tag";
 import ProgressBar from "primevue/progressbar";
 import Divider from "primevue/divider";
+import TabView from "primevue/tabview";
+import TabPanel from "primevue/tabpanel";
 
 const emitter = mitt()
 const app = createApp(App)
@@ -125,6 +127,8 @@ app
     .component('Tag',Tag)
     .component('ProgressBar',ProgressBar)
     .component('Divider',Divider)
+    .component('TabView',TabView)
+    .component('TabPanel',TabPanel)
 
 app.directive('tooltip',Tooltip)
 

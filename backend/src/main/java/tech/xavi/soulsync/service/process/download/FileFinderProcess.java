@@ -14,7 +14,7 @@ import java.util.concurrent.CompletableFuture;
 @Log4j2
 @RequiredArgsConstructor
 @Component
-public class FileFinderProcess extends SlskdProcess {
+public class FileFinderProcess extends SlskdAbstractProcess {
 
     private final SlskdGatewayService slskdGatewayService;
     private final FileFinderService fileFinderService;

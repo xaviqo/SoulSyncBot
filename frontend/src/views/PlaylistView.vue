@@ -12,10 +12,12 @@
           :show-glass="true"
       />
       <PlaylistSongsTable
+          v-if="!getCurrentPlaylist.playlistType || getCurrentPlaylist.playlistType !== 'DISCOGRAPHY'"
           class="w-12"
           :playlist="getCurrentPlaylist"
       />
       <PlaylistDiscography
+          v-else
           class="w-12"
           :playlist-id="getCurrentPlaylist?.id"
       />
@@ -24,7 +26,7 @@
 </template>
 <script>
 import PlaylistBody from "@/components/shared/PlaylistBody.vue";
-import DownloadListDataView from "@/components/shared/DownloadListDataView.vue";
+import DownloadListDataView from "@/components/downloadlist/DownloadListDataView.vue";
 import PlaylistSongsTable from "@/components/playlist/PlaylistSongsTable.vue";
 import PlaylistDiscography from "@/components/playlist/PlaylistDiscography.vue";
 import {usePlaylistStore} from "@/store/playlist-calls";

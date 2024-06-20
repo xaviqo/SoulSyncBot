@@ -9,7 +9,7 @@
         mask: { style: 'backdrop-filter: blur(3px)' }
     }"
   >
-    <ConfigurationFields :fields="fields"/>
+    <ConfigurationFields :fields="fields" :disabled="false"/>
     <template #footer>
       <div class="w-full flex justify-content-between gap-3">
         <Button
@@ -62,7 +62,6 @@ export default {
       this.policyName = null;
       this.policyId = policyId;
       this.fetchFields(policyId);
-      //this.fetchSearchInputStrategyNames();
     });
     this.emitter.on('delete-policy', isDelete => {
       if (isDelete) {
@@ -81,7 +80,6 @@ export default {
             delete policyConfiguration.id
             Object.keys(policyConfiguration)
                 .forEach(fieldName => {
-                  console.log(fieldName)
                   fields.find(f => {
                     return f.objectFieldName == fieldName
                   }).value = policyConfiguration[fieldName];
@@ -99,12 +97,6 @@ export default {
               this.fields = res.data
             }
           });
-    },
-    fetchSearchInputStrategyNames() {
-      if (this.inputStrategyNames.length < 1)
-        this.$axios
-            .get('/playlist/search-policy/strategy-names')
-            .then((res) => this.inputStrategyNames = res.data)
     },
     saveConfiguration() {
       const payload = this.getPolicyCfgPayload();

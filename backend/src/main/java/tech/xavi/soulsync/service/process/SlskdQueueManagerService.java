@@ -2,8 +2,8 @@ package tech.xavi.soulsync.service.process;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.DownloadList;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class SlskdQueueManagerService {
 
-    private static final int RUN_RATE_SEC = 5;
+    private static final int RUN_RATE_MS = 1000;
     private final ConcurrentLinkedQueue<SlskdRequest> queue;
 
     private final ConfigurationFieldService cfgFieldService;
@@ -48,17 +48,28 @@ public class SlskdQueueManagerService {
     }
 
     @Async
-    @Scheduled(fixedRate = RUN_RATE_SEC * 1000)
+    //@Scheduled(fixedRate = RUN_RATE_MS)
     protected void runQueue() {
         if (isRequestSlotAvailable()) {
-            downloadListService
-                    .getNextDownloadList()
-                    .ifPresent( downloadList ->
-                            getNextRequestFromQueue(downloadList)
-                                    .ifPresent(request ->
-                                            handleRequestAndUpdate(downloadList, request))
-                    );
+            getNextDownloadList().ifPresent(downloadList ->
+                    getNextRequestFromQueue(downloadList).ifPresent(request ->
+                            handleRequestAndUpdate(downloadList, request)
+                    )
+            );
         }
+    }
+
+    private Optional<DownloadList> getNextDownloadList() {
+        return downloadListService
+                .getDownloadLists()
+                .filter(DownloadList::getIsActive)
+                .filter(this::hasDownloadListRequestsWaiting)
+                .min(DownloadPriority::compare);
+    }
+
+    private boolean hasDownloadListRequestsWaiting(DownloadList downloadList) {
+        return slskdRequestService
+                .countByDownloadListAndStatus(downloadList, ProcessStatus.WAITING) > 0;
     }
 
     private void handleRequestAndUpdate(DownloadList downloadList, SlskdRequest request) {

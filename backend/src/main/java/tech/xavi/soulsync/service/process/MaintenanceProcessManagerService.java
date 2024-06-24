@@ -31,7 +31,7 @@ public class MaintenanceProcessManagerService {
         this.configurationFieldService = cfgFieldService;
     }
 
-    @Scheduled(fixedRate = RUN_RATE_SEC * 1000)
+    @Scheduled(fixedRate = RUN_RATE_SEC * 1000, initialDelay = RUN_RATE_SEC * 1000)
     protected void runMaintenance() {
         if (isCooldownOver()) {
             for (MaintenanceAbstractProcess maintenanceProcess : maintenanceProcesses) {

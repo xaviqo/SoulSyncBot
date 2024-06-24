@@ -31,7 +31,7 @@ public class SearchService {
 
     public boolean waitUntilSearchIsFinished(SlskdSearchRequest searchRequest) {
         int maxWaitTimeSeconds = configurationFieldService
-                .getValue(ConfigurationField.APP_SEARCH_WAITING_SECONDS)
+                .getValue(ConfigurationField.SRCH_SEARCH_WAITING_SECONDS)
                 .asInt();
         int elapsedSeconds = 0;
         do {

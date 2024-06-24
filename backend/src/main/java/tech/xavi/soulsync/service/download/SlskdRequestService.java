@@ -33,7 +33,7 @@ public class SlskdRequestService {
                 );
     }
 
-    public Stream<SlskdFile> getCompletedDownloads() {
+    public Stream<SlskdFile> getSlskdCompletedDownloads() {
         return slskdGatewayService
                 .getSlskdDownloads()
                 .flatMap( dws -> dws.directories()
@@ -47,6 +47,10 @@ public class SlskdRequestService {
         return getDownloadListSongs(downloadList)
                 .stream()
                 .filter( song -> song.getAttempts() <= retiesThreshold);
+    }
+
+    public Set<SlskdRequest> findByStatus(ProcessStatus status){
+        return slskdRequestRepository.findByStatus(status);
     }
 
     public void saveIncreasingAttempts(SlskdRequest slskdRequest) {

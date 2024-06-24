@@ -72,7 +72,6 @@ public class FileFinderService {
                 && flexibleFileFind(request, slskdFile);
     }
 
-
     private boolean containsAllOriginalSongKeywords(SlskdRequest request, SlskdFile file) {
         String[] fileAndDirs = file.filename().split("\\\\");
         String fileName = fileAndDirs[fileAndDirs.length -1];

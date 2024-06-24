@@ -40,12 +40,12 @@ public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
 
     private long getMinutesToEvaluateStuck() {
         return configurationFieldService
-                .getValue(ConfigurationField.APP_MINUTES_TO_EVALUATE_AS_STUCK)
+                .getValue(ConfigurationField.SRCH_MINUTES_TO_EVALUATE_AS_STUCK)
                 .asLong() * 60 * 1000;
     }
 
     @Override
     public String getTaskName() {
-        return "FIND_COMPLETED";
+        return "FIND_STUCK";
     }
 }

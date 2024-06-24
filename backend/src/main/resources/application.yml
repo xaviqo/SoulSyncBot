@@ -31,14 +31,18 @@ tech:
             sp-max-retries: 0
             sp-is-avoid-remix: true
             sp-is-avoid-live: true
-          application:
-            app-auto-pause-adjustment: true
-            app-max-simultaneous-threads: 5
-            app-tracks-per-queue: 100
-            app-search-waiting-seconds: 60
-            app-total-records-per-batch: 50
+          search:
+            srch-max-simultaneous-threads: 5
+            srch-tracks-per-queue: 100
+            srch-search-waiting-seconds: 60
+            srch-minutes-to-evaluate-as-stuck: 60
+          maintenance:
             app-maintenance-task-interval-mins: 5
-            app-minutes-to-evaluate-as-stuck: 60
+            app-is-relocate: false
+            app-slskd-downloads-path: /slskd/downloads
+            app-relocated-files-path: /soulsync/relocated
+            app-relocate-by: PLAYLIST
+            app-rename-relocated: false
       gateway:
         base-url:
           spotify:

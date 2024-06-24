@@ -95,7 +95,7 @@ public class SlskdProcessService {
 
     private int getMaxSimultaneousThreads() {
         int maxSimultaneousThreads = cfgFieldService
-                .getValue(ConfigurationField.APP_MAX_SIMULTANEOUS_THREADS)
+                .getValue(ConfigurationField.SRCH_MAX_SIMULTANEOUS_THREADS)
                 .asInt();
         if (maxSimultaneousThreads > 5 && threadPoolTaskScheduler.getPoolSize() != maxSimultaneousThreads) {
             threadPoolTaskScheduler.setPoolSize(maxSimultaneousThreads);

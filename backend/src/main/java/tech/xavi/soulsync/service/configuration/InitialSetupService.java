@@ -41,7 +41,8 @@ public class InitialSetupService implements CommandLineRunner {
             ConfigurationField.SLSKD_API_URL
     };
     private static final ConfigurationField.Section[] INITIAL_SETUP_SECTIONS = {
-            ConfigurationField.Section.SLSKD_DOWNLOAD
+            ConfigurationField.Section.SEARCH,
+            ConfigurationField.Section.MAINTENANCE
     };
 
     @Override
@@ -120,7 +121,11 @@ public class InitialSetupService implements CommandLineRunner {
                 .getFieldsBySections(sections)
                 .forEach( field ->
                         configurationFieldService
-                                .saveField(field, configurationFieldService.getProperty(field))
+                                .saveField(
+                                        field,
+                                        configurationFieldService
+                                                .getProperty(field)
+                                )
                 );
     }
 

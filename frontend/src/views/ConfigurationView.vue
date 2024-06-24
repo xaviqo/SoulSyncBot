@@ -40,8 +40,9 @@ export default {
   components: {ConfigurationFields},
   data: () =>  ({
     sections: [
-      { name: 'Downloads', section: 'slskd_download' },
-      { name: 'Api Connection', section: 'api' }
+      { name: `API's Configuration`, section: 'api' },
+      { name: 'Search/Download', section: 'search' },
+      { name: 'Maintenance', section: 'maintenance' }
     ],
     fields: [],
     activeIndex: 0

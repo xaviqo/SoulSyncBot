@@ -48,7 +48,7 @@ public class SlskdQueueManagerService {
     }
 
     @Async
-    //@Scheduled(fixedRate = RUN_RATE_MS)
+    //@Scheduled(fixedRate = RUN_RATE_MS, initialDelay = RUN_RATE_MS)
     protected void runQueue() {
         if (isRequestSlotAvailable()) {
             getNextDownloadList().ifPresent(downloadList ->
@@ -86,7 +86,7 @@ public class SlskdQueueManagerService {
 
     private void updateQueue(DownloadList downloadList) {
         int queueLimit = cfgFieldService
-                .getValue(ConfigurationField.APP_TRACKS_PER_QUEUE)
+                .getValue(ConfigurationField.SRCH_TRACKS_PER_QUEUE)
                 .asInt();
         Set<SlskdRequest> nextQueue = slskdRequestService
                 .getSongsQueue(downloadList)

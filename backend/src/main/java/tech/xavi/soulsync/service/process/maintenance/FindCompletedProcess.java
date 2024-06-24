@@ -19,7 +19,7 @@ public class FindCompletedProcess extends MaintenanceAbstractProcess {
     @Override
     public CompletableFuture<Boolean> execute() {
         slskdRequestService
-                .getCompletedDownloads()
+                .getSlskdCompletedDownloads()
                 .forEach(slskdRequestService::setRequestToCompletedByFile);
         slskdGatewayService
                 .clearDownloads();

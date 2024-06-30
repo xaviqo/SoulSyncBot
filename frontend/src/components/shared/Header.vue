@@ -9,6 +9,7 @@
           <Button label="Playlists" text plain @click="goTo('panel-view')" />
           <Button label="Configuration" text plain @click="goTo('configuration-view')" />
           <Button label="Statistics" text plain @click="goTo('stats-view')" />
+          <Button label="Help" text plain @click="goTo('stats-view')" />
           <Button label="Github" text plain @click="goToRepo()" />
         </div>
       </template>

@@ -2,7 +2,7 @@
   <Dialog
       v-model:visible="visible"
       closable
-      :header="`Search Policy Configuration`"
+      header="Search Policy Configuration"
       class="w-12 md:w-10 lg:w-6"
       :pt="{
         root: 'border-none',

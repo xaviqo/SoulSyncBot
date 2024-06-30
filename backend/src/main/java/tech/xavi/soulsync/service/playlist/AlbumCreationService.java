@@ -120,7 +120,7 @@ public class AlbumCreationService {
             Playlist parentPlaylist,
             String searchPolicyId
     ) {
-        DownloadList downloadList = downloadListCreationService.getDownloadList(album.getId(), searchPolicyId);
+        DownloadList downloadList = downloadListCreationService.createDownloadListForNewPlaylist(album.getId(), searchPolicyId);
         Playlist playlist = saveAlbum(album, parentPlaylist, downloadList);
         downloadListCreationService.createSlskdRequests(playlist, downloadList);
         return playlist;

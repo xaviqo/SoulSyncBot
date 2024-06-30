@@ -22,6 +22,11 @@ public class ConfigurationController {
     private final InitialSetupService initialSetupService;
     private final ConfigurationFieldService configurationFieldService;
 
+    @GetMapping(ApiRoutes.EP_FIELD)
+    public ResponseEntity<ConfigurationField> getFieldByName(@RequestParam String name) {
+        return ResponseEntity.ok(configurationFieldService.getFieldByName(name.toUpperCase()));
+    }
+
     @PostMapping(ApiRoutes.EP_FIELDS)
     public ResponseEntity<Void> saveFieldsValue(@RequestBody List<ConfigurationFieldDto> fields){
         configurationFieldService.saveDtoFields(fields);

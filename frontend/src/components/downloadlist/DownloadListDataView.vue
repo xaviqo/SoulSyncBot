@@ -4,7 +4,7 @@
       :value="downloadLists"
       :paginator="showGlass"
       layout="list"
-      :rows="5"
+      :rows="1"
       class="border-round-xl overflow-hidden"
   >
     <template #list="slotProps">

@@ -11,7 +11,13 @@
             :key="tab.title"
             :header="tab.name"
         >
-          <div class="flex flex-wrap gap-3">
+          <div v-if="tab.section === 'policies'">
+            search policies
+          </div>
+          <div v-else-if="tab.section === 'users'">
+            usuarios
+          </div>
+          <div v-else class="flex flex-wrap gap-3">
             <div class="mt-2">
               <ConfigurationFields
                   :disabled="false"
@@ -42,7 +48,9 @@ export default {
     sections: [
       { name: `API's Configuration`, section: 'api' },
       { name: 'Search/Download', section: 'search' },
-      { name: 'Maintenance', section: 'maintenance' }
+      { name: 'Maintenance', section: 'maintenance' },
+      { name: `Search Policies`, section: 'policies' },
+      { name: 'Users', section: 'users' }
     ],
     fields: [],
     activeIndex: 0
@@ -72,12 +80,14 @@ export default {
       const payload = this.getSectionFields(section.toUpperCase());
       this.$axios
           .post('/cfg/fields', payload)
-          .then(() => {
+          .then((e) => {
             this.emitter.emit('loading', {show: false});
-            this.emitter.emit('alert', {
-              severity: 'success',
-              message: `SoulSync configuration successfully updated`
-            });
+            if (e?.status === 200) {
+              this.emitter.emit('alert', {
+                severity: 'success',
+                message: `SoulSync configuration successfully updated`
+              });
+            }
           })
     }
   }

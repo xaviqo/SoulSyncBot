@@ -2,7 +2,6 @@
   <Dialog
       v-model:visible="visible"
       class="p-1 col-12 lg:col-10 xl:col-8"
-
       closable
       :pt="{
         root: 'border-none',

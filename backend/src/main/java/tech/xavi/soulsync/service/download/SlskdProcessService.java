@@ -89,7 +89,6 @@ public class SlskdProcessService {
 
     public synchronized boolean isRequestSlotAvailable(){
         int totalFree = getMaxSimultaneousThreads() - currentRequests.size();
-        log.trace("Free space in currentRequests --> {}", totalFree);
         return totalFree > 0;
     }
 

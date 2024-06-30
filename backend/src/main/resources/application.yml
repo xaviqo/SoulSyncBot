@@ -37,6 +37,9 @@ tech:
             srch-search-waiting-seconds: 60
             srch-minutes-to-evaluate-as-stuck: 60
           maintenance:
+            app-data-refresh-rate: 30
+            app-run-download-task: true
+            app-run-maintenance-task: true
             app-maintenance-task-interval-mins: 5
             app-is-relocate: false
             app-slskd-downloads-path: /slskd/downloads

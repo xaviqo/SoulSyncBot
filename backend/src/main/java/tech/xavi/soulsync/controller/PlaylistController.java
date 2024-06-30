@@ -12,6 +12,7 @@ import tech.xavi.soulsync.dto.playlist.PlaylistOverviewDto;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.service.playlist.AddPlaylistService;
 import tech.xavi.soulsync.service.playlist.GetPlaylistService;
+import tech.xavi.soulsync.service.playlist.UpdatePlaylistService;
 import tech.xavi.soulsync.service.song.SongService;
 
 import java.util.Set;
@@ -22,6 +23,7 @@ public class PlaylistController {
 
     private final GetPlaylistService getPlaylistService;
     private final AddPlaylistService addPlaylistService;
+    private final UpdatePlaylistService updatePlaylistService;
     private final SongService songService;
 
     @GetMapping(ApiRoutes.EP_PLAYLIST_SONGS)
@@ -42,6 +44,12 @@ public class PlaylistController {
     @GetMapping(ApiRoutes.EP_PLAYLIST)
     public ResponseEntity<Set<PlaylistOverviewDto>> getAllPlaylists(){
         return ResponseEntity.ok(getPlaylistService.getAllPlaylists());
+    }
+
+    @GetMapping(ApiRoutes.EP_PLAYLIST_FORCE_UPDATE)
+    public ResponseEntity<Void> forceUpdate(@PathVariable String playlistId){
+        updatePlaylistService.forceUpdatePlaylist(playlistId);
+        return ResponseEntity.ok(null);
     }
 
     @PostMapping(ApiRoutes.EP_PLAYLIST)

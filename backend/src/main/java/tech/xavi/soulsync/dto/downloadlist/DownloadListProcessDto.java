@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.dto.playlist;
+package tech.xavi.soulsync.dto.downloadlist;
 
 import lombok.Builder;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;

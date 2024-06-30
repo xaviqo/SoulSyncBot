@@ -15,6 +15,7 @@ public class ApiRoutes {
     public static final String EP_INITIAL_SETUP = EP_CONFIGURATION_PATH + "/initial-setup";
     public static final String EP_IS_INSTALLED = EP_CONFIGURATION_PATH + "/is-installed";
     public static final String EP_FIELDS = EP_CONFIGURATION_PATH + "/fields";
+    public static final String EP_FIELD = EP_CONFIGURATION_PATH + "/field";
 
     // ACCOUNT
     public static final String EP_ACCOUNT = API_ROOT + "/account";
@@ -26,10 +27,12 @@ public class ApiRoutes {
     public static final String EP_PLAYLIST_DISCOGRAPHY = EP_PLAYLIST + "/{id}/parent-playlists";
     public static final String EP_PLAYLIST_DOWNLOADS = EP_PLAYLIST + "/{playlistId}/download-lists";
     public static final String EP_PLAYLIST_SONGS = EP_PLAYLIST + "/{id}/songs";
+    public static final String EP_PLAYLIST_FORCE_UPDATE = EP_PLAYLIST + "/{playlistId}/force-update";
 
     // DOWNLOAD LIST
     public static final String EP_DOWNLOAD_LIST = API_ROOT + "/download-list";
     public static final String EP_DOWNLOAD_LIST_TRACKS = EP_DOWNLOAD_LIST + "/{downloadListId}/tracks";
+    public static final String EP_DOWNLOAD_LIST_PAUSE = EP_DOWNLOAD_LIST + "/{downloadListId}/pause";
 
     public static final RequestMatcher[] NO_FILTER_EPS = {
             new AntPathRequestMatcher(EP_HEALTH_CHECK, HttpMethod.GET.name()),

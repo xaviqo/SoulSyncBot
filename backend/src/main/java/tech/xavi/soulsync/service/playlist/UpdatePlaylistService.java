@@ -24,6 +24,12 @@ public class UpdatePlaylistService {
     private final SongService songService;
     private final SpotifyGatewayService spotifyGatewayService;
 
+    public void forceUpdatePlaylist(String playlistId) {
+        playlistService
+                .findById(playlistId)
+                .ifPresent(this::updatePlaylist);
+    }
+
     public void updatePlaylist(Playlist currentPlaylist){
         SpotifyPlaylistDto updatedPlaylist = spotifyGatewayService.getPlaylistDetails(currentPlaylist.getId());
         if (updateName(updatedPlaylist,currentPlaylist) || updateTracklist(updatedPlaylist,currentPlaylist)) {

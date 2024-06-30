@@ -9,23 +9,22 @@
             :playlist-type="playlist?.playlistType"
         />
       </div>
-      <div>
-        <ProgressBar :value="timer">
-          <div>{{ `Next refresh: ${timer - timerThreshold}sec` }}</div>
-        </ProgressBar>
-      </div>
+      <RefreshTimer/>
     </div>
     <div class="w-10 flex flex-wrap gap-3">
       <div class="w-12 flex gap-3">
         <PlaylistName
-            class="w-4"
+            :class="isDownloadManager ? 'w-9' : 'w-4'"
+            :emoji="isDownloadManager ? '💾' : '💿' "
             :playlist-name="playlist?.name"
             :id="playlist?.id"
         />
         <PlaylistManagerButton
-            class="w-8"
+            :class="isDownloadManager ? 'w-3' : 'w-8'"
             :playlist-type="playlist?.playlistType"
-        />
+            :playlist-name="playlist?.name"
+            :isDownloadManager="isDownloadManager"
+            :playlist-id="playlist?.id"/>
       </div>
       <slot name="content" />
     </div>
@@ -36,32 +35,24 @@ import PlaylistType from "@/components/playlist/PlaylistType.vue";
 import PlaylistCover from "@/components/playlist/PlaylistCover.vue";
 import PlaylistName from "@/components/playlist/PlaylistName.vue";
 import PlaylistManagerButton from "@/components/playlist/PlaylistManagerButton.vue";
+import RefreshTimer from "@/components/shared/RefreshTimer.vue";
 
 export default {
   name: "PlaylistBody",
   components: {
+    RefreshTimer,
     PlaylistManagerButton,
     PlaylistName,
     PlaylistCover,
     PlaylistType,
-  },
-  created() {
-/*    this.emitter.on(
-        'download-list-action',
-        payload => this.handleDownloadListAction(payload)
-    );*/
   },
   props: {
     playlist: {
       type: Object,
       required: true
     },
-    timer: {
-      type: Number,
-      required: true
-    },
-    timerThreshold: {
-      type: Number,
+    isDownloadManager: {
+      type: Boolean,
       required: true
     }
   }

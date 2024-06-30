@@ -3,8 +3,15 @@
     <template #content>
       <div class="flex gap-3 align-items-center -my-2" v-if="downloadList">
         <div class="w-2 flex justify-content-start gap-3">
-          <Button v-if="showGlass" icon="pi pi-search" class="mr-2" severity="success" @click="doAction('show')"/>
+          <Button v-if="showGlass" icon="pi pi-search" class="mr-2" severity="info" @click="doAction('show')"/>
           <Button v-else icon="pi pi-cog" class="mr-2" severity="info" @click="doAction('policy')"/>
+          <Button
+              :icon="downloadList?.isActive ? 'pi pi-play' : 'pi pi-pause'"
+              class="mr-2"
+              :severity="downloadList?.isActive ? 'primary' : 'secondary'"
+              v-tooltip="{ value: downloadList?.isActive ? 'Download list active' : 'Download list NOT active', showDelay:20, hideDelay:100 }"
+              @click="doAction('pause')"
+          />
           <Button icon="pi pi-trash" class="mr-2" severity="danger" @click="doAction('delete')"/>
         </div>
         <div class="w-10 flex gap-3">
@@ -109,6 +116,11 @@ export default {
               dl: this.downloadList?.id
             }
           });
+          break;
+        case 'pause':
+          this.$axios
+              .post(`/download-list/${this.downloadList?.id}/pause`)
+          this.emitter.emit('refresh');
           break;
         case 'policy':
           this.emitter.emit('download-list-data-dialog', this.downloadList);

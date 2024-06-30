@@ -62,6 +62,10 @@ export default {
     showDialog: false,
     songData: null
   }),
+  created() {
+    this.onPage(null);
+    this.emitter.on('refresh', () => this.onPage(null));
+  },
   props: {
     downloadList: Object
   },
@@ -78,6 +82,7 @@ export default {
     getSeverity(status) {
       switch (status) {
         case 'COMPLETED':
+        case 'COPIED':
           return 'success';
         case 'SEARCHING':
         case 'FINDING_FILE':
@@ -85,7 +90,7 @@ export default {
         case 'DOWNLOADING':
           return 'warning';
         case 'WAITING':
-          return null;
+          return 'secondary';
       }
     },
     getDate(ts){
@@ -95,10 +100,14 @@ export default {
       return this.bitsToSize(bits);
     },
     async onPage(event) {
+      if (event) {
+        this.page = event.page;
+        this.rows = event.rows;
+      }
       await this.fetchDownloadListSongs(
           this.downloadList?.id,
-          event?.page ? event.page : 1,
-          event?.size ? event.size : 10,
+          this.page,
+          this.rows,
       );
     },
     ...mapActions(usePlaylistStore, [

@@ -88,7 +88,7 @@ axiosInstance.interceptors.response.use(
                 setTimeout(() => window.location.reload(), 1200);
             }
         }
-        throw error;
+        return error;
     }
 );
 

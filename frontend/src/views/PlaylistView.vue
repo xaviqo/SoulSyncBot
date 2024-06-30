@@ -1,8 +1,7 @@
 <template>
   <PlaylistBody
       :playlist="getCurrentPlaylist"
-      :timer="getLastCurrentRefresh"
-      :timer-threshold="getRefreshRateThreshold"
+      :is-download-manager="false"
   >
     <template v-slot:content>
       <DownloadListDataView
@@ -23,6 +22,7 @@
       />
     </template>
   </PlaylistBody>
+  <DownloadListCreationDialog />
 </template>
 <script>
 import PlaylistBody from "@/components/shared/PlaylistBody.vue";
@@ -31,13 +31,12 @@ import PlaylistSongsTable from "@/components/playlist/PlaylistSongsTable.vue";
 import PlaylistDiscography from "@/components/playlist/PlaylistDiscography.vue";
 import {usePlaylistStore} from "@/store/playlist-calls";
 import {mapActions, mapState} from "pinia";
+import DownloadListCreationDialog from "@/components/downloadlist/DownloadListCreationDialog.vue";
 
 export default {
   name: "PlaylistView",
-  data: () => ({
-    timer: null
-  }),
   components: {
+    DownloadListCreationDialog,
     PlaylistDiscography,
     PlaylistSongsTable,
     DownloadListDataView,
@@ -48,9 +47,6 @@ export default {
     if (playlistId)
       this.loadPlaylistData(playlistId);
   },
-  created() {
-    this.timer = setInterval(this.updateTimer, 1000);
-  },
   methods: {
     async loadPlaylistData(playlistId) {
       await this.fetchCurrentPlaylist(playlistId);
@@ -58,20 +54,19 @@ export default {
     },
     ...mapActions(usePlaylistStore, [
         'fetchCurrentPlaylist',
-        'fetchPlaylistDownloadLists',
-        'updateTimer'
+        'fetchPlaylistDownloadLists'
     ])
   },
   computed: {
     ...mapState(usePlaylistStore, {
       getCurrentPlaylist: 'getCurrentPlaylist',
       getPlaylistDownloadLists: 'getPlaylistDownloadLists',
-      getLastCurrentRefresh: 'getLastCurrentRefresh',
-      getRefreshRateThreshold: 'getRefreshRateThreshold'
     })
   },
-  unmounted() {
-    if (this.timer) clearInterval(this.timer);
+  created() {
+    this.emitter.on('refresh', () =>
+        this.fetchPlaylistDownloadLists(this.$route.params.id)
+    );
   }
 }
 </script>

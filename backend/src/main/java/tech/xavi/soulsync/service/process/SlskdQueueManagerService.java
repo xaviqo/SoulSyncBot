@@ -2,6 +2,7 @@ package tech.xavi.soulsync.service.process;
 
 import lombok.extern.log4j.Log4j2;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.configuration.globals.ProcessStatus;
@@ -48,15 +49,14 @@ public class SlskdQueueManagerService {
     }
 
     @Async
-    //@Scheduled(fixedRate = RUN_RATE_MS, initialDelay = RUN_RATE_MS)
+    @Scheduled(fixedRate = RUN_RATE_MS, initialDelay = RUN_RATE_MS)
     protected void runQueue() {
-        if (isRequestSlotAvailable()) {
+        if (shouldRunTask() && isRequestSlotAvailable())
             getNextDownloadList().ifPresent(downloadList ->
                     getNextRequestFromQueue(downloadList).ifPresent(request ->
                             handleRequestAndUpdate(downloadList, request)
                     )
             );
-        }
     }
 
     private Optional<DownloadList> getNextDownloadList() {
@@ -77,7 +77,6 @@ public class SlskdQueueManagerService {
         if (isDownloadListCompleted(downloadList))
             updateDownloadList(downloadList);
     }
-
 
     private Optional<SlskdRequest> getNextRequestFromQueue(DownloadList downloadList) {
         if (queue.isEmpty()) updateQueue(downloadList);
@@ -128,6 +127,12 @@ public class SlskdQueueManagerService {
                 .filter( req -> isRequestWaiting(req) && hasRequestPassedTimeThreshold(req) )
                 .toList()
                 .isEmpty();
+    }
+
+    private boolean shouldRunTask() {
+        return cfgFieldService
+                .getValue(ConfigurationField.APP_RUN_DOWNLOAD_TASK)
+                .asBoolean();
     }
 
 }

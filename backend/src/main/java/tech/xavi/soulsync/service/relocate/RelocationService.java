@@ -1,6 +1,7 @@
 package tech.xavi.soulsync.service.relocate;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
@@ -8,20 +9,46 @@ import tech.xavi.soulsync.entity.db.Artist;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class RelocationService {
 
-    private static final String PL_FOLDER_NAME_REGEX = "[^a-zA-Z0-9\\s/]";
     private static final String SPLIT_BY_FOLDERS_REGEX = "[\\\\/]";
 
     private final ConfigurationFieldService configurationFieldService;
 
-    public void relocate(SlskdRequest slskdRequest) {
+    public boolean relocate(SlskdRequest slskdRequest) {
         Hibernate.initialize(slskdRequest.getSpotifySong());
-        String currentFilePath = getCurrentFilePath(slskdRequest);
-        String relocationFilePath = getRelocationFilePath(slskdRequest);
+        try {
+            Path sourcePath = Paths.get(getCurrentFilePath(slskdRequest));
+            Path destinationPath = Paths.get(getRelocationFilePath(slskdRequest));
+            Files.createDirectories(destinationPath.getParent());
+            Files.move(sourcePath, destinationPath);
+            slskdRequest.setCopyRoute(destinationPath.toAbsolutePath().toString());
+            return Files.exists(destinationPath);
+        } catch (IOException e) {
+            e.printStackTrace();
+            log.error("Error relocating file: {}", e.getMessage());
+        }
+        return false;
+    }
 
+    public void createRelocationFolders() {
+        Arrays.stream(getRelocatedFilesPath()
+                .split(SPLIT_BY_FOLDERS_REGEX))
+                .toList()
+                .forEach( path -> {
+                    File directory = new File(path);
+                    if (!directory.exists()) directory.mkdirs();
+                });
     }
 
     private String getRelocationFilePath(SlskdRequest slskdRequest) {

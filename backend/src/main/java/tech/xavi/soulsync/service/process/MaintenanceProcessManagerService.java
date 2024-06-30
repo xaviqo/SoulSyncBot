@@ -33,7 +33,7 @@ public class MaintenanceProcessManagerService {
 
     @Scheduled(fixedRate = RUN_RATE_SEC * 1000, initialDelay = RUN_RATE_SEC * 1000)
     protected void runMaintenance() {
-        if (isCooldownOver()) {
+        if (shouldRunTask() && isCooldownOver()) {
             for (MaintenanceAbstractProcess maintenanceProcess : maintenanceProcesses) {
                 StopWatch stopWatch = new StopWatch();
                 stopWatch.start();
@@ -64,6 +64,12 @@ public class MaintenanceProcessManagerService {
         }
         return false;
 
+    }
+
+    private boolean shouldRunTask() {
+        return configurationFieldService
+                .getValue(ConfigurationField.APP_RUN_MAINTENANCE_TASK)
+                .asBoolean();
     }
 
 }

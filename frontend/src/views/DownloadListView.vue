@@ -1,8 +1,7 @@
 <template>
   <PlaylistBody
       :playlist="getCurrentPlaylist"
-      :timer="getLastCurrentRefresh"
-      :timer-threshold="getRefreshRateThreshold"
+      is-download-manager
   >
     <template v-slot:content>
      <DownloadListDataView
@@ -32,15 +31,17 @@ export default {
     DownloadListDataView,
     PlaylistBody
   },
+  created() {
+    this.emitter.on('refresh', () =>
+        this.fetchPlaylistDownloadLists(this.$route.params.pl)
+    );
+  },
   mounted() {
     const playlistId = this.$route.params.pl;
     const downloadListId = this.$route.params.dl;
     if (playlistId && downloadListId) {
       this.loadPlaylistData(playlistId,downloadListId);
     }
-  },
-  created() {
-    this.timer = setInterval(this.updateTimer, 1000);
   },
   methods: {
     async loadPlaylistData(playlistId,downloadListId) {
@@ -51,16 +52,13 @@ export default {
     ...mapActions(usePlaylistStore, [
       'fetchCurrentPlaylist',
       'fetchPlaylistDownloadLists',
-      'setCurrentDownloadList',
-      'updateTimer'
+      'setCurrentDownloadList'
     ])
   },
   computed: {
     ...mapState(usePlaylistStore, {
       getCurrentPlaylist: 'getCurrentPlaylist',
-      getCurrentDownloadList: 'getCurrentDownloadList',
-      getLastCurrentRefresh: 'getLastCurrentRefresh',
-      getRefreshRateThreshold: 'getRefreshRateThreshold'
+      getCurrentDownloadList: 'getCurrentDownloadList'
     })
   },
   unmounted() {

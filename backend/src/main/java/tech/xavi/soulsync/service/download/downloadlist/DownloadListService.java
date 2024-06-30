@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.repository.db.DownloadListRepository;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -23,10 +24,13 @@ public class DownloadListService {
                 .stream();
     }
 
-
     public Stream<DownloadList> getPlaylistDownloadLists(String playlistId){
         return downloadListRepository
                 .findAllByPlaylistId(playlistId);
+    }
+
+    public Optional<DownloadList> findById(long id){
+        return downloadListRepository.findById(id);
     }
 
 }

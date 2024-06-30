@@ -30,7 +30,7 @@ public class PlaylistCreationService {
         SpotifyPlaylistDto spotifyPlaylistDto = spotifyGatewayService
                 .getPlaylistDetails(spotifyId);
         DownloadList downloadList = downloadListCreationService
-                .getDownloadList(spotifyId,searchPolicyId);
+                .createDownloadListForNewPlaylist(spotifyId,searchPolicyId);
         Set<SpotifySong> spotifySongs = songService
                 .fetchSongsFromSpotify(spotifyPlaylistDto);
         String playlistCover = playlistService

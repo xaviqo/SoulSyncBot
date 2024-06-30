@@ -28,6 +28,12 @@ public class ConfigurationFieldService {
     private final ConfigurationFieldRepository configurationFieldRepository;
     private final ObjectMapper mapper;
 
+    public ConfigurationField getFieldByName(String name) {
+        for (ConfigurationField field : ConfigurationField.values())
+            if (field.getName().equals(name)) return getFieldWithValue(field);
+        return null;
+    }
+
     public void saveDtoFields(List<ConfigurationFieldDto> fieldDtos) {
         List<ConfigurationField> fields = mapToConfigurationField(fieldDtos);
         saveFields(fields);
@@ -116,38 +122,62 @@ public class ConfigurationFieldService {
 
     private void checkAndSave(ConfigurationField field){
         JsonNode value = field.getValue();
-        try {
-            switch (field.getDataType()) {
-                case TEXT:
-                    if (value.isTextual() && value.textValue().length() > 0) {break;}
-                case NUMBER:
-                    if (value.isNumber()) {break;}
-                case ARRAY:
-                    if (value.isArray() && value.size() > 0) {break;}
-                case BOOLEAN:
-                    if (value.isBoolean()) {break;}
-                case RANGE:
-                    if (isInRange(field)) {break;}
-                case SELECT:
-                    if (isSelectOptionPresent(field)) {break;}
-            }
-            configurationFieldRepository.save(field);
-        } catch (Exception exception){
-            SoulSyncException soulSyncException = new SoulSyncException(
-                    SoulSyncError.INVALID_VALUE,
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    new Object[]{
-                            field.getValue(),
-                            field.getName(),
-                            field.getDataType()
-                    }
-            );
-            log.error(soulSyncException.getUserMessage(),exception);
-            throw soulSyncException;
+        switch (field.getDataType()) {
+            case TEXT:
+                if (!value.isTextual() || value.textValue().length() < 0)
+                    throw createInvalidValueException(field, "Text value is required");
+                break;
+            case NUMBER:
+                if (!isValidNumber(field))
+                    throw createInvalidValueException(
+                            field,
+                            String.format("Invalid number. Max %s, min %s.",
+                                    field.getMax(),
+                                    field.getMin()
+                            )
+                    );
+                break;
+            case ARRAY:
+                if (!value.isArray() && value.size() < 1)
+                    throw createInvalidValueException(field, "Non-empty array required");
+                break;
+            case BOOLEAN:
+                if (!value.isBoolean())
+                    throw createInvalidValueException(field, "Boolean value required");
+                break;
+            case RANGE:
+                if (!isInRange(field))
+                    throw createInvalidValueException(
+                            field,
+                            String.format("Value not in range. Max %s, min %s.",
+                                    field.getMax(),
+                                    field.getMin()
+                            )
+                    );
+                break;
+            case SELECT:
+                if (!isSelectOptionPresent(field))
+                    throw createInvalidValueException(field, "Select option not present");
+                break;
+            default:
+                SoulSyncException soulSyncException = new SoulSyncException(
+                        SoulSyncError.INVALID_TYPE,
+                        HttpStatus.INTERNAL_SERVER_ERROR
+                );
+                log.error(soulSyncException.getUserMessage());
+                throw soulSyncException;
         }
+        configurationFieldRepository.save(field);
     }
 
-    private boolean isInRange(ConfigurationField field) throws Exception {
+    private boolean isValidNumber(ConfigurationField field){
+        JsonNode value = field.getValue();
+        return value.isNumber()
+                && value.asLong() >= field.getMin()
+                && value.asLong() <= field.getMax();
+    }
+
+    private boolean isInRange(ConfigurationField field) {
         if (field.getValue().isNumber()) {
             long value = field.getValue().longValue();
             return (value >= field.getMin()
@@ -159,8 +189,23 @@ public class ConfigurationFieldService {
 
     private boolean isSelectOptionPresent(ConfigurationField field){
         for (Object option : (Object[]) field.getDefaultValues())
-            if (field.getValue().equals(option)) return true;
+            if (String
+                    .valueOf(field.getValue())
+                    .replace("\"", "")
+                    .equals(String.valueOf(option))
+            ) return true;
         return false;
+    }
+
+    private SoulSyncException createInvalidValueException(ConfigurationField field, String message){
+        return new SoulSyncException(
+                SoulSyncError.INVALID_VALUE,
+                HttpStatus.BAD_REQUEST,
+                new Object[]{
+                        field.name(),
+                        message
+                }
+        );
     }
 
 

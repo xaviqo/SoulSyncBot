@@ -15,7 +15,8 @@ public enum SoulSyncError {
 
     GATEWAY_ERROR(MessageSeverity.ERROR,"%s occurred while calling the %s waiting a response type %s"),
 
-    INVALID_VALUE(MessageSeverity.ERROR,"Value %s not valid for field %s, required data type %s"),
+    INVALID_VALUE(MessageSeverity.ERROR,"Value not valid for field %s. %s"),
+    INVALID_TYPE(MessageSeverity.ERROR,"Field type not valid"),
 
     URL_NOT_FOUND(MessageSeverity.WARN,"You must provide a Spotify URL. Value provided: %s"),
     INVALID_SPOTIFY_URL(MessageSeverity.WARN,"The provided URL (%s) does not appear to be a valid Spotify URL"),
@@ -24,6 +25,7 @@ public enum SoulSyncError {
     PLAYLIST_ALREADY_ADDED(MessageSeverity.WARN,"The playlist '%s' is already added"),
     MINIMUM_SEARCH_POLICY(MessageSeverity.WARN, "It is not allowed to delete the last available search policy"),
     PLAYLIST_NOT_FOUND(MessageSeverity.ERROR,"No playlist found with id '%s'"),
+    SEARCH_POLICY_NOT_FOUND(MessageSeverity.ERROR,"Search policy not found"),
     ;
     private final MessageSeverity messageSeverity;
     private final String message;

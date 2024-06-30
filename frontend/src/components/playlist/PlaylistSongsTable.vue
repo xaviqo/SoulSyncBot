@@ -23,11 +23,16 @@ import {usePlaylistStore} from "@/store/playlist-calls";
 
 export default {
   name: "PlaylistSongsTable",
+  data: () => ({
+    page: 0,
+    rows: 10
+  }),
   props: {
-    playlist: Object
+    playlist: Object,
   },
   created() {
     this.onPage(null);
+    this.emitter.on('refresh', () => this.onPage(null));
   },
   watch: {
     playlist(newVal) {
@@ -40,10 +45,14 @@ export default {
       'fetchPlaylistSongs',
     ]),
     async onPage(event) {
+      if (event) {
+        this.page = event.page;
+        this.rows = event.rows;
+      }
       await this.fetchPlaylistSongs(
           this.playlist?.id,
-          event?.page ? event.page : 1,
-          event?.size ? event.size : 10,
+          this.page,
+          this.rows,
       );
     }
   },

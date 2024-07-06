@@ -1,22 +1,44 @@
-.vscode/
-*.sql
+# Package Files #
 *.jar
 *.war
 *.ear
-logs/
-db/
-*.class
-*.log
-*.gz
-dist/
-primevue/build/
-public/css/
+
+# Eclipse #
+.settings
+.project
+.classpath
+.studio
+target
+
+# Apple # 
 .DS_Store
-Thumbs.db
-.env
-node_modules/
-target/
-.idea/
-HELP.md
-.env.production
-.env.development
+
+# Intellij #
+.idea
+*.iml
+*.log
+
+# VSCode
+.vscode
+
+# logback
+logback.out.xml
+
+backend/src/main/resources/public/
+backend/target
+frontend/dist/
+frontend/node/
+frontend/coverage/
+frontend/node_modules/
+frontend/npm-debug.log
+frontend/target
+frontend/test-output
+frontend/tests/e2e/reports
+frontend/tests/unit/coverage
+frontend/yarn-error.log
+frontend/yarn.lock
+
+security/target/
+selenium-debug.log
+
+!.mvn/wrapper/maven-wrapper.jar

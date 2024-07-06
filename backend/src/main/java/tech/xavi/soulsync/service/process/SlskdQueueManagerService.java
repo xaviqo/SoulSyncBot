@@ -130,9 +130,13 @@ public class SlskdQueueManagerService {
     }
 
     private boolean shouldRunTask() {
-        return cfgFieldService
+        boolean isInstalled = cfgFieldService
+                .getValue(ConfigurationField.IS_APP_INSTALLED)
+                .asBoolean();
+        boolean shouldRun = cfgFieldService
                 .getValue(ConfigurationField.APP_RUN_DOWNLOAD_TASK)
                 .asBoolean();
+        return isInstalled && shouldRun;
     }
 
 }

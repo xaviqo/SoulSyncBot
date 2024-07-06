@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.globals.ApiRoutes;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
+import tech.xavi.soulsync.dto.account.AccountDto;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
@@ -29,7 +30,7 @@ public class ConfigurationController {
 
     @PostMapping(ApiRoutes.EP_FIELDS)
     public ResponseEntity<Void> saveFieldsValue(@RequestBody List<ConfigurationFieldDto> fields){
-        configurationFieldService.saveDtoFields(fields);
+        configurationFieldService.saveDtoFieldsCheckingValue(fields);
         return ResponseEntity.ok(null);
     }
 
@@ -47,17 +48,28 @@ public class ConfigurationController {
     }
 
     @GetMapping(ApiRoutes.EP_INITIAL_SETUP)
-    public ResponseEntity<List<ConfigurationField>> getInitialSetupValues(){
-        return ResponseEntity.ok(initialSetupService.getInitialSetupFields());
+    public ResponseEntity<Map<String,Object>> getInitialSetup(){
+        return ResponseEntity.ok(initialSetupService.getInitialSetup());
     }
 
-    @PostMapping(ApiRoutes.EP_INITIAL_SETUP)
-    public ResponseEntity<Map<GatewayName,Boolean>> setInitialSetupValues(
-            @RequestBody List<ConfigurationFieldDto> initialSetupValues
+    @PostMapping(ApiRoutes.EP_INIT_SETUP_APIS)
+    public ResponseEntity<Map<GatewayName,Boolean>> saveApiValues(
+            @RequestBody List<ConfigurationFieldDto> fields
     ){
+        initialSetupService.saveApiValues(fields);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(initialSetupService
-                        .setAndCheckInitialSetupValues(initialSetupValues));
+                .body(initialSetupService.getApiChecks());
+    }
+
+    @PostMapping(ApiRoutes.EP_INIT_SETUP_ADMIN)
+    public ResponseEntity<Void> setAdminAccountAndFinish(
+            @RequestBody AccountDto adminAccount
+            ){
+        initialSetupService
+                .createAdminAccountAndFinish(adminAccount);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .build();
     }
 }

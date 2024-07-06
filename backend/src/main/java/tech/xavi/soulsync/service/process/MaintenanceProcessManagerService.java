@@ -67,9 +67,13 @@ public class MaintenanceProcessManagerService {
     }
 
     private boolean shouldRunTask() {
-        return configurationFieldService
-                .getValue(ConfigurationField.APP_RUN_MAINTENANCE_TASK)
+        boolean isInstalled = configurationFieldService
+                .getValue(ConfigurationField.IS_APP_INSTALLED)
                 .asBoolean();
+        boolean shouldRun = configurationFieldService
+                .getValue(ConfigurationField.APP_RUN_DOWNLOAD_TASK)
+                .asBoolean();
+        return isInstalled && shouldRun;
     }
 
 }

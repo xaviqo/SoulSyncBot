@@ -78,6 +78,10 @@ public class AccountService {
                 );
     }
 
+    public void deleteAccount(String username) {
+        accountRepository.delete(username);
+    }
+
     private SignInResponseDto getSignInPayload(Account account){
         String token = jwtService.generateToken(account);
         return SignInResponseDto.builder()

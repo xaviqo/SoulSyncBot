@@ -13,10 +13,6 @@
         </Message>
       </transition-group>
       <router-view class="w-12" :key="$route.fullPath"/>
-      <InstallDialog
-          :show-dialog="showInstallDialog"
-          v-if="showInstallDialog"
-      />
       <Dialog
           v-model:visible="showLoadingDialog"
           :pt="{
@@ -44,25 +40,22 @@
 import Header from "@/components/shared/Header.vue";
 import {mapActions, mapState} from "pinia";
 import {useUserStore} from "@/store/user-calls";
-import {useInitStore} from "@/store/init-calls";
-import InstallDialog from "@/components/install/InstallDialog.vue";
 import {usePlaylistStore} from "@/store/playlist-calls";
 
 export default {
   name: 'SoulSync',
   data: () => ({
-    showInstallDialog: false,
+    isInstalled: false,
     showLoadingDialog: false,
     loadingText: null,
     messages: [],
     count: 0
   }),
   components: {
-    InstallDialog,
     Header
   },
   created() {
-    this.isInstalled();
+    this.checkInstalled();
     this.emitter.on(
         'alert',
         alert => this.showAlert(alert)
@@ -77,12 +70,6 @@ export default {
     );
   },
   methods:{
-    async isInstalled() {
-      await this.checkSetup();
-      if (!useInitStore().isInstalled) {
-        this.showInstallDialog = true;
-      }
-    },
     showConfirm(confirm){
       const { header, message, reject, accept, listenerLabel } = confirm;
       this.$confirm.require({
@@ -109,8 +96,20 @@ export default {
       })
       setTimeout(() => this.messages.pop(),4000);
     },
+    checkInstalled() {
+      if (!this.isInstalled) {
+        console.log("nooo")
+        this.$axios.get('/cfg/is-installed')
+            .then(res => {
+              const isInstalled = res.data?.isInstalled;
+              this.isInstalled = isInstalled;
+              if (!isInstalled){
+                this.$router.push({ name : 'install-view'});
+              }
+            })
+      }
+    },
     ...mapActions(usePlaylistStore,['loadPlaylists']),
-    ...mapActions(useInitStore,['checkSetup'])
   },
   computed: {
     ...mapState(useUserStore,['isAuthenticated'])

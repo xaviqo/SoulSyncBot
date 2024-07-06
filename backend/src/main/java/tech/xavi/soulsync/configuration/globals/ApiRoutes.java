@@ -13,6 +13,8 @@ public class ApiRoutes {
     // CFG
     public static final String EP_CONFIGURATION_PATH = API_ROOT + "/cfg";
     public static final String EP_INITIAL_SETUP = EP_CONFIGURATION_PATH + "/initial-setup";
+    public static final String EP_INIT_SETUP_APIS = EP_INITIAL_SETUP + "/apis";
+    public static final String EP_INIT_SETUP_ADMIN = EP_INITIAL_SETUP + "/admin";
     public static final String EP_IS_INSTALLED = EP_CONFIGURATION_PATH + "/is-installed";
     public static final String EP_FIELDS = EP_CONFIGURATION_PATH + "/fields";
     public static final String EP_FIELD = EP_CONFIGURATION_PATH + "/field";
@@ -38,7 +40,8 @@ public class ApiRoutes {
             new AntPathRequestMatcher(EP_HEALTH_CHECK, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_IS_INSTALLED, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_INITIAL_SETUP, HttpMethod.GET.name()),
-            new AntPathRequestMatcher(EP_INITIAL_SETUP, HttpMethod.POST.name()),
+            new AntPathRequestMatcher(EP_INIT_SETUP_APIS, HttpMethod.POST.name()),
+            new AntPathRequestMatcher(EP_INIT_SETUP_ADMIN,HttpMethod.POST.name()),
             new AntPathRequestMatcher(EP_ACC_SIGN_IN,HttpMethod.POST.name())
     };
 

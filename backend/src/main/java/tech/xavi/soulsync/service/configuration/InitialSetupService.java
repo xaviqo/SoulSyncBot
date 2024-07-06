@@ -11,6 +11,7 @@ import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
 import tech.xavi.soulsync.configuration.globals.Role;
 import tech.xavi.soulsync.configuration.globals.SearchInputStrategy;
+import tech.xavi.soulsync.dto.account.AccountDto;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
 import tech.xavi.soulsync.entity.datafile.Account;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
@@ -29,6 +30,7 @@ import java.util.*;
 @Service
 public class InitialSetupService implements CommandLineRunner {
 
+    private static final String[] DEFAULT_ADMIN_VALUES = {"admin","admin"};
     private final ConfigurationFieldService configurationFieldService;
     private final SearchPolicyService searchPolicyService;
     private final AccountService accountService;
@@ -51,31 +53,65 @@ public class InitialSetupService implements CommandLineRunner {
         createDefaultSearchPolicyConfiguration();
     }
 
-    public Map<GatewayName, Boolean> setAndCheckInitialSetupValues(List<ConfigurationFieldDto> setupFields){
-        if (isAppInstalled() || Objects.requireNonNull(setupFields).size() != INITIAL_SETUP_FIELDS.length)
+    public void saveApiValues(List<ConfigurationFieldDto> setupFields){
+        if (isAppInstalled())
             throw new SoulSyncException(
                     SoulSyncError.INIT_SETUP_ERROR_CFG,
                     HttpStatus.BAD_REQUEST
             );
-        List<ConfigurationField> configurationFields = configurationFieldService.mapToConfigurationField(setupFields);
-        configurationFieldService.saveFields(configurationFields);
+        configurationFieldService
+                .saveDtoFieldsWithoutCheckingValue(setupFields);
+    }
 
+    public void createAdminAccountAndFinish(AccountDto admin) {
+        if (isAppInstalled())
+            throw new SoulSyncException(
+                    SoulSyncError.INIT_SETUP_ERROR_CFG,
+                    HttpStatus.BAD_REQUEST
+            );
+        accountService.deleteAccount(DEFAULT_ADMIN_VALUES[0]);
+        accountService.createAccount(
+                Account.builder()
+                        .username(admin.username())
+                        .password(admin.password())
+                        .build(),
+                Role.ADMIN
+        );
+        configurationFieldService
+                .saveFieldCheckingValue(ConfigurationField.IS_APP_INSTALLED,true);
+    }
+
+    public Map<String,Object> getInitialSetup(){
+        if (!isAppInstalled())
+            return Map.of(
+                    "admin", getDefaultAccount(),
+                    "fields", getInitialSetupFields()
+            );
+        return null;
+    }
+
+    public Map<String,Boolean> isAppInstalledResponse(){
+        return Map.of("isInstalled",isAppInstalled());
+    }
+
+    public Map<GatewayName,Boolean> getApiChecks() {
         Map<GatewayName,Boolean> apiChecks = new HashMap<>();
         for (GatewayName gatewayName : GatewayName.values())
             apiChecks.put(gatewayName,testApiConnection(gatewayName));
-
-        setInstalled(apiChecks);
         return apiChecks;
     }
 
-    public List<ConfigurationField> getInitialSetupFields(){
+    private List<ConfigurationField> getInitialSetupFields(){
         return Arrays.stream(INITIAL_SETUP_FIELDS)
                 .map(configurationFieldService::getFieldWithValue)
                 .toList();
     }
 
-    public Map<String,Boolean> isAppInstalledResponse(){
-        return Map.of("isInstalled",isAppInstalled());
+    private Account getDefaultAccount(){
+        return Account.builder()
+                .username(DEFAULT_ADMIN_VALUES[0])
+                .password(DEFAULT_ADMIN_VALUES[1])
+                .build();
     }
 
     private void createDefaultSearchPolicyConfiguration() {
@@ -108,11 +144,10 @@ public class InitialSetupService implements CommandLineRunner {
             log.info("Minimum setup loaded successfully");
         } else {
             createDefaultUser();
-            log.warn("Minimum setup not detected");
-
             loadConfigurationBySection(INITIAL_SETUP_SECTIONS);
+            log.warn("Minimum setup not detected");
             log.warn("Loaded initial configuration application with values from application.yml");
-            log.warn("SPOTIFY AND/OR SLSKD must be configured");
+            log.warn("SPOTIFY AND/OR SLSKD APIs must be configured");
         }
     }
 
@@ -121,7 +156,7 @@ public class InitialSetupService implements CommandLineRunner {
                 .getFieldsBySections(sections)
                 .forEach( field ->
                         configurationFieldService
-                                .saveField(
+                                .saveFieldCheckingValue(
                                         field,
                                         configurationFieldService
                                                 .getProperty(field)
@@ -130,30 +165,10 @@ public class InitialSetupService implements CommandLineRunner {
     }
 
     private void createDefaultUser(){
-        final String user = "admin";
-        final String pass = "admin";
         try {
-            accountService.createAccount(
-                    Account.builder()
-                            .username(user)
-                            .password(pass)
-                            .build(),
-                    Role.USER
-            );
-        } catch (SoulSyncException ignore){
-        }
-        log.info("Default user created: {}/{}",user,pass);
-    }
-
-    private void setInstalled(Map<GatewayName,Boolean> apiChecks) {
-        boolean allTrue = apiChecks
-                .values()
-                .stream()
-                .allMatch(val -> val.equals(true));
-        if (allTrue){
-            configurationFieldService.
-                    saveField(ConfigurationField.IS_APP_INSTALLED,true);
-        }
+            accountService.createAccount(getDefaultAccount(),Role.ADMIN);
+        } catch (Exception ignored) {}
+        log.info("Default user created: {}/{}",DEFAULT_ADMIN_VALUES[0],DEFAULT_ADMIN_VALUES[1]);
     }
 
     private boolean isAppInstalled(){

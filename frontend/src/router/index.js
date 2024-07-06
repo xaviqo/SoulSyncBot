@@ -66,6 +66,14 @@ const routes = [
     }
   },
   {
+    path: '/setup',
+    name: 'install-view',
+    component: () => import('../views/InstallView.vue'),
+    meta: {
+      title: "Initial Setup"
+    }
+  },
+  {
     path: '/:pathMatch(.*)*',
     redirect: '/login'
   }

@@ -7,7 +7,7 @@ import tech.xavi.soulsync.dto.shared.MessageSeverity;
 @AllArgsConstructor @Getter
 public enum SoulSyncError {
 
-    INIT_SETUP_ERROR_CFG(MessageSeverity.ERROR,"Invalid gateway or setup already done"),
+    INIT_SETUP_ERROR_CFG(MessageSeverity.ERROR,"Unable to create initial setup configuration"),
     ACC_ALREADY_EXISTS(MessageSeverity.WARN,"Account %s already exists"),
     ACC_NOT_FOUND(MessageSeverity.WARN,"Account %s not found"),
     ACCOUNT_INPUT_EMPTY(MessageSeverity.WARN,"Credentials cannot be empty"),

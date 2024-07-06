@@ -34,12 +34,17 @@ public class ConfigurationFieldService {
         return null;
     }
 
-    public void saveDtoFields(List<ConfigurationFieldDto> fieldDtos) {
-        List<ConfigurationField> fields = mapToConfigurationField(fieldDtos);
-        saveFields(fields);
+    public void saveDtoFieldsWithoutCheckingValue(List<ConfigurationFieldDto> fieldDtos) {
+        mapToConfigurationField(fieldDtos)
+                .forEach(configurationFieldRepository::save);
     }
 
-    public void saveFields(List<ConfigurationField> fields){
+    public void saveDtoFieldsCheckingValue(List<ConfigurationFieldDto> fieldDtos) {
+        List<ConfigurationField> fields = mapToConfigurationField(fieldDtos);
+        saveFieldsCheckingValue(fields);
+    }
+
+    public void saveFieldsCheckingValue(List<ConfigurationField> fields){
         fields.forEach(this::checkAndSave);
     }
 
@@ -61,7 +66,7 @@ public class ConfigurationFieldService {
         return (T) clazz.cast(value);
     }
 
-    public ConfigurationField saveField(ConfigurationField field, Object value){
+    public ConfigurationField saveFieldCheckingValue(ConfigurationField field, Object value){
         field.setValue(mapper.valueToTree(value));
         checkAndSave(field);
         return field;
@@ -98,7 +103,7 @@ public class ConfigurationFieldService {
             field.setValue(configurationFieldRepository.get(field));
             return field;
         } else {
-            return saveField(field,valueIfNotPresent);
+            return saveFieldCheckingValue(field,valueIfNotPresent);
         }
     }
 

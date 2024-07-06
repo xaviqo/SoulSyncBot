@@ -90,7 +90,6 @@ export default {
       const payload = this.getPayloadAndCheckValues();
       if (payload.length === this.setupFields.length) {
         this.visible = false;
-        this.emitter.emit('loading',{show: true, text: null});
         this.$axios
             .post('/cfg/initial-setup',payload)
             .then( res => {

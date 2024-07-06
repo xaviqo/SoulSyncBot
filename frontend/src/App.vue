@@ -98,7 +98,6 @@ export default {
     },
     checkInstalled() {
       if (!this.isInstalled) {
-        console.log("nooo")
         this.$axios.get('/cfg/is-installed')
             .then(res => {
               const isInstalled = res.data?.isInstalled;

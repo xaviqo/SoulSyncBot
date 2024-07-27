@@ -30,6 +30,9 @@ export const useUserStore = defineStore('login', {
     getters: {
         isAuthenticated(state) {
             return state.isUserAuthenticated;
+        },
+        getRole() {
+            return localStorage.getItem('role');
         }
     }
 })

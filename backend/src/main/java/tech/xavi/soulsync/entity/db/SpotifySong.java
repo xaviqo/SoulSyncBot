@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
-import org.checkerframework.common.aliasing.qual.Unique;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -21,9 +20,7 @@ import java.util.Set;
 @Builder
 public class SpotifySong {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Unique
+    @Id
     private String spotifyId;
     @Column(nullable = false)
     private String name;

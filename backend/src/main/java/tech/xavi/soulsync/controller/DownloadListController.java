@@ -33,11 +33,17 @@ public class DownloadListController {
     }
 
     @PostMapping(ApiRoutes.EP_DOWNLOAD_LIST)
-    public ResponseEntity<?> createDownloadList(@RequestBody DownloadListDto dto){
+    public ResponseEntity<Void> createDownloadList(@RequestBody DownloadListDto dto){
         downloadListCreationService.createNewDownloadListForExistingPlaylist(dto);
         return ResponseEntity
                 .created(URI.create(""))
                 .build();
+    }
+
+    @DeleteMapping(ApiRoutes.EP_DOWNLOAD_LIST +  "/{id}")
+    public ResponseEntity<Void> deleteDownloadList(@PathVariable long id) {
+        downloadListDataService.deleteDownloadListAndRequests(id);
+        return ResponseEntity.ok(null);
     }
 
     @PostMapping(ApiRoutes.EP_DOWNLOAD_LIST_PAUSE)
@@ -46,4 +52,8 @@ public class DownloadListController {
         return ResponseEntity.ok(null);
     }
 
+    @GetMapping(ApiRoutes.EP_DOWNLOAD_LIST_BY_POLICY)
+    public ResponseEntity<List<DownloadListProcessDto>> getDownloadListsBySearchPolicy(@PathVariable String searchPolicyId) {
+        return ResponseEntity.ok(downloadListDataService.getDownloadListsBySearchPolicy(searchPolicyId));
+    }
 }

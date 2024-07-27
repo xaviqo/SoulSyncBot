@@ -9,7 +9,10 @@
           :download-lists="getCurrentDownloadList"
           :playlist-id="getCurrentPlaylist?.id"
           :show-glass="false"
-      />
+          show-cog
+          show-pause
+          show-trash
+     />
       <DownloadListSongTable
           class="w-12"
           :download-list="getCurrentDownloadList[0]"
@@ -35,6 +38,10 @@ export default {
     this.emitter.on('refresh', () =>
         this.fetchPlaylistDownloadLists(this.$route.params.pl)
     );
+    this.emitter.on('pause-downloadlist', id => {
+      const dl = this.getCurrentDownloadList.find( dl => dl.id === id);
+       dl.isActive = !dl.isActive;
+    });
   },
   mounted() {
     const playlistId = this.$route.params.pl;

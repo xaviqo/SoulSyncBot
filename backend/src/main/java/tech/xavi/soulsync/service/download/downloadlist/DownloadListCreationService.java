@@ -43,7 +43,7 @@ public class DownloadListCreationService {
                 ? searchPolicyService
                 .upsert(dto.getNewSearchPolicy())
                 : searchPolicyService
-                .getPolicyById(dto.getSearchPolicy());
+                .getPolicyByRequest(dto.getSearchPolicy());
 
         if (Objects.isNull(searchPolicy))
             throw new SoulSyncException(SoulSyncError.SEARCH_POLICY_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -61,7 +61,7 @@ public class DownloadListCreationService {
     }
 
     public DownloadList createDownloadListForNewPlaylist(String playlistId, String searchPolicyId) {
-        SearchPolicy policy = searchPolicyService.getPolicyById(searchPolicyId);
+        SearchPolicy policy = searchPolicyService.getPolicyByRequest(searchPolicyId);
         return downloadListService.save(
                 DownloadList.builder()
                         .playlistId(playlistId)
@@ -78,7 +78,7 @@ public class DownloadListCreationService {
             DownloadList downloadList
     ) {
         SearchPolicy searchPolicy = searchPolicyService
-                .getPolicyById(downloadList.getSearchPolicy());
+                .getPolicyByRequest(downloadList.getSearchPolicy());
 
         Set<SlskdRequest> slskdRequests = playlist
                 .getSongs()

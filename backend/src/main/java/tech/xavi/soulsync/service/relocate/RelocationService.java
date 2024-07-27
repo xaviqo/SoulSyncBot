@@ -84,13 +84,14 @@ public class RelocationService {
             newFileName
                     .append(slskdRequest.getSpotifySong().getName())
                     .append(" - ")
-                    .append(String.join(", ",artists));
+                    .append(String.join(", ",artists))
+                    .append(getFileFormat(slskdRequest));
             return newFileName.toString();
         } else {
             if (splittedRoute.length > 1)
-                return splittedRoute[splittedRoute.length - 1];
+                return splittedRoute[splittedRoute.length - 1] + getFileFormat(slskdRequest);
         }
-        return slskdRequest.getFilename();
+        return slskdRequest.getFilename() + getFileFormat(slskdRequest);
     }
 
     private String getCurrentFilePath(SlskdRequest slskdRequest){
@@ -107,6 +108,13 @@ public class RelocationService {
         else
             return slskdRequest
                     .getFilename();
+    }
+
+    private String getFileFormat(SlskdRequest slskdRequest) {
+        int lastIndex = slskdRequest.getFilename().lastIndexOf(".");
+        if (lastIndex != -1)
+            return "." + slskdRequest.getFilename().substring(lastIndex + 1);
+        return "";
     }
 
     private boolean shouldRenameRelocated(){

@@ -2,19 +2,20 @@
   <Card class="-my-1">
     <template #content>
       <div class="flex gap-3 align-items-center -my-2" v-if="downloadList">
-        <div class="w-2 flex justify-content-start gap-3">
+        <div class="flex justify-content-center align-items-end gap-3">
           <Button v-if="showGlass" icon="pi pi-search" class="mr-2" severity="info" @click="doAction('show')"/>
-          <Button v-else icon="pi pi-cog" class="mr-2" severity="info" @click="doAction('policy')"/>
+          <Button v-if="showCog && !showGlass" icon="pi pi-cog" class="mr-2" severity="info" @click="doAction('policy')"/>
           <Button
+              v-if="showPause"
               :icon="downloadList?.isActive ? 'pi pi-play' : 'pi pi-pause'"
               class="mr-2"
               :severity="downloadList?.isActive ? 'primary' : 'secondary'"
               v-tooltip="{ value: downloadList?.isActive ? 'Download list active' : 'Download list NOT active', showDelay:20, hideDelay:100 }"
               @click="doAction('pause')"
           />
-          <Button icon="pi pi-trash" class="mr-2" severity="danger" @click="doAction('delete')"/>
+          <Button v-if="showTrash" icon="pi pi-trash" class="mr-2" severity="danger" @click="doAction('delete')"/>
         </div>
-        <div class="w-10 flex gap-3">
+        <div class="w-full flex gap-3">
           <div class="w-2 flex flex-column gap-1">
             <div class="text-center">
               Priority
@@ -97,6 +98,18 @@ export default {
     showGlass: {
       type: Boolean,
       required: true
+    },
+    showCog: {
+      type: Boolean,
+      required: true
+    },
+    showPause: {
+      type: Boolean,
+      required: true
+    },
+    showTrash: {
+      type: Boolean,
+      required: true
     }
   },
   methods: {
@@ -120,13 +133,13 @@ export default {
         case 'pause':
           this.$axios
               .post(`/download-list/${this.downloadList?.id}/pause`)
-          this.emitter.emit('refresh');
+          this.emitter.emit('pause-downloadlist',this.downloadList?.id);
           break;
         case 'policy':
           this.emitter.emit('download-list-data-dialog', this.downloadList);
           break;
       }
     }
-  }
+  },
 }
 </script>

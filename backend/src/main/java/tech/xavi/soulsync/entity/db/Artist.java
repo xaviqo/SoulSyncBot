@@ -17,6 +17,10 @@ import lombok.*;
 public class Artist {
     @Id
     private String id;
-    @Column(nullable = false)
+    @Column
     private String name;
+
+    public String getName() {
+        return name != null ? name : "";
+    }
 }

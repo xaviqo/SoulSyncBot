@@ -9,8 +9,6 @@ import tech.xavi.soulsync.dto.playlist.PlaylistOverviewDto;
 import tech.xavi.soulsync.entity.db.Playlist;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
-import tech.xavi.soulsync.service.download.SlskdRequestService;
-import tech.xavi.soulsync.service.download.downloadlist.DownloadListService;
 
 import java.util.Objects;
 import java.util.Set;
@@ -20,8 +18,6 @@ import java.util.stream.Collectors;
 public class GetPlaylistService {
 
     private final PlaylistService playlistService;
-    private final DownloadListService downloadListService;
-    private final SlskdRequestService slskdRequestService;
     private final AlbumCreationService albumCreationService;
 
     @Transactional

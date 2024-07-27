@@ -49,4 +49,12 @@ public class PlaylistService {
         return null;
     }
 
+    public void deletePlaylist(String playlistId) {
+        playlistRepository.deleteById(playlistId);
+    }
+
+    public PlaylistType getPlaylistType(String playlistId) {
+        return playlistRepository.getTypeByPlaylistId(playlistId);
+    }
+
 }

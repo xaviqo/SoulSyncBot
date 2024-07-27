@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
-import tech.xavi.soulsync.configuration.globals.Role;
+import tech.xavi.soulsync.entity.Role;
 import tech.xavi.soulsync.configuration.globals.SearchInputStrategy;
 import tech.xavi.soulsync.dto.account.AccountDto;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
@@ -51,6 +51,12 @@ public class InitialSetupService implements CommandLineRunner {
     public void run(String... args) throws Exception {
         createDefaultInstallation();
         createDefaultSearchPolicyConfiguration();
+        boolean isDemo = configurationFieldService
+                .getFieldWithValue(ConfigurationField.IS_DEMO_MODE,false)
+                .getValue()
+                .asText()
+                .equalsIgnoreCase("true");
+        if (isDemo) log.info("DEMO MODE ACTIVE");
     }
 
     public void saveApiValues(List<ConfigurationFieldDto> setupFields){
@@ -72,8 +78,8 @@ public class InitialSetupService implements CommandLineRunner {
         accountService.deleteAccount(DEFAULT_ADMIN_VALUES[0]);
         accountService.createAccount(
                 Account.builder()
-                        .username(admin.username())
-                        .password(admin.password())
+                        .username(admin.getUsername())
+                        .password(admin.getPassword())
                         .build(),
                 Role.ADMIN
         );
@@ -131,6 +137,8 @@ public class InitialSetupService implements CommandLineRunner {
                     .maxRetries(configurationFieldService.getProperty(ConfigurationField.SP_MAX_RETRIES))
                     .avoidRemix(configurationFieldService.getProperty(ConfigurationField.SP_IS_AVOID_REMIX))
                     .avoidLive(configurationFieldService.getProperty(ConfigurationField.SP_IS_AVOID_LIVE))
+                    .avoidRadioEdit(configurationFieldService.getProperty(ConfigurationField.SP_IS_AVOID_RADIO_EDIT))
+                    .avoidMixedTrack(configurationFieldService.getProperty(ConfigurationField.SP_IS_AVOID_MIXED_TRACK))
                     .inputStrategy(SearchInputStrategy.STANDARD_STRATEGY)
                     .downloadPriority(DownloadPriority.NORMAL)
                     .build();
@@ -143,7 +151,7 @@ public class InitialSetupService implements CommandLineRunner {
         if (isAppInstalled()) {
             log.info("Minimum setup loaded successfully");
         } else {
-            createDefaultUser();
+            createDefaultUsers();
             loadConfigurationBySection(INITIAL_SETUP_SECTIONS);
             log.warn("Minimum setup not detected");
             log.warn("Loaded initial configuration application with values from application.yml");
@@ -164,7 +172,7 @@ public class InitialSetupService implements CommandLineRunner {
                 );
     }
 
-    private void createDefaultUser(){
+    private void createDefaultUsers(){
         try {
             accountService.createAccount(getDefaultAccount(),Role.ADMIN);
         } catch (Exception ignored) {}

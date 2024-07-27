@@ -12,6 +12,7 @@ public record DownloadListProcessDto(
         long lastCheck,
         long attempts,
         long totalTracks,
-        long totalCompleted
+        long totalCompleted,
+        String playlistId
 ) {
 }

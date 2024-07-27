@@ -14,7 +14,7 @@
                 v-if="!inputs.searchPolicy"
                 for="url"
             >
-              Select Download Policy
+              Select Search Policy
             </label>
           </FloatLabel>
           <Button
@@ -74,11 +74,13 @@ export default {
   }),
   created() {
     this.fetchSearchPolicies();
-    this.emitter.on('fetch-policies', () => {
-      this.fetchSearchPolicies();
-    });
+    this.emitter.on('fetch-policies', this.handleFetchPolicies);
+
   },
   methods: {
+    handleFetchPolicies() {
+      this.fetchSearchPolicies();
+    },
     submitPlaylist() {
       if (this.isPlaylistRequestOk()) {
         this.emitter.emit('loading',{show: true, text: 'Loading playlist data...'});
@@ -132,8 +134,8 @@ export default {
     },
     ...mapActions(usePlaylistStore,['addPlaylist'])
   },
+  beforeUnmount() {
+    this.emitter.off('fetch-policies', this.handleFetchPolicies);
+  }
 }
 </script>
-<style scoped>
-
-</style>

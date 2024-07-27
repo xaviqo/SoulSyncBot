@@ -9,8 +9,9 @@ import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 import tech.xavi.soulsync.repository.datafile.SearchPolicyRepository;
+import tech.xavi.soulsync.service.download.downloadlist.DownloadListService;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ import java.util.UUID;
 public class SearchPolicyService {
 
     private final SearchPolicyRepository searchPolicyRepository;
+    private final DownloadListService downloadListService;
 
     public SearchPolicyDto upsert(SearchPolicyDto dto) {
         if (dto.getId() == null || dto.getId().isBlank())
@@ -26,15 +28,15 @@ public class SearchPolicyService {
         return dto;
     }
 
-    public SearchPolicy getPolicyById(SlskdRequest slskdRequest) {
-        return getPolicyById(slskdRequest.getDownloadList().getSearchPolicy());
+    public SearchPolicy getPolicyByRequest(SlskdRequest slskdRequest) {
+        return getPolicyByRequest(slskdRequest.getDownloadList().getSearchPolicy());
     }
 
-    public SearchPolicy getPolicyById(String id) {
+    public SearchPolicy getPolicyByRequest(String id) {
         return searchPolicyRepository.get(id);
     }
 
-    public Set<SearchPolicy> getAllPolicies() {
+    public Collection<SearchPolicy> getAllPolicies() {
         return searchPolicyRepository
                 .getAll();
     }

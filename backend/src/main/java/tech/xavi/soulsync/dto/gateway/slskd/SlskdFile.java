@@ -1,7 +1,9 @@
 package tech.xavi.soulsync.dto.gateway.slskd;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Builder;
 
+@Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record SlskdFile(
         int bitRate,

@@ -1,7 +1,6 @@
 package tech.xavi.soulsync.dto.account;
 
-public record AccountDto(
-        String username,
-        String password
-) {
+import tech.xavi.soulsync.entity.datafile.Account;
+
+public class AccountDto extends Account {
 }

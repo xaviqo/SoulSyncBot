@@ -12,10 +12,10 @@
             :header="tab.name"
         >
           <div v-if="tab.section === 'policies'">
-            search policies
+            <SearchPolicyConfiguration />
           </div>
           <div v-else-if="tab.section === 'users'">
-            usuarios
+            <UsersConfiguration />
           </div>
           <div v-else class="flex flex-wrap gap-3">
             <div class="mt-2">
@@ -40,10 +40,12 @@
 </template>
 <script>
 import ConfigurationFields from "@/components/shared/ConfigurationFields.vue";
+import UsersConfiguration from "@/components/configuration/UsersConfiguration.vue";
+import SearchPolicyConfiguration from "@/components/configuration/SearchPolicyConfiguration.vue";
 
 export default {
   name: "ConfigurationView",
-  components: {ConfigurationFields},
+  components: {SearchPolicyConfiguration, UsersConfiguration, ConfigurationFields},
   data: () =>  ({
     sections: [
       { name: `API's Configuration`, section: 'api' },

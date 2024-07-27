@@ -9,6 +9,7 @@ import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import tech.xavi.soulsync.service.download.SlskdRequestService;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 @Component
@@ -23,12 +24,12 @@ public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
         slskdRequestService
                 .getAllStuckDownloads()
                 .forEach( download ->
-                    slskdRequestService
-                            .findByFilenameAndUser(download)
-                            .ifPresent( req -> {
-                                if (hasPastStuckThreshold(req))
-                                    slskdRequestService.setRequestToWaiting(req);
-                            })
+                        slskdRequestService
+                                .findByFilenameAndUser(download)
+                                .ifPresent( req -> {
+                                    if (hasPastStuckThreshold(req))
+                                        slskdRequestService.setRequestToWaiting(req);
+                                })
                 );
         return CompletableFuture.completedFuture(true);
     }
@@ -39,9 +40,12 @@ public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
     }
 
     private long getMinutesToEvaluateStuck() {
-        return configurationFieldService
-                .getValue(ConfigurationField.SRCH_MINUTES_TO_EVALUATE_AS_STUCK)
-                .asLong() * 60 * 1000;
+        return TimeUnit.MINUTES
+                .toMillis(
+                        configurationFieldService
+                                .getValue(ConfigurationField.SRCH_MINUTES_TO_EVALUATE_AS_STUCK)
+                                .asLong()
+                );
     }
 
     @Override

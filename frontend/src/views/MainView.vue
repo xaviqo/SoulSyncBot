@@ -18,10 +18,16 @@ export default {
   }),
   created() {
     this.fetchAllPlaylists();
+    this.emitter.on('refresh', () => {
+          this.removePlaylists();
+          this.fetchAllPlaylists();
+        }
+    );
   },
   methods: {
     ...mapActions(usePlaylistStore,[
-      'fetchAllPlaylists'
+      'fetchAllPlaylists',
+      'removePlaylists'
     ])
   },
   computed: {

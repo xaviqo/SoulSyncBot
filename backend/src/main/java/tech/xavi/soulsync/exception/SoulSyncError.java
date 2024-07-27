@@ -9,9 +9,11 @@ public enum SoulSyncError {
 
     INIT_SETUP_ERROR_CFG(MessageSeverity.ERROR,"Unable to create initial setup configuration"),
     ACC_ALREADY_EXISTS(MessageSeverity.WARN,"Account %s already exists"),
-    ACC_NOT_FOUND(MessageSeverity.WARN,"Account %s not found"),
-    ACCOUNT_INPUT_EMPTY(MessageSeverity.WARN,"Credentials cannot be empty"),
+    ACC_NOT_FOUND(MessageSeverity.WARN,"Account %s not found. %s"),
+    LOGIN_ATTEMPT_BLOCKED(MessageSeverity.WARN,"Login Blocked. %s"),
+    ACCOUNT_INPUT_EMPTY(MessageSeverity.WARN,"Credentials cannot be empty. %s"),
     TOKEN_ERROR(MessageSeverity.WARN,"Session expired or invalid"),
+    DEMO_USER_NOT_ALLOWED(MessageSeverity.WARN,"The demo user does not have permissions for this action"),
 
     GATEWAY_ERROR(MessageSeverity.ERROR,"%s occurred while calling the %s waiting a response type %s"),
 

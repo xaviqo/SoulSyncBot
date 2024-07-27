@@ -33,4 +33,16 @@ public class DownloadListService {
         return downloadListRepository.findById(id);
     }
 
+    public void deleteById(long id){
+        downloadListRepository.deleteByDownloadListId(id);
+    }
+
+    public void deletePlaylistDownloadLists(long downloadListId) {
+        downloadListRepository.deleteFromPlaylistDownloadListsByDownloadListId(downloadListId);
+    }
+
+    public Stream<DownloadList> findBySearchPolicy(String searchPolicyId) {
+        return downloadListRepository.findAllBySearchPolicy(searchPolicyId);
+    }
+
 }

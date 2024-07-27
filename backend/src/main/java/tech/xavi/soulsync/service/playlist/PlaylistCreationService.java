@@ -26,7 +26,7 @@ public class PlaylistCreationService {
     private final AccountService accountService;
     private final DownloadListCreationService downloadListCreationService;
 
-    public Playlist addNewPlaylist(String spotifyId, String searchPolicyId){
+    public Playlist addNewPlaylist(String spotifyId, String searchPolicyId) {
         SpotifyPlaylistDto spotifyPlaylistDto = spotifyGatewayService
                 .getPlaylistDetails(spotifyId);
         DownloadList downloadList = downloadListCreationService

@@ -9,6 +9,9 @@
           :download-lists="getPlaylistDownloadLists"
           :playlist-id="getCurrentPlaylist?.id"
           :show-glass="true"
+          show-cog
+          show-pause
+          show-trash
       />
       <PlaylistSongsTable
           v-if="!getCurrentPlaylist.playlistType || getCurrentPlaylist.playlistType !== 'DISCOGRAPHY'"
@@ -67,6 +70,10 @@ export default {
     this.emitter.on('refresh', () =>
         this.fetchPlaylistDownloadLists(this.$route.params.id)
     );
+    this.emitter.on('pause-downloadlist', id => {
+      const dl = this.getPlaylistDownloadLists.find( dl => dl.id === id);
+      dl.isActive = !dl.isActive;
+    });
   }
 }
 </script>

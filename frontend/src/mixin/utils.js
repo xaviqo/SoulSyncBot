@@ -1,5 +1,8 @@
 export const utilsMixin = {
     methods: {
+        getArtistsByComa(artists){
+            return artists?.map(a => a.name).join(", ");
+        },
         capitalizeFirstLetter(text) {
             const words = text.split(" ");
             for (let i = 0; i < words.length; i++) {

@@ -1,5 +1,6 @@
 package tech.xavi.soulsync.service.user;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -7,23 +8,27 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import tech.xavi.soulsync.configuration.globals.Role;
 import tech.xavi.soulsync.dto.account.AccountDto;
+import tech.xavi.soulsync.dto.account.AccountWithRole;
 import tech.xavi.soulsync.dto.account.SignInResponseDto;
 import tech.xavi.soulsync.dto.account.TokenDto;
 import tech.xavi.soulsync.dto.shared.AlertData;
 import tech.xavi.soulsync.dto.shared.MessageSeverity;
+import tech.xavi.soulsync.entity.LoginAttempt;
+import tech.xavi.soulsync.entity.Role;
 import tech.xavi.soulsync.entity.datafile.Account;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 import tech.xavi.soulsync.repository.datafile.AccountRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AccountService {
 
+    private final LoginAttemptService loginAttemptService;
     private final AccountRepository accountRepository;
     private final JwtService jwtService;
     private final PasswordEncoder pwdEncoder;
@@ -55,25 +60,39 @@ public class AccountService {
         );
     }
 
-    public SignInResponseDto checkCredentialsAndSignIn(AccountDto request){
-        return Optional.ofNullable(request)
-                .filter(dto -> dto.username() != null && !dto.username().isEmpty())
-                .filter(dto -> dto.password() != null && !dto.password().isEmpty())
-                .map(this::signIn)
+    public SignInResponseDto checkCredentialsAndSignIn(
+            HttpServletRequest request,
+            AccountDto creds
+    ){
+        LoginAttempt loginAttempt = loginAttemptService
+                .getAttemptByIp(request.getRemoteAddr());
+        String attemptMessage = loginAttemptService
+                .getMaxAttemptsUserMessage(loginAttempt);
+        return Optional.ofNullable(creds)
+                .filter(this::checkCredentialsNotEmpty)
+                .map(acc -> this.signIn(acc, attemptMessage))
                 .orElseThrow( () -> new SoulSyncException(
                         SoulSyncError.ACCOUNT_INPUT_EMPTY,
-                        HttpStatus.BAD_REQUEST
+                        HttpStatus.BAD_REQUEST,
+                        attemptMessage
                 ));
     }
 
-    public SignInResponseDto signIn(AccountDto request){
-        return Optional.of(accountRepository.get(request.username()))
-                .filter( acc -> pwdEncoder.matches(request.password(),acc.getPassword()) )
+    private boolean checkCredentialsNotEmpty(AccountDto dto) {
+        return dto.getUsername() != null
+                && !dto.getUsername().isEmpty()
+                && dto.getPassword() != null
+                && !dto.getPassword().isEmpty();
+    }
+
+    public SignInResponseDto signIn(AccountDto accountDto, String attemptMessage){
+        return Optional.ofNullable(accountRepository.get(accountDto.getUsername()))
+                .filter( acc -> pwdEncoder.matches(accountDto.getPassword(),acc.getPassword()) )
                 .map(this::getSignInPayload)
                 .orElseThrow(() -> new SoulSyncException(
                         SoulSyncError.ACC_NOT_FOUND,
                         HttpStatus.BAD_REQUEST,
-                        request.username()
+                        new String[]{ accountDto.getUsername(), attemptMessage }
                         )
                 );
     }
@@ -96,6 +115,17 @@ public class AccountService {
                         .message(String.format("User %s successfully logged in",account.getUsername()))
                         .build())
                 .build();
+    }
+
+    public List<AccountWithRole> getAccounts() {
+        return accountRepository
+                .getAll()
+                .stream()
+                .map( acc -> AccountWithRole.builder()
+                        .username(acc.getUsername())
+                        .role(acc.getRole())
+                        .build())
+                .toList();
     }
 
 }

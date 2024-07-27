@@ -11,18 +11,24 @@
                  size="small"
       >
         <Column field="name" header="Name"></Column>
+        <Column header="Artists">
+          <template #body="slotProps">
+            {{ getArtists(slotProps.data.artists) }}
+          </template>
+        </Column>
         <Column field="album" header="Album"></Column>
       </DataTable>
     </template>
   </Card>
 </template>
 <script>
-
 import {mapActions, mapState} from "pinia";
 import {usePlaylistStore} from "@/store/playlist-calls";
+import {utilsMixin} from "@/mixin/utils";
 
 export default {
   name: "PlaylistSongsTable",
+  mixins: [utilsMixin],
   data: () => ({
     page: 0,
     rows: 10
@@ -32,7 +38,7 @@ export default {
   },
   created() {
     this.onPage(null);
-    this.emitter.on('refresh', () => this.onPage(null));
+    this.emitter.on('refresh', this.handleRefresh);
   },
   watch: {
     playlist(newVal) {
@@ -44,6 +50,12 @@ export default {
     ...mapActions(usePlaylistStore, [
       'fetchPlaylistSongs',
     ]),
+    handleRefresh() {
+      this.onPage(null);
+    },
+    getArtists(artists){
+      return this.getArtistsByComa(artists);
+    },
     async onPage(event) {
       if (event) {
         this.page = event.page;
@@ -60,6 +72,9 @@ export default {
     ...mapState(usePlaylistStore, {
       getPlaylistSongs: 'getPlaylistSongs',
     })
+  },
+  beforeUnmount() {
+    this.emitter.off('refresh', this.handleRefresh);
   }
 }
 </script>

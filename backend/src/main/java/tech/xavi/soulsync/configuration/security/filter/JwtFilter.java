@@ -1,4 +1,4 @@
-package tech.xavi.soulsync.configuration.security;
+package tech.xavi.soulsync.configuration.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +25,7 @@ import tech.xavi.soulsync.service.user.JwtService;
 import java.io.IOException;
 import java.util.Optional;
 
-@Log4j2
+@Order(1)
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -59,13 +59,13 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            handleFilterException(response);
+            handleTokenFilterException(response);
         }
     }
 
-    private void handleFilterException(HttpServletResponse response){
+    private void handleTokenFilterException(HttpServletResponse response){
         try {
-            ExceptionController.handleTokenException(
+            ExceptionController.handleFilterException(
                     response,
                     objectMapper.writeValueAsString(
                             ErrorDto.builder()
@@ -85,19 +85,13 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
-        if (isApiRequest(request))
+        if (ApiRoutes.isApiRequest(request))
             return isUnsecuredEndpoint(request);
         return true;
     }
 
-    private boolean isApiRequest(HttpServletRequest request){
-        return request
-                .getRequestURI()
-                .startsWith(ApiRoutes.API_ROOT);
-    }
-
     private boolean isUnsecuredEndpoint(HttpServletRequest request){
-        for (RequestMatcher requestMatcher : ApiRoutes.NO_FILTER_EPS)
+        for (RequestMatcher requestMatcher : ApiRoutes.NO_JWT_FILTER_EPS)
             if (requestMatcher.matches(request)) return true;
         return false;
     }

@@ -32,7 +32,18 @@
           </div>
         </template>
       </Dialog>
-      <ConfirmDialog></ConfirmDialog>
+      <ConfirmDialog>
+        <template #message="slotProps">
+          <div class="flex align-items-center w-full gap-3 border-bottom-1 surface-border">
+            <div class="w-2 flex align-items-center justify-content-center">
+              <i :class="slotProps.message.icon" class="text-6xl text-primary-500"></i>
+            </div>
+            <div class="w-10">
+              <p>{{ slotProps.message.message }}</p>
+            </div>
+          </div>
+        </template>
+      </ConfirmDialog>
     </div>
   </div>
 </template>
@@ -49,25 +60,16 @@ export default {
     showLoadingDialog: false,
     loadingText: null,
     messages: [],
-    count: 0
+    alertId: 0
   }),
   components: {
     Header
   },
   created() {
     this.checkInstalled();
-    this.emitter.on(
-        'alert',
-        alert => this.showAlert(alert)
-    );
-    this.emitter.on(
-        'loading',
-        loading => this.showLoading(loading)
-    );
-    this.emitter.on(
-        'confirm',
-        confirm => this.showConfirm(confirm)
-    );
+    this.emitter.on('alert', this.showAlert);
+    this.emitter.on('loading', this.showLoading);
+    this.emitter.on('confirm', this.showConfirm);
   },
   methods:{
     showConfirm(confirm){
@@ -89,12 +91,13 @@ export default {
       this.loadingText = text;
     },
     showAlert({severity,message}){
+      console.log("llega mensaje a showAlert")
       this.messages.push({
         severity: severity,
         message: message,
-        id: this.count++
+        id: this.alertId++
       })
-      setTimeout(() => this.messages.pop(),4000);
+      setTimeout(() => this.messages = [],3500);
     },
     checkInstalled() {
       if (!this.isInstalled) {
@@ -112,6 +115,11 @@ export default {
   },
   computed: {
     ...mapState(useUserStore,['isAuthenticated'])
+  },
+  beforeUnmount() {
+    this.emitter.off('alert', this.showAlert);
+    this.emitter.off('loading', this.showLoading);
+    this.emitter.off('confirm', this.showConfirm);
   }
 }
 </script>

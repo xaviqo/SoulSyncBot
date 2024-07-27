@@ -26,7 +26,7 @@ public class JwtService {
     private final String ISSUER = "SoulSyncBot";
     private final Key SECRET;
     private final long ACCESS_TKN_EXP_MS = 604800 * 1000L; // 7 days
-    private static final String TOKEN_PREFIX = "Bearer ";
+    public static final String TOKEN_PREFIX = "Bearer ";
 
     public JwtService() { this.SECRET = Keys.secretKeyFor(SignatureAlgorithm.HS256); }
 
@@ -47,7 +47,7 @@ public class JwtService {
 
     public String generateToken(Account account) {
         return Jwts.builder()
-                .claim("role","ROLE_"+account.getRole().name())
+                .claim("role",account.getRole().getWithPrefix())
                 .setIssuer(ISSUER)
                 .setSubject(account.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
@@ -64,13 +64,17 @@ public class JwtService {
     }
 
     public Collection<? extends GrantedAuthority> extractAuthorities(String token) {
-        String role = extractClaim(token, claims -> claims.get("role", String.class));
+        String role = extractRole(token);
         return Collections.singleton(new SimpleGrantedAuthority(role));
 
     }
 
     public String extractUsername(String token){
         return extractClaim(token,Claims::getSubject);
+    }
+
+    public String extractRole(String token) {
+        return extractClaim(token, claims -> claims.get("role", String.class));
     }
 
     private <T> T extractClaim(String token, Function<Claims, T> claimResolver){

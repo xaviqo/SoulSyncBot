@@ -57,13 +57,7 @@ export default {
             this.userCalls.saveLoginResponse(res.data);
             this.$router.push({ name : 'panel-view'});
           })
-          .catch( () => {
-            this.emitter.emit('alert',{
-              severity: 'warn',
-              message: `Wrong credentials for user ${this.loginPayload.username}`
-            });
-            this.resetInputs();
-          });
+          .catch( () => this.resetInputs());
     },
     resetInputs(){
       this.loginPayload = {
@@ -74,6 +68,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-
-</style>

@@ -18,7 +18,7 @@
           </div>
           <div class="col-3 flex flex-column gap-2">
             <label for="username">Artists</label>
-              <InputText disabled class="bg-black-alpha-60" :value="getArtistsByComa()"/>
+              <InputText disabled class="bg-black-alpha-60" :value="getArtists()"/>
           </div>
           <div class="col-3 flex flex-column gap-2">
             <label for="username">Album</label>
@@ -85,24 +85,28 @@ export default {
     visible: false,
   }),
   created() {
-    this.emitter.on('song-data-dialog', songData => {
-      this.visible = true;
-      this.songData = songData;
-    });
+    this.emitter.on('song-data-dialog', this.handleSongDataDialog);
   },
   methods: {
+    handleSongDataDialog(songData) {
+      this.visible = true;
+      this.songData = songData;
+    },
     getFileName(){
       return this.songData?.filename?.split('\\')?.pop();
     },
     getDialogName(){
       return `
-      ${this.getArtistsByComa()} -
+      ${this.getArtists()} -
       ${this.songData?.name}
       `
     },
-    getArtistsByComa(){
-      return this.songData?.artists?.map(a => a.name).join(", ");
+    getArtists(){
+      return this.getArtistsByComa(this.songData?.artists);
     }
+  },
+  beforeUnmount() {
+    this.emitter.off('song-data-dialog', this.handleSongDataDialog);
   }
 }
 </script>

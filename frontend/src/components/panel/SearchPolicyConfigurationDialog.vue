@@ -55,22 +55,30 @@ export default {
     inputStrategyNames: [],
     fields: [],
     selectedPolicy: null,
+    downloadLists: []
   }),
   created() {
-    this.emitter.on('policies-dialog', policyId => {
+    this.emitter.on('policies-dialog', this.handlePoliciesDialog);
+    this.emitter.on('delete-policy', this.handleDeletePolicy);
+    this.emitter.on('delete-policy-after-dls', this.handleDeletePolicyAfterDls);
+  },
+  methods: {
+    handlePoliciesDialog(policyId) {
       this.visible = true;
       this.policyName = null;
       this.policyId = policyId;
       this.fetchFields(policyId);
-    });
-    this.emitter.on('delete-policy', isDelete => {
+    },
+    handleDeletePolicy(isDelete) {
       if (isDelete) {
         this.deletePolicy(true);
         this.emitter.emit('fetch-policies');
       }
-    })
-  },
-  methods: {
+    },
+    handleDeletePolicyAfterDls(isDelete) {
+      if (isDelete) this.deletePolicyDownloadLists();
+      this.visible = false;
+    },
     fetchPolicyConfiguration(policyId, fields) {
       this.$axios
           .get(`/playlist/search-policy/${policyId}`)
@@ -95,6 +103,7 @@ export default {
               this.fetchPolicyConfiguration(policyId, res.data);
             } else {
               this.fields = res.data
+              this.resetFields();
             }
           });
     },
@@ -105,6 +114,10 @@ export default {
         this.$axios
             .post('/playlist/search-policy', payload)
             .then(() => {
+              this.emitter.emit('alert', {
+                severity: 'success',
+                message: `Search policy successfully saved`
+              });
               this.emitter.emit('fetch-policies');
               this.emitter.emit('loading', {show: false});
               this.fields = this.configurationFields;
@@ -133,19 +146,39 @@ export default {
       return value !== null && value !== undefined && value !== '';
     },
     resetFields(){
-      this.fields.forEach(field => field.value = null)
+      this.fields.forEach( f => {
+        if (f.dataType === 'BOOLEAN') f.value = false;
+        else f.value = null;
+      });
     },
     deletePolicy(isDelete){
       if (isDelete) {
         this.$axios
-            .delete(`/playlist/search-policy/${this.policyId}`)
-            .then(res => {
-              if (res.status >= 200) {
-                this.emitter.emit('alert', {
-                  severity: 'info',
-                  message: `Search policy ${this.policyName} deleted`
+            .get(`/download-list/by-policy/${this.policyId}`)
+            .then( res => {
+              this.downloadLists = res.data;
+              const isEmpty = this.downloadLists?.length === 0;
+              if (isEmpty) {
+                this.$axios
+                    .delete(`/playlist/search-policy/${this.policyId}`)
+                    .then(res => {
+                      if (res.status >= 200) {
+                        this.emitter.emit('alert', {
+                          severity: 'info',
+                          message: `Search policy ${this.policyName} deleted`
+                        });
+                        this.visible = false;
+                        this.emitter.emit('fetch-policies')
+                      }
+                    });
+              } else {
+                this.emitter.emit('confirm',{
+                  header: ` Delete download lists using this policy?`,
+                  message: `Deleting this search policy will delete the (${res.data?.length}) download lists that have it configured. Do you want to continue?`,
+                  reject: 'Cancel',
+                  accept: 'Delete',
+                  listenerLabel: 'delete-policy-after-dls'
                 });
-                this.visible = false;
               }
             });
       } else {
@@ -155,12 +188,27 @@ export default {
           reject: 'Cancel',
           accept: 'Delete',
           listenerLabel: 'delete-policy'
-        })
+        });
       }
-    }
+    },
+    async deletePolicyDownloadLists() {
+      this.emitter.emit('loading', { show: true, text: 'Deleting policy and download lists...' });
+
+      if (this.downloadLists) {
+        const deletePromises = this.downloadLists.map(dl =>
+            this.$axios.delete(`/download-list/${dl.id}`)
+        );
+        await Promise.all(deletePromises);
+      }
+      this.deletePolicy(true);
+      this.emitter.emit('fetch-policies');
+      this.emitter.emit('loading', { show: false });
+    },
+  },
+  beforeUnmount() {
+    this.emitter.off('policies-dialog', this.handlePoliciesDialog);
+    this.emitter.off('delete-policy', this.handleDeletePolicy);
+    this.emitter.off('delete-policy-after-dls', this.handleDeletePolicyAfterDls);
   }
 }
 </script>
-<style scoped>
-
-</style>

@@ -14,13 +14,18 @@ spring:
       #ddl-auto: update
     properties:
       hibernate:
+        format_sql: true
         connection:
           characterEncoding: utf8
+    show-sql: false
 
 tech:
   xavi:
     soulsync:
       cfg:
+        login-attempt:
+          max-try: 5
+          block-time-min: 15
         default:
           search-policy:
             sp-file-formats: mp3
@@ -31,6 +36,8 @@ tech:
             sp-max-retries: 0
             sp-is-avoid-remix: true
             sp-is-avoid-live: true
+            sp-is-avoid-radio-edit: true
+            sp-is-avoid-mixed-track: true
           search:
             srch-max-simultaneous-threads: 5
             srch-tracks-per-queue: 100
@@ -46,6 +53,7 @@ tech:
             app-relocated-files-path: /soulsync/relocated
             app-relocate-by: PLAYLIST
             app-rename-relocated: false
+            app-move-or-copy: COPY
       gateway:
         base-url:
           spotify:

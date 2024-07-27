@@ -8,6 +8,8 @@ import tech.xavi.soulsync.dto.configuration.SearchPolicyDto;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
 import tech.xavi.soulsync.service.search.SearchPolicyService;
 
+import java.util.Collection;
+
 @RestController
 @RequiredArgsConstructor
 public class SearchPolicyController {
@@ -15,13 +17,13 @@ public class SearchPolicyController {
     private final SearchPolicyService searchPolicyService;
 
     @GetMapping(ApiRoutes.EP_SEARCH_POLICY)
-    public ResponseEntity<?> getSearchPolicyConfiguration(){
+    public ResponseEntity<Collection<SearchPolicy>> getSearchPolicyConfiguration(){
         return ResponseEntity.ok(searchPolicyService.getAllPolicies());
     }
 
     @GetMapping(ApiRoutes.EP_SEARCH_POLICY + "/{id}")
     public ResponseEntity<SearchPolicy> getSearchPolicyById(@PathVariable String id){
-        return ResponseEntity.ok(searchPolicyService.getPolicyById(id));
+        return ResponseEntity.ok(searchPolicyService.getPolicyByRequest(id));
     }
 
     @PostMapping(ApiRoutes.EP_SEARCH_POLICY)

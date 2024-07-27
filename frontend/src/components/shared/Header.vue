@@ -39,7 +39,8 @@ export default {
         severity: 'success',
         message: 'Session successfully closed'
       });
-      this.$router.push("/")
+      this.$router.push("/");
+      window.location.reload();
     },
     goTo(name) {
       this.$router.push({ name })

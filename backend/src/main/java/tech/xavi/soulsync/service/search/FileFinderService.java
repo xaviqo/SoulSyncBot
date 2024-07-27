@@ -5,30 +5,22 @@ import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdFile;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdSearchResponse;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
-import tech.xavi.soulsync.entity.db.Artist;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
-import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
-import java.util.stream.Stream;
 
 @Service
 public class FileFinderService {
 
     private final SearchPolicyService searchPolicyService;
-    private final ConfigurationFieldService configurationFieldService;
     @Getter private final List<BiConsumer<SlskdRequest, SlskdSearchResponse>> findingModes;
 
-    public FileFinderService(
-            SearchPolicyService searchPolicyService,
-            ConfigurationFieldService configurationFieldService
-    ) {
+    public FileFinderService(SearchPolicyService searchPolicyService) {
         this.searchPolicyService = searchPolicyService;
-        this.configurationFieldService = configurationFieldService;
         this.findingModes = List.of(this::strictFind,this::flexibleFind);
     }
 
@@ -38,6 +30,18 @@ public class FileFinderService {
 
     public void strictFind(SlskdRequest request, SlskdSearchResponse response) {
         genericFind(request, response, this::strictFileFind);
+    }
+
+    public boolean flexibleFileFind(SlskdRequest request, SlskdFile slskdFile) {
+        return isDistinctFromLastAttempt(request, slskdFile)
+                && isDesiredFormat(request, slskdFile)
+                && isMp3BitRateOk(request, slskdFile)
+                && notContainsAvoidedWords(request, slskdFile);
+    }
+
+    public boolean strictFileFind(SlskdRequest request, SlskdFile slskdFile) {
+        return containsAllOriginalSongKeywords(request, slskdFile)
+                && flexibleFileFind(request, slskdFile);
     }
 
     private void genericFind(
@@ -59,33 +63,44 @@ public class FileFinderService {
         }
     }
 
-    private boolean flexibleFileFind(SlskdRequest request, SlskdFile slskdFile) {
-        return isDistinctFromLastAttempt(request, slskdFile)
-                && isDesiredFormat(request, slskdFile)
-                && isMp3BitRateOk(request, slskdFile)
-                && isNotRemix(request, slskdFile)
-                && isNotLive(request, slskdFile);
+    public boolean containsAllOriginalSongKeywords(SlskdRequest request, SlskdFile file) {
+        String sharedPath = file.filename().toLowerCase();
+        String[] fileAndDirs = sharedPath.split("\\\\");
+        return checkContainsAlbum(request, fileAndDirs) &&
+                checkContainsArtists(request, fileAndDirs) &&
+                checkContainsSongName(request, fileAndDirs);
     }
 
-    private boolean strictFileFind(SlskdRequest request, SlskdFile slskdFile) {
-        return containsAllOriginalSongKeywords(request, slskdFile)
-                && flexibleFileFind(request, slskdFile);
+    private boolean checkContainsAlbum(SlskdRequest request, String[] fileAndDirs) {
+        String albumName = request.getSpotifySong().getAlbum().toLowerCase();
+        for (String fileDir : fileAndDirs)
+            if (fileDir.contains(albumName)) return true;
+        return false;
     }
 
-    private boolean containsAllOriginalSongKeywords(SlskdRequest request, SlskdFile file) {
-        String[] fileAndDirs = file.filename().split("\\\\");
+    private boolean checkContainsArtists(SlskdRequest request, String[] fileAndDirs) {
+        String[] artists = request.getSpotifySong()
+                .getArtists()
+                .stream()
+                .map(a -> a.getName().toLowerCase())
+                .toArray(String[]::new);
+
+        for (String artist : artists) {
+            boolean matchFound = false;
+            for (String fileDir : fileAndDirs)
+                if (fileDir.contains(artist)) {
+                    matchFound = true;
+                    break;
+                }
+            if (!matchFound) return false;
+        }
+        return true;
+    }
+
+    private boolean checkContainsSongName(SlskdRequest request, String[] fileAndDirs) {
+        String songName = request.getSpotifySong().getName().toLowerCase();
         String fileName = fileAndDirs[fileAndDirs.length -1];
-        Stream<String> keywords = Stream.concat(
-                request
-                        .getSpotifySong()
-                        .getArtists()
-                        .stream()
-                        .map(Artist::getName),
-                Stream.of(request.getSearchInput().split(" "))
-        );
-        return keywords.allMatch(kw ->
-                fileName.toLowerCase().contains(kw.toLowerCase())
-        );
+        return fileName.contains(songName);
     }
 
     private boolean isDistinctFromLastAttempt(SlskdRequest request, SlskdFile first) {
@@ -95,7 +110,7 @@ public class FileFinderService {
     private boolean isDesiredFormat(SlskdRequest request, SlskdFile slskdFile) {
         String fileFormat = getFileFormat(slskdFile);
         return searchPolicyService
-                .getPolicyById(request)
+                .getPolicyByRequest(request)
                 .acceptedFormats()
                 .stream()
                 .anyMatch( f -> f.equalsIgnoreCase(fileFormat) );
@@ -103,42 +118,29 @@ public class FileFinderService {
 
     private boolean isMp3BitRateOk(SlskdRequest request, SlskdFile file) {
         SearchPolicy policy = searchPolicyService
-                .getPolicyById(request);
+                .getPolicyByRequest(request);
         return policy.isMp3Accepted()
                 && getFileFormat(file).equalsIgnoreCase("mp3")
                 && policy.getMinimumMp3Bitrate() >= file.bitRate();
     }
 
-    private boolean isNotLive(SlskdRequest request, SlskdFile file) {
-        boolean shouldAvoidLive = searchPolicyService
-                .getPolicyById(request)
-                .isAvoidLive();
-        boolean isRequestLive = request
-                .getSearchInput()
-                .toLowerCase()
-                .contains("live");
-        if (shouldAvoidLive && isRequestLive) {
-            String filenameLower = file.filename().toLowerCase();
-            return !filenameLower.contains("live");
-        }
-        return true;
+    private boolean notContainsAvoidedWords(SlskdRequest request, SlskdFile file){
+        String searchInput = request.getSearchInput()
+                .toLowerCase();
+        boolean isTheFileAnyOfTheCases = searchPolicyService
+                .getPolicyByRequest(request)
+                .getAvoidValues()
+                .stream()
+                .anyMatch(searchInput::contains);
+        if (isTheFileAnyOfTheCases) return true;
+        String fileName = file.filename().toLowerCase();
+        return searchPolicyService
+                .getPolicyByRequest(request)
+                .getAvoidValues()
+                .stream()
+                .anyMatch(fileName::contains);
     }
 
-    private boolean isNotRemix(SlskdRequest request, SlskdFile file) {
-        boolean shouldAvoidRemix = searchPolicyService
-                .getPolicyById(request)
-                .isAvoidRemix();
-        boolean isRequestRemix = request
-                .getSearchInput()
-                .toLowerCase()
-                .contains("remix");
-        if (shouldAvoidRemix && isRequestRemix) {
-            String filenameLower = file.filename().toLowerCase();
-            return !filenameLower.contains("remix")
-                    && !filenameLower.contains("rmx");
-        }
-        return true;
-    }
 
     private String getFileFormat(SlskdFile file){
         String[] split = file.filename().split("\\.");

@@ -6,4 +6,5 @@ import tech.xavi.soulsync.entity.db.Artist;
 
 @Repository
 public interface ArtistRepository extends CrudRepository<Artist,String> {
+
 }

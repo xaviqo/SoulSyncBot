@@ -55,13 +55,14 @@ export default {
     policyFields: []
   }),
   created() {
-    this.emitter.on('download-list-data-dialog', downloadListData => {
-      this.visible = true;
-      this.fetchFields(downloadListData.policyId);
-      this.fetchSearchPolicies(downloadListData.policyId);
-    });
+    this.emitter.on('download-list-data-dialog', this.handleDownloadListDataDialog);
   },
   methods: {
+    handleDownloadListDataDialog(data) {
+      this.visible = true;
+      this.fetchFields(data.policyId);
+      this.fetchSearchPolicies(data.policyId);
+    },
     fetchFields(policyId) {
       this.$axios
           .get('/cfg/fields', {params: {sections: 'search_policy'}})
@@ -97,6 +98,9 @@ export default {
             this.vModelPolicy = this.selectedPolicy;
           });
     },
+  },
+  beforeUnmount() {
+    this.emitter.off('download-list-data-dialog', this.handleDownloadListDataDialog);
   }
 }
 </script>

@@ -30,6 +30,11 @@
           </template>
         </Column>
         <Column field="name" header="Name"></Column>
+        <Column header="Artists">
+          <template #body="slotProps">
+            {{ getArtists(slotProps.data.artists) }}
+          </template>
+        </Column>
         <Column field="album" header="Album"></Column>
         <Column field="attempts" header="Attempts"></Column>
         <Column field="bitRate" header="Bit Rate"></Column>
@@ -64,7 +69,7 @@ export default {
   }),
   created() {
     this.onPage(null);
-    this.emitter.on('refresh', () => this.onPage(null));
+    this.emitter.on('refresh', this.handleRefresh);
   },
   props: {
     downloadList: Object
@@ -76,6 +81,12 @@ export default {
     }
   },
   methods: {
+    handleRefresh() {
+      this.onPage(null);
+    },
+    getArtists(artists) {
+      return this.getArtistsByComa(artists);
+    },
     showSongDialog(data) {
       this.emitter.emit('song-data-dialog', data);
     },
@@ -118,6 +129,9 @@ export default {
     ...mapState(usePlaylistStore, {
       getDownloadListSongs: 'getDownloadListSongs',
     })
+  },
+  beforeUnmount() {
+    this.emitter.off('refresh', this.handleRefresh);
   }
 }
 </script>

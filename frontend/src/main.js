@@ -35,6 +35,8 @@ import ProgressBar from "primevue/progressbar";
 import Divider from "primevue/divider";
 import TabView from "primevue/tabview";
 import TabPanel from "primevue/tabpanel";
+import InlineMessage from "primevue/inlinemessage";
+import Chip from "primevue/chip";
 
 const emitter = mitt()
 const app = createApp(App)
@@ -73,6 +75,7 @@ axiosInstance.interceptors.response.use(
         if (alertData?.message !== lastAlert?.message) {
             lastAlert = alertData;
             emitAlert(alertData)
+            resetAlert();
         }
         return response;
     },
@@ -87,10 +90,15 @@ axiosInstance.interceptors.response.use(
                 localStorage.clear();
                 setTimeout(() => window.location.reload(), 1200);
             }
+            resetAlert();
         }
         return error;
     }
 );
+
+const resetAlert = () => {
+    setTimeout(() => lastAlert = null, 4000);
+}
 
 const emitAlert = (alertData) => {
     if (alertData) {
@@ -117,6 +125,7 @@ app
     .component('InputGroup',InputGroup)
     .component('FloatLabel',FloatLabel)
     .component('Chips',Chips)
+    .component('Chip',Chip)
     .component('Badge',Badge)
     .component('InputNumber',InputNumber)
     .component('ToggleButton',ToggleButton)
@@ -129,6 +138,7 @@ app
     .component('Divider',Divider)
     .component('TabView',TabView)
     .component('TabPanel',TabPanel)
+    .component('InlineMessage',InlineMessage)
 
 app.directive('tooltip',Tooltip)
 

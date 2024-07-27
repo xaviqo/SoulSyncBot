@@ -28,7 +28,7 @@ public class FileFinderProcess extends SlskdAbstractProcess {
                 .filter( response -> !response.files().isEmpty() )
                 .forEach( response -> fileFinderService
                                 .getFindingModes()
-                                .forEach( mode -> mode.accept(request, response))
+                                .forEach( mode -> mode.accept(request, response) )
                 );
         slskdGatewayService
                 .deleteSearch(request);

@@ -72,15 +72,16 @@ export default {
   created() {
     this.fetchSearchPolicies();
     this.fetchFields();
-    this.emitter.on('download-dialog', playlist => {
+    this.emitter.on('download-dialog', this.handleDownloadDialog);
+  },
+  methods: {
+    handleDownloadDialog(playlist) {
       this.visible = true;
       this.playlist = {
         name: playlist.name,
         id: playlist.id,
       };
-    });
-  },
-  methods: {
+    },
     createNewPolicy(){
       this.mode = 0;
       this.selectedPolicy = null;
@@ -136,6 +137,9 @@ export default {
         return acc;
       }, {});
     }
-  }
+  },
+  beforeUnmount() {
+    this.emitter.off('download-dialog', this.handleDownloadDialog);
+  },
 }
 </script>

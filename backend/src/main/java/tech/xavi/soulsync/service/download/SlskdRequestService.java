@@ -109,6 +109,10 @@ public class SlskdRequestService {
         return slskdRequestRepository.findByDownloadList(downloadList);
     }
 
+    public void deleteDownloadListsSlskdRequests(DownloadList downloadList) {
+        slskdRequestRepository.deleteSlskdRequestByDownloadList(downloadList);
+    }
+
     private Stream<SlskdFile> filterByStatus(List<SlskdFile> files, String... status) {
         return files
                 .stream()

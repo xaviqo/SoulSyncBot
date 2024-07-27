@@ -55,6 +55,23 @@ export default {
           this.forceUpdate();
           break;
         case 'delete':
+          this.$confirm.require({
+            message: `Notice that deleting this playlist will also delete all the associated download lists`,
+            header: `Delete playlist ${this.playlistName}`,
+            icon: 'pi pi-exclamation-triangle',
+            rejectLabel: 'Cancel',
+            acceptLabel: 'Delete',
+            accept: () => {
+              this.emitter.emit('loading',{show: true, text: 'Deleting playlist...'});
+              this.$axios
+                  .delete(`/playlist/${this.playlistId}`)
+                  .then( () => {
+                    this.emitter.emit('loading',{show: false});
+                    this.emitter.emit('refresh');
+                    this.$router.push("/");
+                  });
+            }
+          });
           break;
         case 'download':
           this.download();
@@ -84,6 +101,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-
-</style>

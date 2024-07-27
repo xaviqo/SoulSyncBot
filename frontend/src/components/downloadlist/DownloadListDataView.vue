@@ -13,9 +13,12 @@
             v-for="dl in slotProps.items"
             :key="dl.id"
             :download-list="dl"
-            :playlist-id="playlistId"
+            :playlist-id="dl.playlistId"
             class="w-12 p-2"
             :show-glass="showGlass"
+            :show-cog="showCog"
+            :show-pause="showPause"
+            :show-trash="showTrash"
         >
         </DownloadListCard>
       </div>
@@ -33,17 +36,22 @@ export default {
      type: Array,
       required: true
     },
-    playlistId: {
-      type: String,
+    showGlass: {
+      type: Boolean,
       required: true
     },
-    showGlass: {
+    showCog: {
+      type: Boolean,
+      required: true
+    },
+    showPause: {
+      type: Boolean,
+      required: true
+    },
+    showTrash: {
       type: Boolean,
       required: true
     }
   }
 }
 </script>
-<style scoped>
-
-</style>

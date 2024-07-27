@@ -30,4 +30,5 @@ public interface SlskdRequestRepository extends CrudRepository<SlskdRequest, Lon
     @Query("SELECT COUNT(1) FROM SlskdRequest s WHERE s.downloadList = :downloadList AND s.status IN :statuses")
     long countByDownloadListAndStatuses(DownloadList downloadList, ProcessStatus[] statuses);
 
+    void deleteSlskdRequestByDownloadList(DownloadList downloadList);
 }

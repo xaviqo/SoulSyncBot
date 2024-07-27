@@ -104,7 +104,7 @@ public class SlskdQueueManagerService {
     private boolean hasRequestPassedTimeThreshold(SlskdRequest slskdRequest) {
         if (slskdRequest.getLastCheck() == 0) return true;
         long waitingMs = searchPolicyService
-                .getPolicyById(slskdRequest.getDownloadList().getSearchPolicy())
+                .getPolicyByRequest(slskdRequest.getDownloadList().getSearchPolicy())
                 .getMinimumMinutesPerRetry() * 60L * 1000L;
         long msThreshold = slskdRequest.getLastCheck() + waitingMs;
         return msThreshold < System.currentTimeMillis();

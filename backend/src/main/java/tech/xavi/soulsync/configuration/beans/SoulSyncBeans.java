@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
-public class GatewayBeans {
+public class SoulSyncBeans {
 
     @Bean
     public RestTemplate restTemplate(){

@@ -12,6 +12,7 @@ import tech.xavi.soulsync.dto.playlist.PlaylistOverviewDto;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.service.playlist.AddPlaylistService;
 import tech.xavi.soulsync.service.playlist.GetPlaylistService;
+import tech.xavi.soulsync.service.playlist.RemovePlaylistService;
 import tech.xavi.soulsync.service.playlist.UpdatePlaylistService;
 import tech.xavi.soulsync.service.song.SongService;
 
@@ -24,6 +25,7 @@ public class PlaylistController {
     private final GetPlaylistService getPlaylistService;
     private final AddPlaylistService addPlaylistService;
     private final UpdatePlaylistService updatePlaylistService;
+    private final RemovePlaylistService removePlaylistService;
     private final SongService songService;
 
     @GetMapping(ApiRoutes.EP_PLAYLIST_SONGS)
@@ -55,6 +57,12 @@ public class PlaylistController {
     @PostMapping(ApiRoutes.EP_PLAYLIST)
     public ResponseEntity<AddResponseDto> addPlaylist(@RequestBody AddPlaylistDto addPlaylistRequest){
         return ResponseEntity.ok(addPlaylistService.handleAddPlaylistRequest(addPlaylistRequest));
+    }
+
+    @DeleteMapping(ApiRoutes.EP_PLAYLIST + "/{id}")
+    public ResponseEntity<Void> removePlaylist(@PathVariable String id) {
+        removePlaylistService.remove(id);
+        return ResponseEntity.ok(null);
     }
 
 }

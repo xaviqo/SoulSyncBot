@@ -33,7 +33,7 @@ public class ExceptionController {
         );
     }
 
-    public static void handleTokenException(HttpServletResponse response, String jsonError) throws IOException {
+    public static void handleFilterException(HttpServletResponse response, String jsonError) throws IOException {
         if (!response.isCommitted()) {
             response.addHeader("Content-Type", "application/json");
             response.getWriter().println(jsonError);

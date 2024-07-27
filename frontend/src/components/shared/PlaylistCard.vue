@@ -3,7 +3,10 @@
     <template #content>
       <div class="flex flex-wrap gap-3">
         <div class="relative w-12 flex justify-content-center wrap">
-          <div class="w-12 p-3 absolute white-space-nowrap overflow-hidden text-overflow-ellipsis text-xl bg-black-alpha-80 border-round-top-lg">
+          <div
+              class="w-12 p-3 absolute white-space-nowrap overflow-hidden text-overflow-ellipsis text-xl bg-black-alpha-80 border-round-top-lg cursor-pointer"
+              @click="goToPlaylist(playlist.id)"
+          >
             {{ playlist.name }}
           </div>
           <img
@@ -20,7 +23,7 @@
                 {{ playlist.playlistType }}
               </div>
               <div>
-                <Button icon="pi pi-times" class="mr-2" severity="danger" />
+                <Button icon="pi pi-times" @click="deletePlaylist(playlist)" class="mr-2" severity="danger" />
                 <Button icon="pi pi-search" @click="goToPlaylist(playlist.id)" class="mr-2" severity="success" />
               </div>
             </div>
@@ -44,12 +47,27 @@ export default {
     goToPlaylist(id) {
       this.$router.push({ name : 'playlist-view', params: { id }});
     },
+    deletePlaylist(pl) {
+      this.$confirm.require({
+        message: `Notice that deleting this playlist will also delete all the associated download lists`,
+        header: `Delete playlist ${pl.name}`,
+        icon: 'pi pi-exclamation-triangle',
+        rejectLabel: 'Cancel',
+        acceptLabel: 'Delete',
+        accept: () => {
+          this.emitter.emit('loading',{show: true, text: 'Deleting playlist...'});
+          this.$axios
+              .delete(`/playlist/${pl.id}`)
+              .then( () => {
+                this.emitter.emit('loading',{show: false});
+                this.emitter.emit('refresh');
+              });
+        }
+      });
+    }
   },
   props: {
     playlist: Object
   }
 }
 </script>
-<style scoped>
-
-</style>

@@ -9,6 +9,7 @@ import tech.xavi.soulsync.configuration.globals.ApiRoutes;
 import tech.xavi.soulsync.dto.downloadlist.DownloadListDto;
 import tech.xavi.soulsync.dto.downloadlist.DownloadListProcessDto;
 import tech.xavi.soulsync.dto.playlist.SlskdRequestDto;
+import tech.xavi.soulsync.service.download.SlskdRequestService;
 import tech.xavi.soulsync.service.download.downloadlist.DownloadListCreationService;
 import tech.xavi.soulsync.service.download.downloadlist.DownloadListDataService;
 
@@ -21,6 +22,7 @@ public class DownloadListController {
 
     private final DownloadListDataService downloadListDataService;
     private final DownloadListCreationService downloadListCreationService;
+    private final SlskdRequestService slskdRequestService;
 
     @GetMapping(ApiRoutes.EP_PLAYLIST_DOWNLOADS)
     public ResponseEntity<List<DownloadListProcessDto>> getPlaylistDownloads(@PathVariable String playlistId){
@@ -56,4 +58,20 @@ public class DownloadListController {
     public ResponseEntity<List<DownloadListProcessDto>> getDownloadListsBySearchPolicy(@PathVariable String searchPolicyId) {
         return ResponseEntity.ok(downloadListDataService.getDownloadListsBySearchPolicy(searchPolicyId));
     }
+
+    @PostMapping(ApiRoutes.EP_RESET_TRACK_DOWNLOAD)
+    public ResponseEntity<Void> resetTrackDownload(@PathVariable long slskdReqId){
+        slskdRequestService.resetRequest(slskdReqId);
+        return ResponseEntity.ok(null);
+    }
+
+    @PostMapping(ApiRoutes.EP_MODIFY_TRACK_SEARCH_INPUT)
+    public ResponseEntity<?> modifyTrackSearchInput(
+            @PathVariable long slskdReqId,
+            @RequestBody SlskdRequestDto requestDto
+    ){
+        slskdRequestService.modifySearchInput(slskdReqId, requestDto.searchInput());
+        return ResponseEntity.ok(null);
+    }
+
 }

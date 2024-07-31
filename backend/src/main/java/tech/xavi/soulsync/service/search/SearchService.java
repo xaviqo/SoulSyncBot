@@ -8,6 +8,7 @@ import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import tech.xavi.soulsync.service.integration.SlskdGatewayService;
+import tech.xavi.soulsync.service.throttle.SlskdRequestsThrottleService;
 
 import java.util.concurrent.*;
 
@@ -18,8 +19,11 @@ public class SearchService {
 
     private final SlskdGatewayService slskdGatewayService;
     private final ConfigurationFieldService configurationFieldService;
+    private final SlskdRequestsThrottleService throttleService;
 
     public SlskdSearchRequest initSearch(SlskdRequest slskdRequest) {
+        throttleService
+                .throttle(slskdRequest);
         SlskdSearchRequest searchRequest = SlskdSearchRequest.builder()
                 .id(slskdRequest.getSearchId().toString())
                 .searchText(slskdRequest.getSearchInput())

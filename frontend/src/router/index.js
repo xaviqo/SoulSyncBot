@@ -66,6 +66,15 @@ const routes = [
     }
   },
   {
+    path: '/stats',
+    name: 'stats-view',
+    component: () => import('../views/StatsView.vue'),
+    beforeEnter: goToLogin,
+    meta: {
+      title: "Stats View",
+    }
+  },
+  {
     path: '/setup',
     name: 'install-view',
     component: () => import('../views/InstallView.vue'),

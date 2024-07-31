@@ -40,8 +40,15 @@ public class ApiRoutes {
     public static final String EP_DOWNLOAD_LIST_TRACKS = EP_DOWNLOAD_LIST + "/{downloadListId}/tracks";
     public static final String EP_DOWNLOAD_LIST_PAUSE = EP_DOWNLOAD_LIST + "/{downloadListId}/pause";
     public static final String EP_DOWNLOAD_LIST_BY_POLICY = EP_DOWNLOAD_LIST + "/by-policy/{searchPolicyId}";
+    public static final String EP_RESET_TRACK_DOWNLOAD = EP_DOWNLOAD_LIST + "/{slskdReqId}/reset";
+    public static final String EP_MODIFY_TRACK_SEARCH_INPUT = EP_DOWNLOAD_LIST + "/{slskdReqId}/search-input";
+
+    // STATS
+    public static final String EP_STATS = API_ROOT + "/stats";
+    public static final String EP_STATS_ITERATIONS = EP_STATS + "/iterations";
 
     public static final RequestMatcher[] NO_JWT_FILTER_EPS = {
+            new AntPathRequestMatcher(EP_STATS_ITERATIONS,HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_HEALTH_CHECK, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_IS_INSTALLED, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_INITIAL_SETUP, HttpMethod.GET.name()),

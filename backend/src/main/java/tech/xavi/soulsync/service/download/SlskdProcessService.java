@@ -60,7 +60,7 @@ public class SlskdProcessService {
             boolean isSuccess = slskdProcess.execute(slskdRequest).join();
             stopWatch.stop();
 
-            log.info("Finished Process [{}] " +
+            log.trace("Finished Process [{}] " +
                             ":: Result --> {} " +
                             ":: Task --> {} " +
                             ":: Name --> {} " +

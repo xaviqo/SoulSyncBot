@@ -40,4 +40,11 @@ public class SpotifySong {
                 : getAlbum();
     }
 
+    @Override
+    public String toString() {
+        return "SpotifySong{" +
+                "name='" + name + '\'' +
+                ", artists=" + artists +
+                '}';
+    }
 }

@@ -47,7 +47,7 @@ public class GatewayTokenService {
                     .isBlank());
     }
 
-    private GatewayToken requestNewToken(GatewayName gatewayName){
+    public GatewayToken requestNewToken(GatewayName gatewayName){
         return switch (gatewayName) {
             case SLSKD -> getNewSlskdToken();
             case SPOTIFY -> getNewSpotifyToken();

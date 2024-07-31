@@ -40,7 +40,7 @@ public class MaintenanceProcessManagerService {
                 maintenanceProcess.execute().join();
                 stopWatch.stop();
 
-                log.info("Finished Process [{}] " +
+                log.trace("Finished Process [{}] " +
                                 ":: Task --> {} " +
                                 ":: Elapsed --> {}",
                         maintenanceProcess.getTaskType(),

@@ -12,7 +12,7 @@
           {{ msg.message }}
         </Message>
       </transition-group>
-      <router-view class="w-12" :key="$route.fullPath"/>
+      <router-view :key="$route.fullPath"/>
       <Dialog
           v-model:visible="showLoadingDialog"
           :pt="{
@@ -91,7 +91,6 @@ export default {
       this.loadingText = text;
     },
     showAlert({severity,message}){
-      console.log("llega mensaje a showAlert")
       this.messages.push({
         severity: severity,
         message: message,

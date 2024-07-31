@@ -113,6 +113,21 @@ public class SlskdRequestService {
         slskdRequestRepository.deleteSlskdRequestByDownloadList(downloadList);
     }
 
+    public void resetRequest(long id) {
+        slskdRequestRepository
+                .findById(id)
+                .ifPresent(this::setRequestToWaiting);
+    }
+
+    public void modifySearchInput(long id, String searchInput) {
+        slskdRequestRepository
+                .findById(id)
+                .ifPresent( request -> {
+                    request.setSearchInput(searchInput);
+                    save(request);
+                });
+    }
+
     private Stream<SlskdFile> filterByStatus(List<SlskdFile> files, String... status) {
         return files
                 .stream()

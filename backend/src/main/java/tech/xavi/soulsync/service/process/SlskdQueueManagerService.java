@@ -1,10 +1,13 @@
 package tech.xavi.soulsync.service.process;
 
 import lombok.extern.log4j.Log4j2;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
+import tech.xavi.soulsync.configuration.globals.GatewayName;
 import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.DownloadList;
@@ -13,7 +16,9 @@ import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import tech.xavi.soulsync.service.download.SlskdProcessService;
 import tech.xavi.soulsync.service.download.SlskdRequestService;
 import tech.xavi.soulsync.service.download.downloadlist.DownloadListService;
+import tech.xavi.soulsync.service.integration.GatewayTokenService;
 import tech.xavi.soulsync.service.search.SearchPolicyService;
+import tech.xavi.soulsync.service.throttle.SlskdRequestsThrottleService;
 
 import java.util.Optional;
 import java.util.Set;
@@ -29,34 +34,70 @@ public class SlskdQueueManagerService {
 
     private final ConfigurationFieldService cfgFieldService;
     private final DownloadListService downloadListService;
+    private final GatewayTokenService gatewayTokenService;
     private final SlskdProcessService slskdProcessService;
     private final SlskdRequestService slskdRequestService;
     private final SearchPolicyService searchPolicyService;
+    private final SlskdRequestsThrottleService throttleService;
 
     public SlskdQueueManagerService(
             ConfigurationFieldService cfgFieldService,
             DownloadListService downloadListService,
+            GatewayTokenService gatewayTokenService,
             SlskdProcessService slskdProcessService,
             SlskdRequestService slskdRequestService,
-            SearchPolicyService searchPolicyService
+            SearchPolicyService searchPolicyService,
+            SlskdRequestsThrottleService throttleService
     ) {
         this.cfgFieldService = cfgFieldService;
         this.downloadListService = downloadListService;
         this.slskdProcessService = slskdProcessService;
         this.slskdRequestService = slskdRequestService;
         this.searchPolicyService = searchPolicyService;
+        this.gatewayTokenService = gatewayTokenService;
+        this.throttleService = throttleService;
         this.queue = new ConcurrentLinkedQueue<>();
     }
 
     @Async
     @Scheduled(fixedRate = RUN_RATE_MS, initialDelay = RUN_RATE_MS)
     protected void runQueue() {
-        if (shouldRunTask() && isRequestSlotAvailable())
-            getNextDownloadList().ifPresent(downloadList ->
-                    getNextRequestFromQueue(downloadList).ifPresent(request ->
-                            handleRequestAndUpdate(downloadList, request)
-                    )
-            );
+        try {
+            if (shouldRunTask() && throttleService.isNotBanned() && isRequestSlotAvailable())
+                getNextDownloadList().ifPresent(downloadList ->
+                        getNextRequestFromQueue(downloadList).ifPresent(request ->
+                                handleRequestAndUpdate(downloadList, request)
+                        )
+                );
+        } catch (HttpStatusCodeException hsce) {
+            hsce.printStackTrace();
+            String responseError = hsce.getResponseBodyAsString();
+            log.warn("HTTP Error: {}", responseError);
+            switch (hsce.getStatusCode()) {
+                case HttpStatus.CONFLICT:
+                case HttpStatus.INTERNAL_SERVER_ERROR:
+                    if (isBanError(responseError)) {
+                        log.warn("Too many requests per minute. " +
+                                        "Expect 30 minutes of ban on the SoulSeek network " +
+                                        "| Current Throttle: {} " +
+                                        "| Current Ms Between Req: {}*{}",
+                                throttleService.getMillisBetweenRequests(),
+                                cfgFieldService
+                                        .getValue(ConfigurationField.SRCH_MILLIS_BETWEEN_REQUESTS)
+                                        .asLong(),
+                                throttleService.getThrottleMultiplier()
+                        );
+                        throttleService.setBanned();
+                    }
+                    break;
+                case HttpStatus.UNAUTHORIZED:
+                    log.warn("It seems that SLSKD token has expired earlier than expected.... New token requested");
+                    gatewayTokenService.requestNewToken(GatewayName.SLSKD);
+                    break;
+                default:
+                    throw new IllegalStateException("Unexpected status code from SLSKD API: " + hsce.getStatusCode());
+            }
+        }
     }
 
     private Optional<DownloadList> getNextDownloadList() {
@@ -137,6 +178,14 @@ public class SlskdQueueManagerService {
                 .getValue(ConfigurationField.APP_RUN_DOWNLOAD_TASK)
                 .asBoolean();
         return isInstalled && shouldRun;
+    }
+
+    private static boolean isBanError(String responseBody) {
+        final String SLSKD_BAN_MESSAGE = "the server connection must be connected";
+        return Optional.ofNullable(responseBody)
+                .map(String::toLowerCase)
+                .orElse("")
+                .contains(SLSKD_BAN_MESSAGE);
     }
 
 }

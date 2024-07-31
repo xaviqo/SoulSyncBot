@@ -24,6 +24,7 @@ public class SlskdGateway extends Gateway {
     private final String GET_TOKEN_PATH;
     private final String SEARCH_REQUEST_PATH;
     private final String DOWNLOAD_REQUEST_PATH;
+    private final String REBOOT_APP_PATH;
 
     public SlskdGateway(
             RestTemplate restTemplate,
@@ -31,13 +32,15 @@ public class SlskdGateway extends Gateway {
             @Value("${tech.xavi.soulsync.gateway.path.slskd.health}") String healthPath,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.login}") String getTokenPath,
             @Value("${tech.xavi.soulsync.gateway.path.slskd.search}") String searchPath,
-            @Value("${tech.xavi.soulsync.gateway.path.slskd.downloads}") String downloadPath
+            @Value("${tech.xavi.soulsync.gateway.path.slskd.downloads}") String downloadPath,
+            @Value("${tech.xavi.soulsync.gateway.path.slskd.reboot}") String rebootPath
     ) {
         super(restTemplate, objectMapper, true);
         this.GET_HEALTH_PATH = healthPath;
         this.GET_TOKEN_PATH = getTokenPath;
         this.SEARCH_REQUEST_PATH = searchPath;
         this.DOWNLOAD_REQUEST_PATH = downloadPath;
+        this.REBOOT_APP_PATH = rebootPath;
     }
 
     public void search(
@@ -157,6 +160,16 @@ public class SlskdGateway extends Gateway {
                         .path(GET_TOKEN_PATH)
                         .build(),
                 SlskdTokenDto.class
+        );
+    }
+
+    public void rebootSlskd(GatewayToken token) {
+        call(
+                GatewayRequest.builder()
+                        .method(HttpMethod.POST)
+                        .token(token.token())
+                        .path(REBOOT_APP_PATH)
+                        .build()
         );
     }
 

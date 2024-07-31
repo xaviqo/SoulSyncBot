@@ -2,6 +2,8 @@ package tech.xavi.soulsync.configuration.beans;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -29,5 +31,10 @@ public class SoulSyncBeans {
     @Bean
     public Map<GatewayName, GatewayToken> gatewayTokenMap(){
         return HashMap.newHashMap(2);
+    }
+
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+        return builder -> builder.modules(new JavaTimeModule());
     }
 }

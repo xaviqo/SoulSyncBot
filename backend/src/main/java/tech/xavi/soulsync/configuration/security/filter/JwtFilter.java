@@ -57,9 +57,10 @@ public class JwtFilter extends OncePerRequestFilter {
                     filterChain.doFilter(request,response);
                 }
             }
+        } catch (io.jsonwebtoken.SignatureException se) {
+            handleTokenFilterException(response);
         } catch (Exception e) {
             e.printStackTrace();
-            handleTokenFilterException(response);
         }
     }
 

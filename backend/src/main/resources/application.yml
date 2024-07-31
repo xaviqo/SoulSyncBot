@@ -39,7 +39,8 @@ tech:
             sp-is-avoid-radio-edit: true
             sp-is-avoid-mixed-track: true
           search:
-            srch-max-simultaneous-threads: 5
+            srch-millis-between-requests: 1200
+            srch-max-simultaneous-threads: 8
             srch-tracks-per-queue: 100
             srch-search-waiting-seconds: 60
             srch-minutes-to-evaluate-as-stuck: 60
@@ -78,6 +79,7 @@ tech:
             login: /api/v0/session
             search: /api/v0/searches
             downloads: /api/v0/transfers/downloads
+            reboot: /api/v1/application
 
 logging:
   level:

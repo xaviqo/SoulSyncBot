@@ -53,4 +53,14 @@ public class SlskdRequest {
     public void increaseAttempts() {
         this.attempts++;
     }
+
+
+    @Override
+    public String toString() {
+        return "SlskdRequest{" +
+                "id=" + id +
+                ", searchInput='" + searchInput + '\'' +
+                ", spotifySong=" + spotifySong +
+                '}';
+    }
 }

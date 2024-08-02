@@ -126,7 +126,7 @@ export default {
       if (isReset) this.resetDownload(true);
     },
     resetDownload(isReset) {
-      const songName = `${this.songData?.name} - ${this.getArtistsByComa(this.songData?.artists)}`;
+      const songName = `${this.songData?.name} - ${this.getByComa(this.songData?.artists)}`;
       if (isReset) {
         this.$axios
             .post(`/download-list/${this.songData?.id}/reset`)
@@ -148,7 +148,7 @@ export default {
       }
     },
     saveNewSearchInput() {
-      const songName = `${this.songData?.name} - ${this.getArtistsByComa(this.songData?.artists)}`;
+      const songName = `${this.songData?.name} - ${this.getByComa(this.songData?.artists)}`;
       this.$axios
           .post(`/download-list/${this.songData?.id}/search-input`, { searchInput: this.songData?.searchInput })
           .then( () => {
@@ -176,7 +176,7 @@ export default {
       `
     },
     getArtists(){
-      return this.getArtistsByComa(this.songData?.artists);
+      return this.getByComa(this.songData?.artists);
     }
   },
   beforeUnmount() {

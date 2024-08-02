@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
-import tech.xavi.soulsync.dto.stats.IterationStats;
 import tech.xavi.soulsync.entity.FixedSizeMap;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
@@ -87,30 +86,6 @@ public class SlskdRequestsThrottleService {
                     .plus(Duration.ofMinutes(30));
             currentRequests = 0;
         }
-    }
-
-    public IterationStats getIterationsStats() {
-        boolean isBanned = Objects.nonNull(getBanExpirationTime());
-        LocalDateTime banExpTime = Objects.nonNull(getBanExpirationTime())
-                ? getBanExpirationTime()
-                : LocalDateTime.now();
-        return IterationStats.builder()
-                .banExpirationTime(banExpTime.atZone(ZoneId.systemDefault()).toEpochSecond())
-                .nextIteration(getNextIteration().atZone(ZoneId.systemDefault()).toEpochSecond())
-                .lastBans(getLastBans())
-                .lastIterations(getLastIterations())
-                .currentRequests(getCurrentRequests())
-                .isBanned(isBanned)
-                .throttleMultiplier(getThrottleMultiplier())
-                .adjustedMillisBetweenRequests(getMillisBetweenRequests())
-                .millisBetweenRequests(configurationFieldService
-                        .getValue(ConfigurationField.SRCH_MILLIS_BETWEEN_REQUESTS)
-                        .asLong())
-                .minsUntilBanExpiry(Duration.between(
-                        LocalDateTime.now(),
-                        banExpTime
-                ).toMinutes())
-                .build();
     }
 
     private synchronized boolean isIterationExpired() {

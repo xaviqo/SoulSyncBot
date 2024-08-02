@@ -110,7 +110,7 @@ public class SlskdQueueManagerService {
 
     private boolean hasDownloadListRequestsWaiting(DownloadList downloadList) {
         return slskdRequestService
-                .countByDownloadListAndStatus(downloadList, ProcessStatus.WAITING) > 0;
+                .countByDownloadListAndStatus(downloadList, 0, ProcessStatus.WAITING) > 0;
     }
 
     private void handleRequestAndUpdate(DownloadList downloadList, SlskdRequest request) {

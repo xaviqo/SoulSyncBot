@@ -57,9 +57,9 @@ export const usePlaylistStore = defineStore('playlist', {
             }
 
         },
-        async fetchDownloadListSongs(downloadListId,page,size) {
+        async fetchDownloadListSongs(downloadListId,params) {
             if (downloadListId) {
-                const res = await this.$axios.get(`/download-list/${downloadListId}/tracks`, { params: { page: page , size }});
+                const res = await this.$axios.get(`/download-list/${downloadListId}/tracks`, { params: params });
                 this.downloadListSongs = res.data;
             }
         },

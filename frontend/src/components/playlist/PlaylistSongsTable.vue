@@ -54,7 +54,7 @@ export default {
       this.onPage(null);
     },
     getArtists(artists){
-      return this.getArtistsByComa(artists);
+      return this.getByComa(artists);
     },
     async onPage(event) {
       if (event) {

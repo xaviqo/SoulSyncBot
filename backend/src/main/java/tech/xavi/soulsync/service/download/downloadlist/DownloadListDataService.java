@@ -35,9 +35,14 @@ public class DownloadListDataService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SlskdRequestDto> getDownloadListTracks(long downloadListId, Pageable pageable){
+    public Page<SlskdRequestDto> getDownloadListTracks(
+            long downloadListId,
+            Pageable pageable,
+            String processesByComa,
+            String nameContains
+    ){
         return slskdRequestService
-                .getDownloadListSongs(downloadListId, pageable)
+                .getDownloadListTracks(downloadListId, processesByComa, nameContains, pageable)
                 .map( req -> SlskdRequestDto.builder()
                         .id(req.getId())
                         .name(req.getSpotifySong().getName())
@@ -68,7 +73,7 @@ public class DownloadListDataService {
         long totalTracks = slskdRequestService
                 .countByDownloadList(list);
         long totalCompleted = slskdRequestService
-                .countByDownloadListAndStatus(list, ProcessStatus.COMPLETED, ProcessStatus.COPIED);
+                .countByDownloadListAndStatus(list, 0, ProcessStatus.COMPLETED, ProcessStatus.COPIED);
         return DownloadListProcessDto.builder()
                 .id(list.getDownloadListId())
                 .playlistId(list.getPlaylistId())

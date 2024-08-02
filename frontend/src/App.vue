@@ -12,7 +12,7 @@
           {{ msg.message }}
         </Message>
       </transition-group>
-      <router-view :key="$route.fullPath"/>
+      <router-view class="w-12" :key="$route.fullPath"/>
       <Dialog
           v-model:visible="showLoadingDialog"
           :pt="{

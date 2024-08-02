@@ -57,7 +57,7 @@ public class MaintenanceProcessManagerService {
         long coolDownMs = configurationFieldService
                 .getValue(ConfigurationField.APP_MAINTENANCE_TASK_INTERVAL_MINS)
                 .asLong() * 60 * 1000;
-        boolean isExpired = lastExecutionMs + coolDownMs < currentMs;
+        boolean isExpired = lastExecutionMs + coolDownMs <= currentMs;
         if (isExpired) {
             lastExecutionMs = currentMs;
             return true;
@@ -71,7 +71,7 @@ public class MaintenanceProcessManagerService {
                 .getValue(ConfigurationField.IS_APP_INSTALLED)
                 .asBoolean();
         boolean shouldRun = configurationFieldService
-                .getValue(ConfigurationField.APP_RUN_DOWNLOAD_TASK)
+                .getValue(ConfigurationField.APP_RUN_MAINTENANCE_TASK)
                 .asBoolean();
         return isInstalled && shouldRun;
     }

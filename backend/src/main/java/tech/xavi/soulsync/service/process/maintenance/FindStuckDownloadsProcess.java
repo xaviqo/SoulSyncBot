@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
 
-    @Getter private final int order = 30;
+    @Getter private final int order = 20;
     private final SlskdRequestService slskdRequestService;
     private final ConfigurationFieldService configurationFieldService;
 

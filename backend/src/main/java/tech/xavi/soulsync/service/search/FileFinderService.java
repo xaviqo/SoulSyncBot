@@ -10,6 +10,7 @@ import tech.xavi.soulsync.entity.db.SlskdRequest;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
@@ -18,10 +19,14 @@ public class FileFinderService {
 
     private final SearchPolicyService searchPolicyService;
     @Getter private final List<BiConsumer<SlskdRequest, SlskdSearchResponse>> findingModes;
+    @Getter private final AtomicLong totalFoundStrict;
+    @Getter private final AtomicLong totalFoundFlexible;
 
     public FileFinderService(SearchPolicyService searchPolicyService) {
         this.searchPolicyService = searchPolicyService;
         this.findingModes = List.of(this::strictFind,this::flexibleFind);
+        this.totalFoundStrict = new AtomicLong(0);
+        this.totalFoundFlexible = new AtomicLong(0);
     }
 
     public void flexibleFind(SlskdRequest request, SlskdSearchResponse response) {
@@ -33,15 +38,19 @@ public class FileFinderService {
     }
 
     public boolean flexibleFileFind(SlskdRequest request, SlskdFile slskdFile) {
-        return isDistinctFromLastAttempt(request, slskdFile)
+        boolean isFound = isDistinctFromLastAttempt(request, slskdFile)
                 && isDesiredFormat(request, slskdFile)
                 && isMp3BitRateOk(request, slskdFile)
                 && notContainsAvoidedWords(request, slskdFile);
+        if (isFound) totalFoundFlexible.incrementAndGet();
+        return isFound;
     }
 
     public boolean strictFileFind(SlskdRequest request, SlskdFile slskdFile) {
-        return containsAllOriginalSongKeywords(request, slskdFile)
+        boolean isFound = containsAllOriginalSongKeywords(request, slskdFile)
                 && flexibleFileFind(request, slskdFile);
+        if (isFound) totalFoundStrict.incrementAndGet();
+        return isFound;
     }
 
     private void genericFind(
@@ -127,18 +136,18 @@ public class FileFinderService {
     private boolean notContainsAvoidedWords(SlskdRequest request, SlskdFile file){
         String searchInput = request.getSearchInput()
                 .toLowerCase();
-        boolean isTheFileAnyOfTheCases = searchPolicyService
+        boolean isRequestAnyOfTheCases = searchPolicyService
                 .getPolicyByRequest(request)
                 .getAvoidValues()
                 .stream()
                 .anyMatch(searchInput::contains);
-        if (isTheFileAnyOfTheCases) return true;
+        if (isRequestAnyOfTheCases) return true;
         String fileName = file.filename().toLowerCase();
         return searchPolicyService
                 .getPolicyByRequest(request)
                 .getAvoidValues()
                 .stream()
-                .anyMatch(fileName::contains);
+                .noneMatch(fileName::contains);
     }
 
 

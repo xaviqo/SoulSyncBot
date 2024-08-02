@@ -40,7 +40,7 @@ class FileFinderServiceTest {
     }
 
     @Test
-    void whenAlbumNotPresent_strictFindFails() throws JsonProcessingException {
+    void whenAlbumNotPresent_strictFindFails()  {
         //given
         SearchPolicy searchPolicy = getTestingSearchPolicy();
         SlskdRequest slskdRequest = getTestingSlskdRequest();
@@ -88,7 +88,7 @@ class FileFinderServiceTest {
         return SlskdFile.builder()
                 .bitRate(320)
                 .size(15074235)
-                .filename("@@user\\\\Música\\\\B\\\\Blur\\\\2012 - 21 The Box\\\\DVD2 The Singles Night at Wembley Arena, 11 Dec 1999\\\\20 - Coffee & TV.mp3")
+                .filename("@@user\\\\Música\\\\B\\\\Blur\\\\2012 - 21 The Box\\\\DVD2 The Singles Night at Wembley Arena, 11 Dec 1999\\\\20 - Coffee & TV (Live).mp3")
                 .id(UUID.randomUUID().toString())
                 .state("state")
                 .username("username")

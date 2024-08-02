@@ -4,6 +4,6 @@ const PlaylistColor = {
     SINGLE: '#fcf6bd' ,
     COMPILATION: '#ffadad' ,
     DISCOGRAPHY: '#ff99c8'
-}
+};
 
 export default PlaylistColor;

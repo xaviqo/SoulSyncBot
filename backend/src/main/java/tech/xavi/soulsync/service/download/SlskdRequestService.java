@@ -2,16 +2,20 @@ package tech.xavi.soulsync.service.download;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.dto.gateway.slskd.SlskdFile;
+import tech.xavi.soulsync.dto.stats.StatusCountDto;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.repository.db.SlskdRequestRepository;
 import tech.xavi.soulsync.service.integration.SlskdGatewayService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @RequiredArgsConstructor
@@ -44,7 +48,7 @@ public class SlskdRequestService {
 
     public Stream<SlskdRequest> getSongsQueue(DownloadList downloadList) {
         long retiesThreshold = downloadList.getAttempts();
-        return getDownloadListSongs(downloadList)
+        return getDownloadListTracks(downloadList)
                 .stream()
                 .filter( song -> song.getAttempts() <= retiesThreshold);
     }
@@ -96,16 +100,57 @@ public class SlskdRequestService {
         return slskdRequestRepository.countByDownloadList(downloadList);
     }
 
-    public long countByDownloadListAndStatus(DownloadList downloadList, ProcessStatus... status) {
-        return slskdRequestRepository.countByDownloadListAndStatuses(downloadList, status);
+    public List<StatusCountDto> countByStatus() {
+        return slskdRequestRepository.countByStatus();
     }
 
-    public Page<SlskdRequest> getDownloadListSongs(long downloadListId, Pageable pageable){
-        DownloadList dl = DownloadList.builder().downloadListId(downloadListId).build();
-        return slskdRequestRepository.findByDownloadList(dl,pageable);
+    public long countByDownloadListAndStatus(DownloadList downloadList, long minAttempts, ProcessStatus... status) {
+        return slskdRequestRepository.countByDownloadListAndStatuses(downloadList, status, minAttempts);
     }
 
-    public Set<SlskdRequest> getDownloadListSongs(DownloadList downloadList) {
+    public long countByStatuses(long minAttempts, ProcessStatus... processStatus) {
+        return slskdRequestRepository.countByStatuses(processStatus, minAttempts);
+    }
+
+    public Page<SlskdRequest> getDownloadListTracks(
+            long downloadListId,
+            String processesByComa,
+            String nameContains,
+            Pageable pageable
+    ){
+        DownloadList dl = DownloadList.builder()
+                .downloadListId(downloadListId)
+                .build();
+        List<ProcessStatus> processArr = Arrays.stream(processesByComa.split(","))
+                .map(ProcessStatus::valueOf)
+                .collect(Collectors.toList());
+
+        if (nameContains == null || nameContains.isEmpty())
+            return slskdRequestRepository
+                    .findByDownloadListAndStatusIn(
+                            dl,
+                            processArr,
+                            PageRequest.of(
+                                    pageable.getPageNumber(),
+                                    pageable.getPageSize(),
+                                    Sort.by("spotifySong.name").ascending()
+                            )
+                    );
+        else
+            return slskdRequestRepository
+                    .findByDownloadListAndStatusInAndSearchInputContaining(
+                            dl,
+                            processArr,
+                            nameContains,
+                            PageRequest.of(
+                                    pageable.getPageNumber(),
+                                    pageable.getPageSize(),
+                                    Sort.by("spotifySong.name").ascending()
+                            )
+                    );
+    }
+
+    public Set<SlskdRequest> getDownloadListTracks(DownloadList downloadList) {
         return slskdRequestRepository.findByDownloadList(downloadList);
     }
 

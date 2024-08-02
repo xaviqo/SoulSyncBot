@@ -46,9 +46,12 @@ public class ApiRoutes {
     // STATS
     public static final String EP_STATS = API_ROOT + "/stats";
     public static final String EP_STATS_ITERATIONS = EP_STATS + "/iterations";
+    public static final String EP_STATS_QUEUE = EP_STATS + "/queue";
+    public static final String EP_STATS_SUMMARY = EP_STATS + "/summary";
+    public static final String EP_STATS_FINDING_LOGIC = EP_STATS + "/finding-logic";
+    public static final String EP_STATS_DOWNLOADS_STATUS = EP_STATS + "/downloads-status";
 
     public static final RequestMatcher[] NO_JWT_FILTER_EPS = {
-            new AntPathRequestMatcher(EP_STATS_ITERATIONS,HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_HEALTH_CHECK, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_IS_INSTALLED, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_INITIAL_SETUP, HttpMethod.GET.name()),

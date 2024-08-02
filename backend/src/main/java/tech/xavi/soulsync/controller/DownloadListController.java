@@ -3,6 +3,7 @@ package tech.xavi.soulsync.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.globals.ApiRoutes;
@@ -30,8 +31,20 @@ public class DownloadListController {
     }
 
     @GetMapping(ApiRoutes.EP_DOWNLOAD_LIST_TRACKS)
-    public ResponseEntity<Page<SlskdRequestDto>> getDownloadListTracks(@PathVariable long downloadListId, Pageable pageable){
-        return ResponseEntity.ok(downloadListDataService.getDownloadListTracks(downloadListId,pageable));
+    public ResponseEntity<Page<SlskdRequestDto>> getDownloadListTracks(
+            @PathVariable long downloadListId,
+            @RequestParam(required = false) String processesByComa,
+            @RequestParam(required = false) String nameContains,
+            @PageableDefault(size = 10) Pageable pageable
+    ){
+        return ResponseEntity.ok(downloadListDataService
+                .getDownloadListTracks(
+                        downloadListId,
+                        pageable,
+                        processesByComa,
+                        nameContains
+                )
+        );
     }
 
     @PostMapping(ApiRoutes.EP_DOWNLOAD_LIST)

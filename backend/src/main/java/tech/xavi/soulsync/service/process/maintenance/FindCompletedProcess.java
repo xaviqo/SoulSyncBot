@@ -12,7 +12,7 @@ import java.util.concurrent.CompletableFuture;
 @Component
 public class FindCompletedProcess extends MaintenanceAbstractProcess {
 
-    @Getter private final int order = 20;
+    @Getter private final int order = 30;
     private final SlskdRequestService slskdRequestService;
     private final SlskdGatewayService slskdGatewayService;
 

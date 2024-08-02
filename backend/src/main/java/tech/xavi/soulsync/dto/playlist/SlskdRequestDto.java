@@ -23,4 +23,5 @@ public record SlskdRequestDto(
         int bitRate,
         String sharedBy
 ) {
+
 }

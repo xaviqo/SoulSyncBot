@@ -3,7 +3,9 @@ package tech.xavi.soulsync.service.song;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyAlbumDto;
 import tech.xavi.soulsync.dto.gateway.spotify.SpotifyPlaylistDto;
@@ -32,7 +34,14 @@ public class SongService {
     private final ArtistMainService artistMainService;
 
     public Page<SpotifySong> findByPlaylistsId(String playlistId, Pageable pageable) {
-        return songRepository.findByPlaylistsId(playlistId, pageable);
+        return songRepository.findByPlaylistsId(
+                playlistId,
+                PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        Sort.by("name").ascending()
+                )
+        );
     }
 
     public Set<SpotifySong> fetchSongsFromSpotify(SpotifyPlaylistDto playlistDto){

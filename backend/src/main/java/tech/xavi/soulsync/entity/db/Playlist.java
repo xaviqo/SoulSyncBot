@@ -31,8 +31,6 @@ public class Playlist {
     @Column
     private Integer totalTracks;
     @Column
-    private Boolean shouldRenameRelocated;
-    @Column
     private Boolean isUpdatable;
     @Column
     private Long lastUpdate;

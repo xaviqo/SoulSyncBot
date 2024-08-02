@@ -11,7 +11,6 @@ import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.Arrays;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -46,13 +45,8 @@ public class RelocationService {
     }
 
     public void createRelocationFolders() {
-        Arrays.stream(getRelocatedFilesPath()
-                .split(SPLIT_BY_FOLDERS_REGEX))
-                .toList()
-                .forEach( path -> {
-                    File directory = new File(path);
-                    if (!directory.exists()) directory.mkdirs();
-                });
+        File directory = new File(getRelocatedFilesPath());
+        if (!directory.exists()) directory.mkdirs();
     }
 
     private String getRelocationFilePath(SlskdRequest slskdRequest) {
@@ -127,15 +121,17 @@ public class RelocationService {
     }
 
     private String getSlskdDownloadsPath() {
-        return configurationFieldService
+        String slskdDownloadsPath = configurationFieldService
                 .getValue(ConfigurationField.APP_SLSKD_DOWNLOADS_PATH)
                 .asText();
+        return ensureTrailingSeparator(slskdDownloadsPath);
     }
 
     private String getRelocatedFilesPath(){
-        return configurationFieldService
+        String relocatedFilesPath = configurationFieldService
                 .getValue(ConfigurationField.APP_RELOCATED_FILES_PATH)
                 .asText();
+        return ensureTrailingSeparator(relocatedFilesPath);
     }
 
     private boolean isMoveFile() {
@@ -150,6 +146,14 @@ public class RelocationService {
                 .getValue(ConfigurationField.APP_RELOCATE_BY)
                 .asText()
                 .equals("PLAYLIST");
+    }
+
+    private String ensureTrailingSeparator(String path) {
+        if (path == null || path.isEmpty()) return path;
+        if (!path.endsWith(File.separator)) {
+            path += File.separator;
+        }
+        return path;
     }
 
 }

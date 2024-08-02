@@ -9,6 +9,8 @@ public class ApiRoutes {
 
     public static final String API_VERSION = "/v2";
     public static final String API_ROOT = API_VERSION + "/api";
+
+    // HEALTH CHECK
     public static final String EP_HEALTH_CHECK = API_ROOT + "/health";
 
     // CFG
@@ -50,6 +52,7 @@ public class ApiRoutes {
     public static final String EP_STATS_SUMMARY = EP_STATS + "/summary";
     public static final String EP_STATS_FINDING_LOGIC = EP_STATS + "/finding-logic";
     public static final String EP_STATS_DOWNLOADS_STATUS = EP_STATS + "/downloads-status";
+    public static final String EP_STATS_API_STATUS = EP_STATS + "/apis-status";
 
     public static final RequestMatcher[] NO_JWT_FILTER_EPS = {
             new AntPathRequestMatcher(EP_HEALTH_CHECK, HttpMethod.GET.name()),

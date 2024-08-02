@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -52,6 +54,20 @@ public class SlskdRequest {
 
     public void increaseAttempts() {
         this.attempts++;
+    }
+
+    public String getArtistsNames() {
+        SpotifySong song = getSpotifySong();
+        if (song != null) {
+            List<Artist> artists = song.getArtists();
+            if (artists != null && !artists.isEmpty()) {
+                return artists.stream()
+                        .map(Artist::getName)
+                        .filter(name -> !name.isEmpty())
+                        .collect(Collectors.joining(", "));
+            }
+        }
+        return "";
     }
 
 

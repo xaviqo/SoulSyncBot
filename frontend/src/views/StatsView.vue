@@ -6,7 +6,7 @@
         {{ ps.title }}
       </template>
       <template #content>
-        <div class="flex justify-content-center align-items-end font-medium text-color-secondary white-space-nowrap overflow-hidden text-overflow-ellipsis">
+        <div class="flex justify-content-center align-items-end font-medium text-color-secondary white-space-nowrap overflow-hidden text-overflow-ellipsis" style="max-width: 100%;">
           {{ ps.value ? ps.value : 'N/A' }}
         </div>
       </template>
@@ -54,7 +54,8 @@
       </template>
       <template #content>
         <ApiConnections
-            :api-status="[]"
+            :api-status="apiStatus"
+            :tool-tips="{ soulseek: 'Status of the temporary ban on the SoulSeek network', spotify: 'Spotify API connection status', slskd: 'Slskd API connection status'}"
         />
       </template>
     </Card>
@@ -140,11 +141,13 @@ export default {
   mixins: [utilsMixin],
   components: {IterationStats, QueueStatus, ApiConnections},
   created() {
+    this.fetchApiStatus();
     this.fetchIterationStats();
     this.fetchQueueStatus();
     this.fetchSummary();
     this.fetchFindLogicStats();
     this.fetchCountByStatus();
+    this.apiStatusInterval = setInterval(this.fetchApiStatus,30000);
     this.countByStatusInterval = setInterval(this.fetchCountByStatus,5000);
     this.findingLogicInterval = setInterval(this.fetchFindLogicStats,5000);
     this.iterationStatsInterval = setInterval(this.fetchIterationStats,5000);
@@ -152,6 +155,7 @@ export default {
     this.fetchQueueStatusInterval = setInterval(this.fetchQueueStatus,3000);
   },
   data: () => ({
+    apiStatusInterval: null,
     iterationStatsInterval: null,
     fetchSummaryInterval: null,
     fetchQueueStatusInterval: null,
@@ -182,11 +186,17 @@ export default {
       throttleMultiplier: 0,
       adjustedMillisBetweenRequests: 0,
       millisBetweenRequests: 0
-    }
+    },
+    apiStatus: {},
   }),
   methods: {
     getValue(data,field) {
       return data[field] ? data[field] : 0;
+    },
+    fetchApiStatus() {
+      this.$axios
+          .get('/stats/apis-status')
+          .then( res => this.apiStatus = res.data );
     },
     fetchQueueStatus() {
       this.$axios
@@ -270,6 +280,7 @@ export default {
     clearInterval(this.iterationStatsInterval);
     clearInterval(this.fetchSummaryInterval)
     clearInterval(this.fetchQueueStatusInterval);
+    clearInterval(this.apiStatusInterval)
   }
 }
 </script>

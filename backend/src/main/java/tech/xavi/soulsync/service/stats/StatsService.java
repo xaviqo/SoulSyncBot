@@ -5,6 +5,7 @@ import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.dto.stats.*;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
+import tech.xavi.soulsync.service.configuration.SetupService;
 import tech.xavi.soulsync.service.download.SlskdProcessService;
 import tech.xavi.soulsync.service.download.SlskdRequestService;
 import tech.xavi.soulsync.service.search.FileFinderService;
@@ -27,13 +28,15 @@ public class StatsService {
     private final SlskdProcessService slskdProcessService;
     private final SlskdRequestService slskdRequestService;
     private final FileFinderService fileFinderService;
+    private final SetupService setupService;
     private final LocalDateTime startTime;
 
     public StatsService(ConfigurationFieldService configurationFieldService,
                         SlskdRequestsThrottleService throttleService,
                         SlskdProcessService slskdProcessService,
                         SlskdRequestService slskdRequestService,
-                        FileFinderService fileFinderService
+                        FileFinderService fileFinderService,
+                        SetupService setupService
     ) {
         this.startTime = LocalDateTime.now();
         this.configurationFieldService = configurationFieldService;
@@ -41,6 +44,7 @@ public class StatsService {
         this.slskdProcessService = slskdProcessService;
         this.slskdRequestService = slskdRequestService;
         this.fileFinderService = fileFinderService;
+        this.setupService = setupService;
     }
 
     public List<SlskdQueueReqDto> getCurrentQueueRequests() {
@@ -60,8 +64,7 @@ public class StatsService {
     }
 
     public IterationStats getIterationsStats() {
-        boolean isBanned = Objects
-                .nonNull(throttleService.getBanExpirationTime());
+        boolean isBanned = isBanned();
         LocalDateTime banExpTime = isBanned
                 ? throttleService.getBanExpirationTime()
                 : LocalDateTime.now();
@@ -127,6 +130,24 @@ public class StatsService {
                 .countByStatus()
                 .stream()
                 .collect(Collectors.toMap(StatusCountDto::status,StatusCountDto::total));
+    }
+
+    public Map<String,Boolean> getApisStatus() {
+        Map<String, Boolean> apiStatus = setupService
+                .getApiChecks()
+                .entrySet()
+                .stream()
+                .collect(Collectors.toMap(
+                        api -> api.getKey().name().toLowerCase(),
+                        Map.Entry::getValue
+                ));
+        apiStatus.put("soulseek",!isBanned());
+        return apiStatus;
+    }
+
+    private boolean isBanned() {
+        return Objects
+                .nonNull(throttleService.getBanExpirationTime());
     }
 
     private String getRunningTimeStr() {

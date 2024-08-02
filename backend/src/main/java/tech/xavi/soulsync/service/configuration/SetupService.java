@@ -28,7 +28,7 @@ import java.util.*;
 @Log4j2
 @RequiredArgsConstructor
 @Service
-public class InitialSetupService implements CommandLineRunner {
+public class SetupService implements CommandLineRunner {
 
     private static final String[] DEFAULT_ADMIN_VALUES = {"admin","admin"};
     private final ConfigurationFieldService configurationFieldService;

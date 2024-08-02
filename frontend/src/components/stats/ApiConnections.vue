@@ -1,15 +1,11 @@
 <template>
   <div class="flex flex-wrap align-items-center gap-3">
     <Button
-        label="SPOTIFY"
-        class="w-12"
-    />
-    <Button
-        label="SLSKD"
-        class="w-12"
-    />
-    <Button
-        label="SOULSEEK"
+        v-for="key of Object.keys(apiStatus)"
+        :key="key"
+        v-tooltip="{ value: toolTips[key], showDelay:50, hideDelay:100 }"
+        :label="`${apiStatus[key] ? '👍' : '👎'} ${key.toUpperCase()}`"
+        :severity="apiStatus[key] ? 'success' : 'secondary'"
         class="w-12"
     />
   </div>
@@ -19,7 +15,11 @@ export default {
   name: "ApiConnections",
   props: {
     apiStatus: {
-      type: Array,
+      type: Object,
+      required: true
+    },
+    toolTips: {
+      type: Object,
       required: true
     }
   }

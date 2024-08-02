@@ -10,7 +10,7 @@ import tech.xavi.soulsync.dto.account.AccountDto;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
-import tech.xavi.soulsync.service.configuration.InitialSetupService;
+import tech.xavi.soulsync.service.configuration.SetupService;
 
 import java.util.List;
 import java.util.Map;
@@ -20,7 +20,7 @@ import java.util.Set;
 @RestController
 public class ConfigurationController {
 
-    private final InitialSetupService initialSetupService;
+    private final SetupService setupService;
     private final ConfigurationFieldService configurationFieldService;
 
     @GetMapping(ApiRoutes.EP_FIELD)
@@ -44,29 +44,29 @@ public class ConfigurationController {
 
     @GetMapping(ApiRoutes.EP_IS_INSTALLED)
     public ResponseEntity<Map<String,Boolean>> isAppInstalled(){
-        return ResponseEntity.ok(initialSetupService.isAppInstalledResponse());
+        return ResponseEntity.ok(setupService.isAppInstalledResponse());
     }
 
     @GetMapping(ApiRoutes.EP_INITIAL_SETUP)
     public ResponseEntity<Map<String,Object>> getInitialSetup(){
-        return ResponseEntity.ok(initialSetupService.getInitialSetup());
+        return ResponseEntity.ok(setupService.getInitialSetup());
     }
 
     @PostMapping(ApiRoutes.EP_INIT_SETUP_APIS)
     public ResponseEntity<Map<GatewayName,Boolean>> saveApiValues(
             @RequestBody List<ConfigurationFieldDto> fields
     ){
-        initialSetupService.saveApiValues(fields);
+        setupService.saveApiValues(fields);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(initialSetupService.getApiChecks());
+                .body(setupService.getApiChecks());
     }
 
     @PostMapping(ApiRoutes.EP_INIT_SETUP_ADMIN)
     public ResponseEntity<Void> setAdminAccountAndFinish(
             @RequestBody AccountDto adminAccount
             ){
-        initialSetupService
+        setupService
                 .createAdminAccountAndFinish(adminAccount);
         return ResponseEntity
                 .status(HttpStatus.CREATED)

@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
-import tech.xavi.soulsync.entity.db.Artist;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 
@@ -21,6 +20,7 @@ import java.util.Arrays;
 @Service
 public class RelocationService {
 
+    private static final String ONLY_ALPHANUM_REGEX = "[^a-zA-Z0-9]";
     private static final String SPLIT_BY_FOLDERS_REGEX = "[\\\\/]";
 
     private final ConfigurationFieldService configurationFieldService;
@@ -56,18 +56,20 @@ public class RelocationService {
             return String.format(
                     "%s/%s/%s",
                     getRelocatedFilesPath(),
-                    slskdRequest.getPlaylist().getName().trim(),
+                    slskdRequest.getPlaylist().getName().replaceAll(ONLY_ALPHANUM_REGEX, "").trim(),
                     getFileName(slskdRequest)
             );
         else
             return String.format(
                     "%s/%s/%s/%s",
                     getRelocatedFilesPath(),
-                    slskdRequest.getSpotifySong().getArtists().get(0).getName(),
+                    slskdRequest.getArtistsNames(),
                     slskdRequest.getSpotifySong().getAlbum(),
                     getFileName(slskdRequest)
             );
     }
+
+
 
     private String getFileName(SlskdRequest slskdRequest) {
         String[] splittedRoute = slskdRequest
@@ -75,17 +77,14 @@ public class RelocationService {
                 .split(SPLIT_BY_FOLDERS_REGEX);
         if (shouldRenameRelocated()) {
             StringBuilder newFileName = new StringBuilder();
-            String[] artists = slskdRequest
-                    .getSpotifySong()
-                    .getArtists()
-                    .stream()
-                    .map(Artist::getName)
-                    .toArray(String[]::new);
-            newFileName
-                    .append(slskdRequest.getSpotifySong().getName())
-                    .append(" - ")
-                    .append(String.join(", ",artists))
-                    .append(getFileFormat(slskdRequest));
+
+            newFileName.append(slskdRequest.getSpotifySong().getName());
+
+            boolean hasArtists = !slskdRequest.getSpotifySong().getArtists().isEmpty();
+            if (hasArtists) newFileName.append(slskdRequest.getArtistsNames());
+
+            newFileName.append(getFileFormat(slskdRequest));
+
             return newFileName.toString();
         } else {
             if (splittedRoute.length > 1)

@@ -24,6 +24,7 @@ target
 # logback
 logback.out.xml
 
+datafile/
 backend/src/main/resources/public/
 backend/target
 frontend/dist/

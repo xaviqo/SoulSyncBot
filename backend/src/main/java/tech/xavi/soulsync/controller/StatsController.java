@@ -46,5 +46,10 @@ public class StatsController {
         return ResponseEntity.ok(statsService.countByStatus());
     }
 
+    @GetMapping(ApiRoutes.EP_STATS_API_STATUS)
+    public ResponseEntity<Map<String,Boolean>> getApisStatus(){
+        return ResponseEntity.ok(statsService.getApisStatus());
+    }
+
 
 }

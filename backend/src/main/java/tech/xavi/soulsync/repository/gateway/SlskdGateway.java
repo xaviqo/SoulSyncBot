@@ -166,7 +166,7 @@ public class SlskdGateway extends Gateway {
     public void rebootSlskd(GatewayToken token) {
         call(
                 GatewayRequest.builder()
-                        .method(HttpMethod.POST)
+                        .method(HttpMethod.PUT)
                         .token(token.token())
                         .path(REBOOT_APP_PATH)
                         .build()

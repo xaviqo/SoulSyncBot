@@ -10,9 +10,7 @@ import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.Arrays;
 
 @Slf4j
@@ -31,9 +29,15 @@ public class RelocationService {
             Path sourcePath = Paths.get(getCurrentFilePath(slskdRequest));
             Path destinationPath = Paths.get(getRelocationFilePath(slskdRequest));
             Files.createDirectories(destinationPath.getParent());
-            Files.move(sourcePath, destinationPath);
+            if (isMoveFile())
+                Files.move(sourcePath, destinationPath);
+            else
+                Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
             slskdRequest.setCopyRoute(destinationPath.toAbsolutePath().toString());
             return Files.exists(destinationPath);
+        } catch (FileAlreadyExistsException faee) {
+            log.error("Error relocating file - The file to be moved/copied already exists: {}", faee.getMessage());
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
             log.error("Error relocating file: {}", e.getMessage());
@@ -132,6 +136,13 @@ public class RelocationService {
         return configurationFieldService
                 .getValue(ConfigurationField.APP_RELOCATED_FILES_PATH)
                 .asText();
+    }
+
+    private boolean isMoveFile() {
+        return configurationFieldService
+                .getValue(ConfigurationField.APP_MOVE_OR_COPY)
+                .asText()
+                .equals("MOVE");
     }
 
     private boolean isRelocateByPlaylist(){

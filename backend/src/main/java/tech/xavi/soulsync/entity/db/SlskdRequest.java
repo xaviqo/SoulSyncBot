@@ -64,7 +64,7 @@ public class SlskdRequest {
                 return artists.stream()
                         .map(Artist::getName)
                         .filter(name -> !name.isEmpty())
-                        .collect(Collectors.joining(", "));
+                        .collect(Collectors.joining(", ")) + " - ";
             }
         }
         return "";

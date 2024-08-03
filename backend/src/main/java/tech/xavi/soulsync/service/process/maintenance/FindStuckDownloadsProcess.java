@@ -3,10 +3,12 @@ package tech.xavi.soulsync.service.process.maintenance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import tech.xavi.soulsync.configuration.globals.ProcessStatus;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import tech.xavi.soulsync.service.download.SlskdRequestService;
+import tech.xavi.soulsync.service.stats.StatsService;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +20,7 @@ public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
     @Getter private final int order = 20;
     private final SlskdRequestService slskdRequestService;
     private final ConfigurationFieldService configurationFieldService;
+    private final StatsService statsService;
 
     @Override
     public CompletableFuture<Boolean> execute() {
@@ -31,6 +34,11 @@ public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
                                         slskdRequestService.setRequestToWaiting(req);
                                 })
                 );
+        if (statsService.isBanned()) {
+            slskdRequestService
+                    .findByStatus(ProcessStatus.SEARCHING)
+                    .forEach(slskdRequestService::setRequestToWaiting);
+        }
         return CompletableFuture.completedFuture(true);
     }
 

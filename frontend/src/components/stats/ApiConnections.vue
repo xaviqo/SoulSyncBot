@@ -3,10 +3,12 @@
     <Button
         v-for="key of Object.keys(apiStatus)"
         :key="key"
+        :icon="apiStatus[key] ? 'pi pi-check' : 'pi pi-times'"
         v-tooltip="{ value: toolTips[key], showDelay:50, hideDelay:100 }"
-        :label="`${apiStatus[key] ? '👍' : '👎'} ${key.toUpperCase()}`"
+        :label="key.toUpperCase()"
         :severity="apiStatus[key] ? 'success' : 'secondary'"
-        class="w-12"
+        iconPos="bottom"
+        class="w-12 opacity-80"
     />
   </div>
 </template>

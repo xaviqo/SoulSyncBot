@@ -6,11 +6,15 @@
           <span>S O U L  <b>S Y N C</b></span>
         </div>
         <div class="flex align-items-center gap-2">
-          <Button label="Playlists" text plain @click="goTo('panel-view')" />
-          <Button label="Configuration" text plain @click="goTo('configuration-view')" />
-          <Button label="Statistics" text plain @click="goTo('stats-view')" />
-          <Button label="Help" text plain @click="goTo('stats-view')" />
-          <Button label="Github" text plain @click="goToRepo()" />
+          <Button
+              v-for="route in routes"
+              :key="route.route"
+              :label="route.label"
+              text
+              plain
+              @click="goTo(route.isInternal,route.route)"
+              :class="{'active-button': isActive(route.route)}"
+          />
         </div>
       </template>
       <template #end>
@@ -29,6 +33,35 @@ import {useUserStore} from "@/store/user-calls";
 
 export default {
   name: "Header",
+  data: () => ({
+    routes: [
+      {
+        label: 'Playlists',
+        route: 'panel-view',
+        isInternal: true
+      },
+      {
+        label: 'Configuration',
+        route: 'configuration-view',
+        isInternal: true
+      },
+      {
+        label: 'Statistics',
+        route: 'stats-view',
+        isInternal: true
+      },
+      {
+        label: 'Help',
+        route: 'https://soulsync.xavi.tech/manual',
+        isInternal: false
+      },
+      {
+        label: 'GitHub',
+        route: 'https://github.com/xaviqo/SoulSyncBot',
+        isInternal: false
+      }
+    ]
+  }),
   computed: {
     userCalls: () => useUserStore()
   },
@@ -42,15 +75,24 @@ export default {
       this.$router.push("/");
       window.location.reload();
     },
-    goTo(name) {
-      this.$router.push({ name })
+    goTo(isInternal, route) {
+      console.log("isInternal",isInternal)
+      console.log("route", route)
+
+      if (isInternal)
+        this.$router.push({ name: route })
+      else
+        window.open(route, '_blank');
     },
-    goToRepo(){
-      window.open('https://github.com/xaviqo/SoulSyncBot', '_blank');
+    isActive(routeName) {
+      return this.$route.name === routeName;
     }
   }
 }
 </script>
 <style scoped>
-
+.active-button {
+  font-weight: bold;
+  color: var(--primary-color); /* Ajusta el color según el tema que uses */
+}
 </style>

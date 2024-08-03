@@ -145,7 +145,7 @@ public class StatsService {
         return apiStatus;
     }
 
-    private boolean isBanned() {
+    public boolean isBanned() {
         return Objects
                 .nonNull(throttleService.getBanExpirationTime());
     }

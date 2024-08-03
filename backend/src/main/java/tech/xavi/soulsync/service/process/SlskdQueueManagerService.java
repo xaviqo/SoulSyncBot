@@ -69,9 +69,7 @@ public class SlskdQueueManagerService {
                                 handleRequestAndUpdate(downloadList, request)
                         )
                 );
-        } catch (HttpStatusCodeException hsce) {
-            hsce.printStackTrace();
-            String responseError = hsce.getResponseBodyAsString();
+        } catch (HttpStatusCodeException hsce) {String responseError = hsce.getResponseBodyAsString();
             log.warn("HTTP Error: {}", responseError);
             switch (hsce.getStatusCode()) {
                 case HttpStatus.CONFLICT:
@@ -88,6 +86,11 @@ public class SlskdQueueManagerService {
                                 throttleService.getThrottleMultiplier()
                         );
                         throttleService.setBanned();
+                    } else if (responseError.contains("appears to be offline")
+                            || responseError.contains("error occurred while saving the entity changes")){
+                        log.warn(responseError);
+                    } else {
+                        hsce.printStackTrace();
                     }
                     break;
                 case HttpStatus.UNAUTHORIZED:

@@ -76,9 +76,6 @@ export default {
       window.location.reload();
     },
     goTo(isInternal, route) {
-      console.log("isInternal",isInternal)
-      console.log("route", route)
-
       if (isInternal)
         this.$router.push({ name: route })
       else

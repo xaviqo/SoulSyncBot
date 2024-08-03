@@ -1,6 +1,7 @@
 package tech.xavi.soulsync.entity.db;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.*;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
 @Getter
@@ -64,7 +66,7 @@ public class SlskdRequest {
                 return artists.stream()
                         .map(Artist::getName)
                         .filter(name -> !name.isEmpty())
-                        .collect(Collectors.joining(", ")) + " - ";
+                        .collect(Collectors.joining(", "));
             }
         }
         return "";

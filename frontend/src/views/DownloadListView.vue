@@ -56,11 +56,11 @@ export default {
       await this.fetchPlaylistDownloadLists(playlistId);
       this.setCurrentDownloadList(downloadListId);
     },
-    ...mapActions(usePlaylistStore, [
-      'fetchCurrentPlaylist',
-      'fetchPlaylistDownloadLists',
-      'setCurrentDownloadList'
-    ])
+    ...mapActions(usePlaylistStore, {
+      fetchCurrentPlaylist: 'fetchCurrentPlaylist',
+      fetchPlaylistDownloadLists: 'fetchPlaylistDownloadLists',
+      setCurrentDownloadList: 'setCurrentDownloadList'
+    })
   },
   computed: {
     ...mapState(usePlaylistStore, {

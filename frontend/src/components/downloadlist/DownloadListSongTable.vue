@@ -55,7 +55,6 @@
                  @page="onPage"
                  size="small"
       >
-        <template #loading>Loading download lists... Please wait.</template>
         <Column header="Info">
           <template #body="slotProps">
             <Tag
@@ -120,6 +119,7 @@ export default {
     processArr: []
   }),
   created() {
+    this.clearSongs();
     Object.keys(DownloadStatus).forEach(ds => this.addStatusFilter(false,ds));
     this.onPage(null);
     this.emitter.on('refresh', this.handleRefresh);
@@ -186,9 +186,10 @@ export default {
           params
       );
     },
-    ...mapActions(usePlaylistStore, [
-      'fetchDownloadListSongs',
-    ])
+    ...mapActions(usePlaylistStore, {
+      fetchDownloadListSongs: 'fetchDownloadListSongs',
+      clearSongs: 'clearSongs'
+  })
   },
   computed: {
     DownloadStatus() {

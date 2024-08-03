@@ -51,9 +51,12 @@ export default {
   }),
   methods: {
     submitLogin(){
+      this.emitter.emit('loading', {show: true, text: `Logging in...`});
       return this.$axios
           .post('/account/sign-in', this.loginPayload)
           .then(res => {
+            this.emitter.emit('loading', {show: false});
+
             this.userCalls.saveLoginResponse(res.data);
             this.$router.push({ name : 'panel-view'});
           })

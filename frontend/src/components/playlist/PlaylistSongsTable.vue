@@ -37,6 +37,7 @@ export default {
     playlist: Object,
   },
   created() {
+    this.clearSongs();
     this.onPage(null);
     this.emitter.on('refresh', this.handleRefresh);
   },
@@ -47,9 +48,10 @@ export default {
     }
   },
   methods: {
-    ...mapActions(usePlaylistStore, [
-      'fetchPlaylistSongs',
-    ]),
+    ...mapActions(usePlaylistStore, {
+      fetchPlaylistSongs: 'fetchPlaylistSongs',
+      clearSongs: 'clearSongs'
+    }),
     handleRefresh() {
       this.onPage(null);
     },

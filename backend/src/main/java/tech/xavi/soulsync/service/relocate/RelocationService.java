@@ -49,7 +49,7 @@ public class RelocationService {
         if (!directory.exists()) directory.mkdirs();
     }
 
-    private String getRelocationFilePath(SlskdRequest slskdRequest) {
+    public String getRelocationFilePath(SlskdRequest slskdRequest) {
         if (isRelocateByPlaylist())
             return String.format(
                     "%s/%s/%s",
@@ -75,12 +75,13 @@ public class RelocationService {
                 .split(SPLIT_BY_FOLDERS_REGEX);
         if (shouldRenameRelocated()) {
             StringBuilder newFileName = new StringBuilder();
-
-            newFileName.append(slskdRequest.getSpotifySong().getName());
-
             boolean hasArtists = !slskdRequest.getSpotifySong().getArtists().isEmpty();
-            if (hasArtists) newFileName.append(slskdRequest.getArtistsNames());
 
+            if (hasArtists) {
+                newFileName.append(slskdRequest.getArtistsNames());
+                newFileName.append(" - ");
+            }
+            newFileName.append(slskdRequest.getSpotifySong().getName());
             newFileName.append(getFileFormat(slskdRequest));
 
             return newFileName.toString();

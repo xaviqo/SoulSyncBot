@@ -121,7 +121,8 @@ public class SlskdRequestService {
         DownloadList dl = DownloadList.builder()
                 .downloadListId(downloadListId)
                 .build();
-        List<ProcessStatus> processArr = Arrays.stream(processesByComa.split(","))
+        String[] processesStrArr = processesByComa.split(",");
+        List<ProcessStatus> processArr = Arrays.stream(processesStrArr)
                 .map(ProcessStatus::valueOf)
                 .collect(Collectors.toList());
 

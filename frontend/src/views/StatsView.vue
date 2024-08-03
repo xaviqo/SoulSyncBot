@@ -141,6 +141,7 @@ export default {
   mixins: [utilsMixin],
   components: {IterationStats, QueueStatus, ApiConnections},
   created() {
+    this.emitter.emit('loading', {show: true, text: `Loading SoulSync Stats...`});
     this.fetchApiStatus();
     this.fetchIterationStats();
     this.fetchQueueStatus();
@@ -188,6 +189,7 @@ export default {
       millisBetweenRequests: 0
     },
     apiStatus: {},
+    initStatsCounter: 0
   }),
   methods: {
     getValue(data,field) {
@@ -196,17 +198,26 @@ export default {
     fetchApiStatus() {
       this.$axios
           .get('/stats/apis-status')
-          .then( res => this.apiStatus = res.data );
+          .then( res => {
+            this.apiStatus = res.data;
+            this.increaseInitStats();
+          });
     },
     fetchQueueStatus() {
       this.$axios
           .get('/stats/queue')
-          .then( res => this.queueStatus = res.data );
+          .then( res => {
+            this.queueStatus = res.data
+            this.increaseInitStats();
+          });
     },
     fetchIterationStats() {
       this.$axios
           .get('/stats/iterations')
-          .then( res => this.iterationsData = res.data );
+          .then( res => {
+            this.iterationsData = res.data;
+            this.increaseInitStats();
+          });
     },
     fetchSummary() {
       this.$axios
@@ -225,6 +236,7 @@ export default {
               { label: 'Failure', value: this.getValue(res.data, 'totalFailed'), color: '#c084fc' },
             ]
             this.successRate.max = this.getValue(res.data, 'totalProcessed');
+            this.increaseInitStats();
           });
     },
     fetchCountByStatus() {
@@ -243,6 +255,7 @@ export default {
               ],
               max: Object.values(res.data).reduce((a, b) => a + b, 0)
             };
+            this.increaseInitStats();
           });
     },
     fetchFindLogicStats() {
@@ -256,6 +269,7 @@ export default {
               ],
               max: res.data.totalFlexible + res.data.totalStrict
             };
+            this.increaseInitStats();
           });
     },
     showMeters() {
@@ -274,6 +288,12 @@ export default {
     },
     tsToDate(timeStamp) {
       return this.timestampToDate(timeStamp);
+    },
+    increaseInitStats() {
+      if (this.initStatsCounter < 5)
+        this.initStatsCounter++;
+      else
+        this.emitter.emit('loading', {show: false});
     }
   },
   beforeUnmount() {

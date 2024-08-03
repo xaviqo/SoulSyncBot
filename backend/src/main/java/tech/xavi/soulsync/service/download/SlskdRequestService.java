@@ -26,7 +26,7 @@ public class SlskdRequestService {
     private final SlskdGatewayService slskdGatewayService;
 
     private static final String SUCCESS_STATUS = "Completed, Succeeded";
-    private static final String[] STUCK_STATUS = { "Queued, remotely","Completed, Cancelled","Completed, Errored" };
+    private static final String[] STUCK_STATUS = { "Queued, Remotely","Completed, Cancelled","Completed, Errored" };
 
     public Stream<SlskdFile> getAllStuckDownloads() {
         return slskdGatewayService
@@ -178,7 +178,9 @@ public class SlskdRequestService {
                 .stream()
                 .filter(file ->
                         Arrays.stream(status)
-                                .anyMatch(s -> s.equals(file.state()) )
+                                .anyMatch(s -> {
+                                    return s.equals(file.state());
+                                } )
                 );
     }
 

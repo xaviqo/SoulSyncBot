@@ -93,7 +93,7 @@ class SlskdRequestServiceTest {
             "            \"size\": 5242880,\n" +
             "            \"filename\": \"@@qbjcj\\\\\\\\Music\\\\\\\\from itunes\\\\\\\\Led Zeppelin\\\\\\\\IV\\\\\\\\01_Black_Dog.mp3\",\n" +
             "            \"id\": \"7890qrst-uvwx-1234-yzab-5678cdef9012\",\n" +
-            "            \"state\": \"Queued, remotely\",\n" +
+            "            \"state\": \"Queued, Remotely\",\n" +
             "            \"username\": \"testUser2\"\n" +
             "          },\n" +
             "          {\n" +

@@ -5,7 +5,7 @@
 
     <groupId>tech.xavi</groupId>
     <artifactId>soulsync</artifactId>
-    <version>2.0.0</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
 
     <name>soulsync</name>
@@ -18,6 +18,7 @@
     </parent>
 
     <properties>
+        <revision>2.0.0-beta</revision>
         <main.basedir>${project.basedir}</main.basedir>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

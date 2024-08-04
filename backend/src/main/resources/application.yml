@@ -10,8 +10,7 @@ spring:
     password: soulsync
   jpa:
     hibernate:
-      ddl-auto: create-drop
-      #ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
@@ -22,6 +21,7 @@ spring:
 tech:
   xavi:
     soulsync:
+      version: @revision@
       cfg:
         login-attempt:
           max-try: 5
@@ -60,7 +60,10 @@ tech:
           spotify:
             auth: https://accounts.spotify.com
             main: https://api.spotify.com
+          github: https://api.github.com
         path:
+          github:
+            release: /repos/xaviqo/SoulSync/releases/latest
           spotify:
             auth:
               get-token:

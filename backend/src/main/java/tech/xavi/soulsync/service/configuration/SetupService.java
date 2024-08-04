@@ -1,7 +1,7 @@
 package tech.xavi.soulsync.service.configuration;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -9,15 +9,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
-import tech.xavi.soulsync.entity.Role;
 import tech.xavi.soulsync.configuration.globals.SearchInputStrategy;
 import tech.xavi.soulsync.dto.account.AccountDto;
+import tech.xavi.soulsync.dto.configuration.AppVersionDto;
+import tech.xavi.soulsync.dto.gateway.github.LastReleaseDto;
+import tech.xavi.soulsync.dto.shared.AlertData;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
+import tech.xavi.soulsync.dto.shared.MessageSeverity;
+import tech.xavi.soulsync.entity.Role;
 import tech.xavi.soulsync.entity.datafile.Account;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.datafile.SearchPolicy;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
+import tech.xavi.soulsync.repository.gateway.GithubGateway;
 import tech.xavi.soulsync.service.integration.GatewayTokenService;
 import tech.xavi.soulsync.service.search.SearchPolicyService;
 import tech.xavi.soulsync.service.user.AccountService;
@@ -26,15 +31,10 @@ import java.util.*;
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Log4j2
-@RequiredArgsConstructor
 @Service
 public class SetupService implements CommandLineRunner {
 
     private static final String[] DEFAULT_ADMIN_VALUES = {"admin","admin"};
-    private final ConfigurationFieldService configurationFieldService;
-    private final SearchPolicyService searchPolicyService;
-    private final AccountService accountService;
-    private final GatewayTokenService gatewayTokenService;
     private static final ConfigurationField[] INITIAL_SETUP_FIELDS = {
             ConfigurationField.SPOTIFY_CLIENT_ID,
             ConfigurationField.SPOTIFY_API_SECRET,
@@ -47,6 +47,30 @@ public class SetupService implements CommandLineRunner {
             ConfigurationField.Section.MAINTENANCE
     };
 
+    private final String CURRENT_VERSION;
+
+    private final ConfigurationFieldService configurationFieldService;
+    private final SearchPolicyService searchPolicyService;
+    private final AccountService accountService;
+    private final GatewayTokenService gatewayTokenService;
+    private final GithubGateway githubGateway;
+
+    public SetupService(
+            @Value("${tech.xavi.soulsync.version}") String currVer,
+            ConfigurationFieldService configurationFieldService,
+            SearchPolicyService searchPolicyService,
+            AccountService accountService,
+            GatewayTokenService gatewayTokenService,
+            GithubGateway githubGateway
+    ) {
+        this.CURRENT_VERSION = currVer;
+        this.configurationFieldService = configurationFieldService;
+        this.searchPolicyService = searchPolicyService;
+        this.accountService = accountService;
+        this.gatewayTokenService = gatewayTokenService;
+        this.githubGateway = githubGateway;
+    }
+
     @Override
     public void run(String... args) throws Exception {
         createDefaultInstallation();
@@ -57,6 +81,12 @@ public class SetupService implements CommandLineRunner {
                 .asText()
                 .equalsIgnoreCase("true");
         if (isDemo) log.info("DEMO MODE ACTIVE");
+
+        AppVersionDto appVersion = getCurrentAndLatestVersion();
+        if (appVersion.getAlertData().getSeverity().equals(MessageSeverity.INFO))
+            log.info(appVersion.getAlertData().getMessage());
+        else
+            log.warn(appVersion.getAlertData().getMessage());
     }
 
     public void saveApiValues(List<ConfigurationFieldDto> setupFields){
@@ -105,6 +135,41 @@ public class SetupService implements CommandLineRunner {
         for (GatewayName gatewayName : GatewayName.values())
             apiChecks.put(gatewayName,testApiConnection(gatewayName));
         return apiChecks;
+    }
+
+    public AppVersionDto getCurrentAndLatestVersion() {
+        LastReleaseDto releaseDto = githubGateway.getLastRelease();
+        AppVersionDto appVersionDto = AppVersionDto.builder()
+                .current(CURRENT_VERSION)
+                .latest(releaseDto.tagName())
+                .build();
+        if (Objects.nonNull(releaseDto.message()) && releaseDto.message().equals(HttpStatus.NOT_FOUND.name())) {
+            AlertData alertData = AlertData.builder()
+                    .severity(MessageSeverity.ERROR)
+                    .message(String.format("Not able to obtain data of the latest version of the application - Current: %s",
+                            CURRENT_VERSION))
+                    .build();
+            appVersionDto
+                    .setAlertData(alertData);
+        } else if (!releaseDto.tagName().equals(CURRENT_VERSION)) {
+            AlertData alertData = AlertData.builder()
+                    .severity(MessageSeverity.INFO)
+                    .message(String.format("A new version of the application is available! Latest: %s - Current: %s",
+                            releaseDto.tagName(),
+                            CURRENT_VERSION))
+                    .build();
+            appVersionDto
+                    .setAlertData(alertData);
+        } else {
+            AlertData alertData = AlertData.builder()
+                    .severity(MessageSeverity.SUCCESS)
+                    .message(String.format("The latest version of the application is being used. - Current: %s",
+                            CURRENT_VERSION))
+                    .build();
+            appVersionDto
+                    .setAlertData(alertData);
+        }
+        return appVersionDto;
     }
 
     private List<ConfigurationField> getInitialSetupFields(){

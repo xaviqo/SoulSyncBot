@@ -1,7 +1,22 @@
 <template>
 
   <div class="w-12 flex gap-3">
-    <Card class="w-2" v-for="ps in summaryData" :key="ps.title">
+    <Card class="w-2">
+      <template #title>
+        Version
+      </template>
+      <template #content>
+        <Button
+            :icon="appVersion.alertData.severity === 'INFO' ? 'pi pi-check' : 'pi pi-sync'"
+            v-tooltip.bottom="{ value: appVersion.alertData.message, showDelay:50, hideDelay:100 }"
+            :label="appVersion.current"
+            :severity="appVersion.alertData.severity"
+            class="w-12 opacity-80"
+            @click="fetchSoulSyncVersion()"
+        />
+      </template>
+    </Card>
+    <Card v-for="ps in summaryData" :key="ps.title" class="flex-1">
       <template #title>
         {{ ps.title }}
       </template>
@@ -148,6 +163,7 @@ export default {
     this.fetchSummary();
     this.fetchFindLogicStats();
     this.fetchCountByStatus();
+    this.fetchSoulSyncVersion();
     this.apiStatusInterval = setInterval(this.fetchApiStatus,30000);
     this.countByStatusInterval = setInterval(this.fetchCountByStatus,5000);
     this.findingLogicInterval = setInterval(this.fetchFindLogicStats,5000);
@@ -189,11 +205,28 @@ export default {
       millisBetweenRequests: 0
     },
     apiStatus: {},
+    appVersion: {
+      current: '',
+      latest: '',
+      alertData: {
+        message: '',
+        severity: ''
+      }
+    },
     initStatsCounter: 0
   }),
   methods: {
     getValue(data,field) {
       return data[field] ? data[field] : 0;
+    },
+    fetchSoulSyncVersion() {
+      this.$axios
+          .get('/cfg/app-version')
+          .then( res => {
+            console.log(res.data)
+            this.appVersion = res.data;
+            this.increaseInitStats();
+          });
     },
     fetchApiStatus() {
       this.$axios
@@ -290,7 +323,7 @@ export default {
       return this.timestampToDate(timeStamp);
     },
     increaseInitStats() {
-      if (this.initStatsCounter < 5)
+      if (this.initStatsCounter < 6)
         this.initStatsCounter++;
       else
         this.emitter.emit('loading', {show: false});

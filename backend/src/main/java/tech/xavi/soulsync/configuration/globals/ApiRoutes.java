@@ -15,6 +15,7 @@ public class ApiRoutes {
 
     // CFG
     public static final String EP_CONFIGURATION_PATH = API_ROOT + "/cfg";
+    public static final String EP_APP_VERSION = EP_CONFIGURATION_PATH + "/app-version";
     public static final String EP_INITIAL_SETUP = EP_CONFIGURATION_PATH + "/initial-setup";
     public static final String EP_INIT_SETUP_APIS = EP_INITIAL_SETUP + "/apis";
     public static final String EP_INIT_SETUP_ADMIN = EP_INITIAL_SETUP + "/admin";

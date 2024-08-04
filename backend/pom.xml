@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>tech.xavi</groupId>
 		<artifactId>soulsync</artifactId>
-		<version>2.0.0</version>
+		<version>${revision}</version>
 	</parent>
 
 	<properties>
@@ -92,6 +92,16 @@
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
+						<id>filter-resources</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>resources</goal>
+						</goals>
+						<configuration>
+							<encoding>UTF-8</encoding>
+						</configuration>
+					</execution>
+					<execution>
 						<id>copy Vue.js frontend content</id>
 						<phase>generate-resources</phase>
 						<goals>
@@ -115,6 +125,18 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>application.yml</include>
+				</includes>
+				<excludes>
+					<exclude>**/*.eot</exclude>
+				</excludes>
+			</resource>
+		</resources>
 	</build>
 
 </project>

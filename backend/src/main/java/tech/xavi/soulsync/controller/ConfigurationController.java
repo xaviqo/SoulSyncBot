@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import tech.xavi.soulsync.configuration.globals.ApiRoutes;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
 import tech.xavi.soulsync.dto.account.AccountDto;
+import tech.xavi.soulsync.dto.configuration.AppVersionDto;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
@@ -71,5 +72,10 @@ public class ConfigurationController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .build();
+    }
+
+    @GetMapping(ApiRoutes.EP_APP_VERSION)
+    public ResponseEntity<AppVersionDto> getAppVersion() {
+        return ResponseEntity.ok(setupService.getCurrentAndLatestVersion());
     }
 }

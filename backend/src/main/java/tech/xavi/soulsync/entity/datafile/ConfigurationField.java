@@ -19,8 +19,9 @@ import java.util.stream.Collectors;
 public enum ConfigurationField {
 
     // OTHER
-    IS_APP_INSTALLED(null,null,Section.INSTALL, DataType.BOOLEAN,null,null,null,null),
-    IS_DEMO_MODE(null,null,Section.INSTALL, DataType.BOOLEAN,null,null,null,false),
+    IS_APP_INSTALLED(null,null,Section.SETUP, DataType.BOOLEAN,null,null,null,null),
+    IS_DEMO_MODE(null,null,Section.SETUP, DataType.BOOLEAN,null,null,null,false),
+    VERSION(null,null,Section.SETUP,DataType.TEXT,null,null,null,null),
 
     // API
     SPOTIFY_CLIENT_ID("spotify client id",null,Section.API, DataType.TEXT,"You can get both ID and key from the spotify developers dashboard",null,null,null),
@@ -90,7 +91,7 @@ public enum ConfigurationField {
 
     @Getter @RequiredArgsConstructor
     public enum Section {
-        INSTALL,
+        SETUP,
         API,
         SEARCH_POLICY,
         SEARCH,

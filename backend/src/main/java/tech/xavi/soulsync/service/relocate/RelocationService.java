@@ -77,7 +77,7 @@ public class RelocationService {
             StringBuilder newFileName = new StringBuilder();
             boolean hasArtists = !slskdRequest.getSpotifySong().getArtists().isEmpty();
 
-            if (hasArtists) newFileName.append(slskdRequest.getArtistsNames());
+            if (hasArtists) newFileName.append(slskdRequest.getArtistsNames()).append(" - ");
             newFileName.append(slskdRequest.getSpotifySong().getName());
             newFileName.append(getFileFormat(slskdRequest));
 

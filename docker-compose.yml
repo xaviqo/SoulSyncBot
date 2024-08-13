@@ -27,6 +27,8 @@ services:
     volumes:
       - /slskd/downloads:/soulsync/slskd-downloads
       - ../soulsync/relocated:/soulsync/relocated
+    extra_hosts:
+    - "slskd:host-gateway"
 
 volumes:
   db_data:

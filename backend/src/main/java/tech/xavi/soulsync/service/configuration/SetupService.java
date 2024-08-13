@@ -35,13 +35,6 @@ import java.util.*;
 public class SetupService implements CommandLineRunner {
 
     private static final String[] DEFAULT_ADMIN_VALUES = {"admin","admin"};
-    private static final ConfigurationField[] INITIAL_SETUP_FIELDS = {
-            ConfigurationField.SPOTIFY_CLIENT_ID,
-            ConfigurationField.SPOTIFY_API_SECRET,
-            ConfigurationField.SLSKD_USERNAME,
-            ConfigurationField.SLSKD_PASSWORD,
-            ConfigurationField.SLSKD_API_URL
-    };
     private static final ConfigurationField.Section[] INITIAL_SETUP_SECTIONS = {
             ConfigurationField.Section.SEARCH,
             ConfigurationField.Section.MAINTENANCE
@@ -176,7 +169,13 @@ public class SetupService implements CommandLineRunner {
     }
 
     private List<ConfigurationField> getInitialSetupFields(){
-        return Arrays.stream(INITIAL_SETUP_FIELDS)
+        return Arrays.stream(new ConfigurationField[]{
+                        ConfigurationField.SPOTIFY_CLIENT_ID,
+                        ConfigurationField.SPOTIFY_API_SECRET,
+                        ConfigurationField.SLSKD_USERNAME,
+                        ConfigurationField.SLSKD_PASSWORD,
+                        ConfigurationField.SLSKD_API_URL
+                })
                 .map(configurationFieldService::getFieldWithValue)
                 .toList();
     }

@@ -28,7 +28,7 @@ public enum ConfigurationField {
     SPOTIFY_API_SECRET("spotify client secret",null,Section.API, DataType.TEXT,"You can get both ID and key from the spotify developers dashboard",null,null,null),
     SLSKD_USERNAME("slskd username",null,Section.API, DataType.TEXT,"Username for Slskd panel",null,null, "slskd"),
     SLSKD_PASSWORD("slskd password",null,Section.API, DataType.TEXT,"Password for Slskd panel",null,null,"slskd"),
-    SLSKD_API_URL("slskd api url",null,Section.API, DataType.TEXT,"Slskd Api URL",null,null,"http://localhost:5030"),
+    SLSKD_API_URL("slskd api url",null,Section.API, DataType.TEXT,"Slskd Api URL",null,null,"http://slskd:5030"),
 
     // SEARCH
     SRCH_MILLIS_BETWEEN_REQUESTS("Min milliseconds between requests",null,Section.SEARCH,DataType.NUMBER,"Minimum milliseconds between requests, will automatically adjust if too many requests are being made to the SoulSeek API",500,99999,null),

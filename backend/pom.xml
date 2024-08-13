@@ -91,7 +91,7 @@
 			<plugin>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
-					<execution>
+<!--					<execution>
 						<id>filter-resources</id>
 						<phase>process-resources</phase>
 						<goals>
@@ -100,7 +100,7 @@
 						<configuration>
 							<encoding>UTF-8</encoding>
 						</configuration>
-					</execution>
+					</execution>-->
 					<execution>
 						<id>copy Vue.js frontend content</id>
 						<phase>generate-resources</phase>
@@ -125,7 +125,7 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<resources>
+<!--		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
@@ -136,7 +136,7 @@
 					<exclude>**/*.eot</exclude>
 				</excludes>
 			</resource>
-		</resources>
+		</resources>-->
 	</build>
 
 </project>

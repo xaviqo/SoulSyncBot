@@ -75,12 +75,7 @@ public class SetupService implements CommandLineRunner {
     public void run(String... args) throws Exception {
         createDefaultInstallation();
         createDefaultSearchPolicyConfiguration();
-        boolean isDemo = configurationFieldService
-                .getFieldWithValue(ConfigurationField.IS_DEMO_MODE,false)
-                .getValue()
-                .asText()
-                .equalsIgnoreCase("true");
-        if (isDemo) log.info("DEMO MODE ACTIVE");
+        if (isDemoMode()) log.info("---> DEMO MODE ACTIVE <---");
 
         AppVersionDto appVersion = getCurrentAndLatestVersion();
         if (appVersion.getAlertData().getSeverity().equals(MessageSeverity.INFO))
@@ -170,6 +165,14 @@ public class SetupService implements CommandLineRunner {
                     .setAlertData(alertData);
         }
         return appVersionDto;
+    }
+
+    public boolean isDemoMode() {
+        return configurationFieldService
+                .getFieldWithValue(ConfigurationField.IS_DEMO_MODE,false)
+                .getValue()
+                .asText()
+                .equalsIgnoreCase("true");
     }
 
     private List<ConfigurationField> getInitialSetupFields(){

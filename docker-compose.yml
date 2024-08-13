@@ -1,0 +1,32 @@
+services:
+  db:
+    container_name: db
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: soulsync
+      POSTGRES_PASSWORD: soulsync
+      POSTGRES_DB: soulsync
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: be
+    environment:
+      SOULSYNC_DATASOURCE_URL: jdbc:postgresql://db:5432/soulsync?currentSchema=public&ssl=false
+      SOULSYNC_DATASOURCE_USER: soulsync
+      SOULSYNC_DATASOURCE_PASS: soulsync
+    ports:
+      - "6743:6743"
+    depends_on:
+      - db
+    volumes:
+      - /slskd/downloads:/soulsync/slskd-downloads
+      - ../soulsync/relocated:/soulsync/relocated
+
+volumes:
+  db_data:

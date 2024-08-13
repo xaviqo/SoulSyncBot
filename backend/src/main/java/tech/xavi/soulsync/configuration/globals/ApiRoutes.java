@@ -22,6 +22,7 @@ public class ApiRoutes {
     public static final String EP_IS_INSTALLED = EP_CONFIGURATION_PATH + "/is-installed";
     public static final String EP_FIELDS = EP_CONFIGURATION_PATH + "/fields";
     public static final String EP_FIELD = EP_CONFIGURATION_PATH + "/field";
+    public static final String EP_IS_DEMO = EP_CONFIGURATION_PATH + "/is-demo";
 
     // ACCOUNT
     public static final String EP_ACCOUNT = API_ROOT + "/account";
@@ -60,8 +61,9 @@ public class ApiRoutes {
             new AntPathRequestMatcher(EP_IS_INSTALLED, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_INITIAL_SETUP, HttpMethod.GET.name()),
             new AntPathRequestMatcher(EP_INIT_SETUP_APIS, HttpMethod.POST.name()),
-            new AntPathRequestMatcher(EP_INIT_SETUP_ADMIN,HttpMethod.POST.name()),
-            new AntPathRequestMatcher(EP_ACC_SIGN_IN,HttpMethod.POST.name())
+            new AntPathRequestMatcher(EP_INIT_SETUP_ADMIN, HttpMethod.POST.name()),
+            new AntPathRequestMatcher(EP_ACC_SIGN_IN, HttpMethod.POST.name()),
+            new AntPathRequestMatcher(EP_IS_DEMO, HttpMethod.GET.name())
     };
 
     public static final RequestMatcher[] NO_AVAILABLE_FOR_DEMO_USER = {

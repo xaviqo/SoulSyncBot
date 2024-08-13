@@ -5,7 +5,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false
+    url: ${SOULSYNC_DATASOURCE_URL:jdbc:postgresql://localhost:5432/soulsync?currentSchema=public&ssl=false}
     username: soulsync
     password: soulsync
   jpa:
@@ -50,7 +50,7 @@ tech:
             app-run-maintenance-task: true
             app-maintenance-task-interval-mins: 5
             app-is-relocate: false
-            app-slskd-downloads-path: /slskd/downloads
+            app-slskd-downloads-path: /soulsync/slskd-downloads
             app-relocated-files-path: /soulsync/relocated
             app-relocate-by: PLAYLIST
             app-rename-relocated: false
@@ -86,6 +86,6 @@ tech:
 
 logging:
   level:
-    tech.xavi.soulsync: TRACE
+    tech.xavi.soulsync: INFO
     org.springframework.web.client.RestTemplate: INFO
     com.fasterxml.jackson: INFO

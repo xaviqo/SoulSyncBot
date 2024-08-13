@@ -78,4 +78,9 @@ public class ConfigurationController {
     public ResponseEntity<AppVersionDto> getAppVersion() {
         return ResponseEntity.ok(setupService.getCurrentAndLatestVersion());
     }
+
+    @GetMapping(ApiRoutes.EP_IS_DEMO)
+    public ResponseEntity<Boolean> isDemoMode() {
+        return ResponseEntity.ok(setupService.isDemoMode());
+    }
 }

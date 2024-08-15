@@ -7,6 +7,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import tech.xavi.soulsync.configuration.globals.Banner;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
 import tech.xavi.soulsync.configuration.globals.SearchInputStrategy;
@@ -68,13 +69,15 @@ public class SetupService implements CommandLineRunner {
     public void run(String... args) throws Exception {
         createDefaultInstallation();
         createDefaultSearchPolicyConfiguration();
-        if (isDemoMode()) log.info("---> DEMO MODE ACTIVE <---");
 
         AppVersionDto appVersion = getCurrentAndLatestVersion();
+
+        printInitBanner();
         if (appVersion.getAlertData().getSeverity().equals(MessageSeverity.INFO))
             log.info(appVersion.getAlertData().getMessage());
         else
             log.warn(appVersion.getAlertData().getMessage());
+        if (isDemoMode()) log.info(" ---> DEMO MODE ACTIVE <---");
     }
 
     public void saveApiValues(List<ConfigurationFieldDto> setupFields){
@@ -260,6 +263,33 @@ public class SetupService implements CommandLineRunner {
         } catch (Exception e){
             return false;
         }
+    }
+
+    private void printInitBanner() {
+        final int[] versionNumbers = getVersionNumbers();
+        for (int i = 0; i < Banner.SPACE.getLines().length; i++)
+            System.out.println(
+                    Banner.SPACE.getLine(i)
+                    + Banner.SOULSYNC.getLine(i)
+                    + Banner.SPACE.getLine(i)
+                    + Banner.V.getLine(i)
+                    + Banner.values()[versionNumbers[0]].getLine(i)
+                    + Banner.DOT.getLine(i)
+                    + Banner.values()[versionNumbers[1]].getLine(i)
+                    + Banner.DOT.getLine(i)
+                    + Banner.values()[versionNumbers[2]].getLine(i)
+            );
+        System.out.println();
+    }
+
+    private int[] getVersionNumbers() {
+        String numericPart = CURRENT_VERSION.split("-")[0];
+        String[] parts = numericPart.split("\\.");
+        int[] versionNumbers = new int[parts.length];
+
+        for (int i = 0; i < parts.length; i++)
+            versionNumbers[i] = Integer.parseInt(parts[i]);
+        return versionNumbers;
     }
 
 }

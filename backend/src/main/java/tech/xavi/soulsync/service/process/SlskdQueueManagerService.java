@@ -103,6 +103,10 @@ public class SlskdQueueManagerService {
         }
     }
 
+    public void resetQueue() {
+        queue.clear();
+    }
+
     private Optional<DownloadList> getNextDownloadList() {
         return downloadListService
                 .getDownloadLists()

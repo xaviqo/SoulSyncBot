@@ -333,7 +333,9 @@ export default {
     clearInterval(this.iterationStatsInterval);
     clearInterval(this.fetchSummaryInterval)
     clearInterval(this.fetchQueueStatusInterval);
-    clearInterval(this.apiStatusInterval)
+    clearInterval(this.apiStatusInterval);
+    clearInterval(this.countByStatusInterval);
+    clearInterval(this.findingLogicInterval);
   }
 }
 </script>

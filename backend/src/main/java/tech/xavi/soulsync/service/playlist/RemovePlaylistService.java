@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tech.xavi.soulsync.service.download.SlskdRequestService;
 import tech.xavi.soulsync.service.download.downloadlist.DownloadListService;
+import tech.xavi.soulsync.service.process.SlskdQueueManagerService;
 import tech.xavi.soulsync.service.song.SongService;
 
 @Service @RequiredArgsConstructor
@@ -14,6 +15,7 @@ public class RemovePlaylistService {
     private final DownloadListService downloadListService;
     private final SlskdRequestService slskdRequestService;
     private final SongService songService;
+    private final SlskdQueueManagerService queueManagerService;
 
     @Transactional
     public void remove(String playlistId) {
@@ -21,12 +23,14 @@ public class RemovePlaylistService {
             case DISCOGRAPHY -> removeDiscography(playlistId);
             default -> removePlaylist(playlistId);
         }
+        queueManagerService.resetQueue();
     }
 
     private void removeDiscography(String playlistId){
         playlistService
                 .findAllByParentId(playlistId)
                 .forEach(pl -> removePlaylist(pl.getId()));
+        removePlaylist(playlistId);
     }
 
     private void removePlaylist(String playlistId) {

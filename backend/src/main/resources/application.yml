@@ -63,7 +63,7 @@ tech:
           github: https://api.github.com
         path:
           github:
-            release: /repos/xaviqo/SoulSync/releases/latest
+            release: /repos/xaviqo/SoulSyncBot/releases/latest
           spotify:
             auth:
               get-token:

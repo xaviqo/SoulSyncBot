@@ -8,6 +8,7 @@ import tech.xavi.soulsync.configuration.globals.PlaylistType;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class Playlist {
     @Column
     private String name;
     @Column
-    private String owner;
+    private String ownerRole;
     @Column
     private Integer totalTracks;
     @Column
@@ -36,7 +37,9 @@ public class Playlist {
     private Long lastUpdate;
     @ManyToMany(fetch = FetchType.LAZY) @Builder.Default
     private Set<SpotifySong> songs = new HashSet<>();
-    @OneToMany @Builder.Default
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "playlist_id")
+    @Builder.Default
     private Set<DownloadList> downloadLists = new HashSet<>();
     @OneToMany(mappedBy = "parentPlaylist", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -45,4 +48,22 @@ public class Playlist {
     @JoinColumn(name = "parent_id")
     private Playlist parentPlaylist;
 
+    @Override
+    public String toString() {
+        return "Playlist{" +
+                "id='" + id + '\'' +
+                ", playlistType=" + playlistType +
+                ", cover='" + cover + '\'' +
+                ", totalTracks=" + totalTracks +
+                ", name='" + name + '\'' +
+                ", isUpdatable=" + isUpdatable +
+                ", lastUpdate=" + lastUpdate +
+                ", downloadLists=" + downloadLists +
+                ", subPlaylists=" + (subPlaylists.isEmpty() ? 0 : subPlaylists
+                    .stream()
+                    .map(pl -> "("+pl.getId()+" - "+pl.getName()+")")
+                    .collect(Collectors.joining(", "))) +
+                ", parentPlaylist=" + (parentPlaylist != null ? "("+parentPlaylist.getId()+" - "+parentPlaylist.getName()+")" : "n/a") +
+                '}';
+    }
 }

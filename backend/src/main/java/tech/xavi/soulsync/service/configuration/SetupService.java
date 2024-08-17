@@ -48,6 +48,7 @@ public class SetupService implements CommandLineRunner {
     private final AccountService accountService;
     private final GatewayTokenService gatewayTokenService;
     private final GithubGateway githubGateway;
+    private final DemoModeService demoModeService;
 
     public SetupService(
             @Value("${tech.xavi.soulsync.version}") String currVer,
@@ -55,14 +56,15 @@ public class SetupService implements CommandLineRunner {
             SearchPolicyService searchPolicyService,
             AccountService accountService,
             GatewayTokenService gatewayTokenService,
-            GithubGateway githubGateway
-    ) {
+            GithubGateway githubGateway,
+            DemoModeService demoModeService) {
         this.CURRENT_VERSION = currVer;
         this.configurationFieldService = configurationFieldService;
         this.searchPolicyService = searchPolicyService;
         this.accountService = accountService;
         this.gatewayTokenService = gatewayTokenService;
         this.githubGateway = githubGateway;
+        this.demoModeService = demoModeService;
     }
 
     @Override
@@ -77,7 +79,7 @@ public class SetupService implements CommandLineRunner {
             log.info(appVersion.getAlertData().getMessage());
         else
             log.warn(appVersion.getAlertData().getMessage());
-        if (isDemoMode()) log.info(" ---> DEMO MODE ACTIVE <---");
+        if (demoModeService.isDemoMode()) log.info(" ---> DEMO MODE ACTIVE <---");
     }
 
     public void saveApiValues(List<ConfigurationFieldDto> setupFields){
@@ -145,7 +147,7 @@ public class SetupService implements CommandLineRunner {
         } else if (!releaseDto.tagName().equals(CURRENT_VERSION)) {
             AlertData alertData = AlertData.builder()
                     .severity(MessageSeverity.INFO)
-                    .message(String.format("A new version of the application is available! Latest: %s - Current: %s",
+                    .message(String.format("A new version of SoulSync is available! Latest: %s - Current: %s",
                             releaseDto.tagName(),
                             CURRENT_VERSION))
                     .build();
@@ -154,21 +156,13 @@ public class SetupService implements CommandLineRunner {
         } else {
             AlertData alertData = AlertData.builder()
                     .severity(MessageSeverity.SUCCESS)
-                    .message(String.format("The latest version of the application is being used. - Current: %s",
+                    .message(String.format("Running last version of SoulSync - Current: %s",
                             CURRENT_VERSION))
                     .build();
             appVersionDto
                     .setAlertData(alertData);
         }
         return appVersionDto;
-    }
-
-    public boolean isDemoMode() {
-        return configurationFieldService
-                .getFieldWithValue(ConfigurationField.IS_DEMO_MODE,false)
-                .getValue()
-                .asText()
-                .equalsIgnoreCase("true");
     }
 
     private List<ConfigurationField> getInitialSetupFields(){

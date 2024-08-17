@@ -64,7 +64,6 @@ public class DownloadListDataService {
     @Transactional
     public void deleteDownloadListAndRequests(long downloadListId) {
         DownloadList downloadList = DownloadList.builder().downloadListId(downloadListId).build();
-        downloadListService.deletePlaylistDownloadLists(downloadListId);
         slskdRequestService.deleteDownloadListsSlskdRequests(downloadList);
         downloadListService.deleteById(downloadListId);
     }

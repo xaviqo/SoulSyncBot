@@ -42,7 +42,7 @@ public class PlaylistCreationService {
                 .totalTracks(spotifySongs.size())
                 .cover(playlistCover)
                 .songs(spotifySongs)
-                .owner(accountService.getCurrentUser().getUsername())
+                .ownerRole(accountService.getCurrentUserRole())
                 .lastUpdate(System.currentTimeMillis())
                 .playlistType(PlaylistType.PLAYLIST)
                 .downloadLists(Set.of(downloadList))

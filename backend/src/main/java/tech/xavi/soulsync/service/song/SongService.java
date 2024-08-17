@@ -14,12 +14,10 @@ import tech.xavi.soulsync.entity.db.Artist;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.repository.db.SongRepository;
 import tech.xavi.soulsync.service.artist.ArtistMainService;
+import tech.xavi.soulsync.service.configuration.DemoModeService;
 import tech.xavi.soulsync.service.integration.SpotifyGatewayService;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -32,6 +30,7 @@ public class SongService {
     private final SongRepository songRepository;
     private final SpotifyGatewayService spotifyGatewayService;
     private final ArtistMainService artistMainService;
+    private final DemoModeService demoModeService;
 
     public Page<SpotifySong> findByPlaylistsId(String playlistId, Pageable pageable) {
         return songRepository.findByPlaylistsId(
@@ -47,6 +46,7 @@ public class SongService {
     public Set<SpotifySong> fetchSongsFromSpotify(SpotifyPlaylistDto playlistDto){
         Set<SpotifySong> spotifySongs = fetchFromSpotify(playlistDto)
                 .parallel()
+                .filter( sng -> Objects.nonNull(sng.getTrack()) )
                 .map(this::findAndReplaceNullSongAndArtistsIds)
                 .map(this::createSpotifySong)
                 .collect(Collectors.toSet());
@@ -75,7 +75,7 @@ public class SongService {
     }
 
     private Stream<SpotifySongDto> fetchFromSpotify(SpotifyPlaylistDto playlistDto) {
-        int totalPageRequests = calculateTotalPageRequests(playlistDto.getTotalTracks());
+        int totalPageRequests = calculateTotalPageRequests(playlistDto);
         return IntStream.range(0, totalPageRequests)
                 .parallel()
                 .mapToObj( index -> CompletableFuture.supplyAsync( () -> {
@@ -87,8 +87,11 @@ public class SongService {
                 .flatMap(List::stream);
     }
 
-    private int calculateTotalPageRequests(long totalTracks) {
-        return (int) ((totalTracks + MAX_SONGS_PER_REQUEST - 1) / MAX_SONGS_PER_REQUEST);
+    private int calculateTotalPageRequests(SpotifyPlaylistDto playlistDto) {
+        if (demoModeService.isDemoMode()) {
+            playlistDto.setTotalTracks(MAX_SONGS_PER_REQUEST);
+        }
+        return (int) ((playlistDto.getTotalTracks() + MAX_SONGS_PER_REQUEST - 1) / MAX_SONGS_PER_REQUEST);
     }
 
     private SpotifySongDto findAndReplaceNullSongAndArtistsIds(SpotifySongDto dto){
@@ -122,10 +125,6 @@ public class SongService {
                                 .build() )
                         .toList())
                 .build();
-    }
-
-    public void deleteOrphanSongs() {
-        songRepository.deleteOrphans();
     }
 
 }

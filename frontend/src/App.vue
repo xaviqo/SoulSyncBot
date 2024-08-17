@@ -45,6 +45,16 @@
         </template>
       </ConfirmDialog>
     </div>
+    <div v-if="isDemo" class="fixed p-3 w-full flex justify-content-center bg-gray-900 text-gray-300 shadow-2" style="bottom: 0; letter-spacing: .05em; opacity: .85">
+      <div class="fade-effect">
+        <span>
+          SoulSync is in demo mode. Some features are hidden or limited
+        </span>
+        <span v-if="isAuthenticated" class="cursor-pointer" @click="()  => window.open('https://github.com/xaviqo/SoulSyncBot', '_blank')">
+          - v{{ getVersion() }}
+        </span>
+      </div>
+    </div>
   </div>
 </template>
 <script>
@@ -56,6 +66,7 @@ import {usePlaylistStore} from "@/store/playlist-calls";
 export default {
   name: 'SoulSync',
   data: () => ({
+    isDemo: false,
     isInstalled: false,
     showLoadingDialog: false,
     loadingText: null,
@@ -66,6 +77,7 @@ export default {
     Header
   },
   created() {
+    this.checkIsDemoMode();
     this.checkInstalled();
     this.emitter.on('alert', this.showAlert);
     this.emitter.on('loading', this.showLoading);
@@ -110,6 +122,15 @@ export default {
             })
       }
     },
+    checkIsDemoMode() {
+      this.$axios.get('/cfg/is-demo')
+          .then(res => {
+            this.isDemo = res.data
+          })
+    },
+    getVersion() {
+      return JSON.parse(localStorage.getItem('version'))?.current;
+    },
     ...mapActions(usePlaylistStore,['loadPlaylists']),
   },
   computed: {
@@ -139,5 +160,13 @@ export default {
 }
 .input-right-squared {
   border-radius: 5px 0 0 0;
+}
+.fade-effect {
+  animation: fadeInOut 3s infinite;
+}
+@keyframes fadeInOut {
+  0% { opacity: .1; }
+  50% { opacity: .6; }
+  100% { opacity: .1; }
 }
 </style>

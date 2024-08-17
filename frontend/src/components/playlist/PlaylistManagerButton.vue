@@ -40,10 +40,9 @@ export default {
   },
   data: () => ({
     buttons: [
-      { label: 'Download', action: 'download', showWhenDownloadManager: false },
-      { label: 'Show Stats', action: 'showStats', showWhenDownloadManager: false },
+      { label: 'Create Downloads', action: 'download', showWhenDownloadManager: false },
       { label: 'Force Update', action: 'forceUpdate', showWhenDownloadManager: true },
-      { label: 'Delete', action: 'delete', showWhenDownloadManager: false }
+      { label: 'Delete Playlist', action: 'delete', showWhenDownloadManager: false }
     ]
   }),
   methods: {

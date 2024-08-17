@@ -1,1 +1,19 @@
-wip
+image::img/logo.jpg[align=center]
+
+# About
+
+SoulSync
+
+# Novedades
+
+# Requisitos
+
+# Instalacion
+
+## Docker
+
+## Standalone
+
+# Configuracion
+
+# Agradecimientos

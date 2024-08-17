@@ -55,8 +55,8 @@ export default {
       return this.$axios
           .post('/account/sign-in', this.loginPayload)
           .then(res => {
+            this.getVersion();
             this.emitter.emit('loading', {show: false});
-
             this.userCalls.saveLoginResponse(res.data);
             this.$router.push({ name : 'panel-view'});
           })
@@ -67,6 +67,17 @@ export default {
         username: '',
         password: ''
       };
+    },
+    getVersion() {
+      this.$axios
+          .get('/cfg/app-version')
+          .then( res => {
+            console.log(res.data.alertData.message);
+            localStorage.setItem('version',JSON.stringify(res.data));
+            if (res.data.alertData.severity !== 'SUCCESS') {
+              this.emitter.emit('alert',res.data.alertData);
+            }
+          });
     }
   }
 }

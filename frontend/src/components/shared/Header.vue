@@ -2,7 +2,7 @@
   <header class="flex justify-content-center">
     <Toolbar class="w-full p-4">
       <template #start>
-        <div class="w-full mr-4 cursor-pointer" @click="goTo('panel-view')">
+        <div class="w-full mr-4 cursor-pointer" @click="goTo(routes[0])">
           <span>S O U L  <b>S Y N C</b></span>
         </div>
         <div class="flex align-items-center gap-2">
@@ -12,7 +12,7 @@
               :label="route.label"
               text
               plain
-              @click="goTo(route.isInternal,route.route)"
+              @click="goTo(route)"
               :class="{'active-button': isActive(route.route)}"
           />
         </div>
@@ -52,13 +52,16 @@ export default {
       },
       {
         label: 'Help',
-        route: 'https://soulsync.xavi.tech/manual',
-        isInternal: false
+        isInternal: false,
+        go: () => {
+          const current = JSON.parse(localStorage.getItem('version')).current;
+          window.open(`https://soulsync.xavi.tech/manual?v=${current}`, '_blank');
+        }
       },
       {
         label: 'GitHub',
-        route: 'https://github.com/xaviqo/SoulSyncBot',
-        isInternal: false
+        isInternal: false,
+        go: () => window.open('https://github.com/xaviqo/SoulSyncBot', '_blank')
       }
     ]
   }),
@@ -75,11 +78,11 @@ export default {
       this.$router.push("/");
       window.location.reload();
     },
-    goTo(isInternal, route) {
-      if (isInternal)
-        this.$router.push({ name: route })
+    goTo(route) {
+      if (route.isInternal)
+        this.$router.push({ name: route.route })
       else
-        window.open(route, '_blank');
+        route.go();
     },
     isActive(routeName) {
       return this.$route.name === routeName;

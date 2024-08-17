@@ -12,7 +12,6 @@ public record PlaylistOverviewDto(
         String owner,
         int totalTracks,
         long lastUpdate,
-        boolean isUpdatable,
-        boolean shouldRenameRelocated
+        boolean isUpdatable
 ) {
 }

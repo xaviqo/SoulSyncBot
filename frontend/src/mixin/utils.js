@@ -12,6 +12,7 @@ export const utilsMixin = {
             return words.join(" ");
         },
         timestampToDate(ts) {
+            console.log(ts)
             if (ts > 0) {
                 const isInSeconds = ts.toString().length === 10;
                 if (isInSeconds) ts *= 1000;

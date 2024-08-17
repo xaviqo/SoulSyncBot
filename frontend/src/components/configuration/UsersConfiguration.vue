@@ -14,7 +14,10 @@
         </Column>
         <Column field="username">
           <template #body="slotProps">
-            <div class="w-full flex justify-content-center text-xl">
+            <div
+                class="w-full flex justify-content-center text-xl"
+                :class="isCurrentUser(slotProps.data.username) ? 'text-primary' : ''"
+            >
               {{ slotProps.data.username }}
             </div>
           </template>
@@ -207,6 +210,9 @@ export default {
     },
     isAdmin(){
       return this.getRole === 'ADMIN';
+    },
+    isCurrentUser(current) {
+      return current === localStorage.getItem('username');
     }
   },
   computed: {

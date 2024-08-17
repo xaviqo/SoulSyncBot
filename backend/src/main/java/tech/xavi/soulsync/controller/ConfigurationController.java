@@ -11,6 +11,7 @@ import tech.xavi.soulsync.dto.configuration.AppVersionDto;
 import tech.xavi.soulsync.dto.shared.ConfigurationFieldDto;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
+import tech.xavi.soulsync.service.configuration.DemoModeService;
 import tech.xavi.soulsync.service.configuration.SetupService;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ConfigurationController {
 
     private final SetupService setupService;
     private final ConfigurationFieldService configurationFieldService;
+    private final DemoModeService demoModeService;
 
     @GetMapping(ApiRoutes.EP_FIELD)
     public ResponseEntity<ConfigurationField> getFieldByName(@RequestParam String name) {
@@ -81,6 +83,6 @@ public class ConfigurationController {
 
     @GetMapping(ApiRoutes.EP_IS_DEMO)
     public ResponseEntity<Boolean> isDemoMode() {
-        return ResponseEntity.ok(setupService.isDemoMode());
+        return ResponseEntity.ok(demoModeService.isDemoMode());
     }
 }

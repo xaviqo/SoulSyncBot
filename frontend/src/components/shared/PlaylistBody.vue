@@ -5,9 +5,46 @@
         <PlaylistCover
             :playlist-cover="playlist?.cover"
         />
-        <PlaylistType
-            :playlist-type="playlist?.playlistType"
-        />
+        <Card class="w-12 p-0 m-0">
+          <template #content>
+            <div
+                class="p-2 border-round font-semibold inline text-gray-800 opacity-80 w-full flex justify-content-center"
+                :style="`background-color : ${PlaylistColor[playlist.playlistType]}; letter-spacing: 1.3px`"
+            >
+              {{ playlist.playlistType }}
+            </div>
+          </template>
+        </Card>
+        <Card class="w-12 p-0 m-0">
+          <template #content>
+            <div
+                class="inline text-gray-800 opacity-80 w-full flex flex-wrap justify-content-center gap-2"
+                style="letter-spacing: 1.3px"
+            >
+              <div class="p-1 font-semibold text-white">
+                Total Songs
+              </div>
+              <div class="p-1 border-round bg-gray-800 text-white">
+                {{ playlist.totalTracks }}
+              </div>
+            </div>
+          </template>
+        </Card>
+        <Card v-if="playlist.lastUpdate > 0" class="w-12 p-0 m-0">
+          <template #content>
+            <div
+                class="inline text-gray-800 opacity-80 w-full flex flex-wrap justify-content-center gap-2"
+                style="letter-spacing: 1.3px"
+            >
+              <div class="p-1 font-semibold text-white">
+                Last Update
+              </div>
+              <div class="p-1 border-round bg-gray-800 text-white">
+                {{ timestampToDate(playlist.lastUpdate) }}
+              </div>
+            </div>
+          </template>
+        </Card>
       </div>
       <RefreshTimer/>
     </div>
@@ -31,20 +68,21 @@
   </div>
 </template>
 <script>
-import PlaylistType from "@/components/playlist/PlaylistType.vue";
 import PlaylistCover from "@/components/playlist/PlaylistCover.vue";
 import PlaylistName from "@/components/playlist/PlaylistName.vue";
 import PlaylistManagerButton from "@/components/playlist/PlaylistManagerButton.vue";
 import RefreshTimer from "@/components/shared/RefreshTimer.vue";
+import PlaylistColor from "@/model/PlaylistColor";
+import {utilsMixin} from "@/mixin/utils";
 
 export default {
   name: "PlaylistBody",
+  mixins: [utilsMixin],
   components: {
     RefreshTimer,
     PlaylistManagerButton,
     PlaylistName,
     PlaylistCover,
-    PlaylistType,
   },
   props: {
     playlist: {
@@ -55,6 +93,11 @@ export default {
       type: Boolean,
       required: true
     }
+  },
+  computed: {
+    PlaylistColor() {
+      return PlaylistColor
+    },
   }
 }
 </script>

@@ -132,11 +132,31 @@ export default {
           break;
         case 'pause':
           this.$axios
-              .post(`/download-list/${this.downloadList?.id}/pause`)
+              .post(`/download-list/${this.downloadList?.id}/pause`);
           this.emitter.emit('pause-downloadlist',this.downloadList?.id);
           break;
         case 'policy':
           this.emitter.emit('download-list-data-dialog', this.downloadList);
+          break;
+        case  'delete':
+          this.$confirm.require({
+            message: `Do you want to delete this downloads?`,
+            header: `Delete downloads`,
+            icon: 'pi pi-exclamation-triangle',
+            rejectLabel: 'Cancel',
+            acceptLabel: 'Delete',
+            accept: () => {
+              this.emitter.emit('loading',{show: true, text: 'Deleting download list...'});
+              this.$axios
+                  .delete(`/download-list/${this.downloadList?.id}`)
+                  .then( () => {
+                    this.emitter.emit('refresh');
+                    this.emitter.emit('loading', {show: false});
+                    this.$router.push({name: 'playlist-view', params: {id: this.playlistId}});
+                  });
+            }
+          });
+
           break;
       }
     }

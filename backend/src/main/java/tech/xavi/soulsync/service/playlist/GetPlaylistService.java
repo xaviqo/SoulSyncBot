@@ -63,7 +63,7 @@ public class GetPlaylistService {
                 .playlistType(playlist.getPlaylistType())
                 .cover(getPlaylistCover(playlist))
                 .name(playlist.getName())
-                .owner(playlist.getOwner())
+                .owner(playlist.getOwnerRole())
                 .totalTracks(playlist.getTotalTracks())
                 .build();
     }

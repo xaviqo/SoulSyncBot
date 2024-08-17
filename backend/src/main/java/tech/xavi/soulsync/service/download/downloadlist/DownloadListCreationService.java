@@ -49,6 +49,7 @@ public class DownloadListCreationService {
             throw new SoulSyncException(SoulSyncError.SEARCH_POLICY_NOT_FOUND, HttpStatus.NOT_FOUND);
 
         DownloadList downloadList = downloadListService.save(DownloadList.builder()
+                .downloadListId(System.currentTimeMillis())
                 .playlistId(dto.getPlaylistId())
                 .searchPolicy(searchPolicy.getId())
                 .isActive(true)
@@ -60,17 +61,16 @@ public class DownloadListCreationService {
         createSlskdRequests(playlist, downloadList);
     }
 
-    public DownloadList createDownloadListForNewPlaylist(String playlistId, String searchPolicyId) {
+    public synchronized DownloadList createDownloadListForNewPlaylist(String playlistId, String searchPolicyId) {
         SearchPolicy policy = searchPolicyService.getPolicyByRequest(searchPolicyId);
-        return downloadListService.save(
-                DownloadList.builder()
-                        .playlistId(playlistId)
-                        .searchPolicy(searchPolicyId)
-                        .isActive(true)
-                        .priority(policy.getDownloadPriority())
-                        .attempts(0L)
-                        .build()
-        );
+        return DownloadList.builder()
+                .downloadListId(System.currentTimeMillis())
+                .playlistId(playlistId)
+                .searchPolicy(policy.getId())
+                .isActive(true)
+                .priority(policy.getDownloadPriority())
+                .attempts(0L)
+                .build();
     }
 
     public void createSlskdRequests(

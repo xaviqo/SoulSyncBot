@@ -45,7 +45,7 @@ public class AlbumCreationService {
                 .playlistType(PlaylistType.DISCOGRAPHY)
                 .isUpdatable(false)
                 .lastUpdate(System.currentTimeMillis())
-                .owner(accountService.getCurrentUser().getUsername())
+                .ownerRole(accountService.getCurrentUserRole())
                 .totalTracks(0)
                 .build();
         playlistService.savePlaylist(parentPlaylist);
@@ -120,8 +120,10 @@ public class AlbumCreationService {
             Playlist parentPlaylist,
             String searchPolicyId
     ) {
-        DownloadList downloadList = downloadListCreationService.createDownloadListForNewPlaylist(album.getId(), searchPolicyId);
+        DownloadList downloadList = downloadListCreationService
+                .createDownloadListForNewPlaylist(album.getId(), searchPolicyId);
         Playlist playlist = saveAlbum(album, parentPlaylist, downloadList);
+
         downloadListCreationService.createSlskdRequests(playlist, downloadList);
         return playlist;
     }
@@ -137,7 +139,7 @@ public class AlbumCreationService {
                         .totalTracks(albumDto.getTotalTracks())
                         .cover(playlistService.getPlaylistCoverUrl(albumDto.getImages()))
                         .songs(playlistSongs)
-                        .owner(accountService.getCurrentUser().getUsername())
+                        .ownerRole(accountService.getCurrentUserRole())
                         .lastUpdate(System.currentTimeMillis())
                         .playlistType(PlaylistType.getType(albumDto.getAlbumType()))
                         .parentPlaylist(parentPlaylist)

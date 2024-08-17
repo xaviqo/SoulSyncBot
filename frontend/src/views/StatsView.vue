@@ -16,13 +16,15 @@
         />
       </template>
     </Card>
-    <Card v-for="ps in summaryData" :key="ps.title" class="flex-1">
+    <Card v-for="ps in summaryData" :key="ps.title" class="flex-1" style="max-width: 200px;">
       <template #title>
         {{ ps.title }}
       </template>
       <template #content>
-        <div class="flex justify-content-center align-items-end font-medium text-color-secondary white-space-nowrap overflow-hidden text-overflow-ellipsis" style="max-width: 100%;">
-          {{ ps.value ? ps.value : 'N/A' }}
+        <div class="flex justify-content-center align-items-end font-medium text-color-secondary">
+          <span class="white-space-nowrap overflow-hidden text-overflow-ellipsis">
+            {{ ps.value ? ps.value : 'N/A' }}
+          </span>
         </div>
       </template>
     </Card>

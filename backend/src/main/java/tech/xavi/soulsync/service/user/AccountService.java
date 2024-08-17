@@ -43,6 +43,10 @@ public class AccountService {
         );
     }
 
+    public String getCurrentUserRole() {
+        return ((Account) getCurrentUser()).getRole().name();
+    }
+
     public void createAccount(Account account, Role role){
         boolean isUsernameTaken = accountRepository
                 .contains(account.getUsername());

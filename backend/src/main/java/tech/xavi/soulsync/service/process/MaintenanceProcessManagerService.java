@@ -15,7 +15,7 @@ import java.util.List;
 @Service
 public class MaintenanceProcessManagerService {
 
-    private static final int RUN_RATE_SEC = 60;
+    private static final int RUN_INTERVAL_SEC = 60;
     private final List<MaintenanceAbstractProcess> maintenanceProcesses;
     private final ConfigurationFieldService configurationFieldService;
     private long lastExecutionMs;
@@ -24,6 +24,7 @@ public class MaintenanceProcessManagerService {
             List<MaintenanceAbstractProcess> processes,
             ConfigurationFieldService cfgFieldService)
     {
+        this.lastExecutionMs = System.currentTimeMillis();
         this.maintenanceProcesses = processes
                 .stream()
                 .sorted(Comparator.comparingInt(Process::getOrder))
@@ -31,7 +32,7 @@ public class MaintenanceProcessManagerService {
         this.configurationFieldService = cfgFieldService;
     }
 
-    @Scheduled(fixedRate = RUN_RATE_SEC * 1000, initialDelay = RUN_RATE_SEC * 1000)
+    @Scheduled(fixedRate = RUN_INTERVAL_SEC * 1000, initialDelay = RUN_INTERVAL_SEC * 1000)
     protected void runMaintenance() {
         if (shouldRunTask() && isCooldownOver()) {
             for (MaintenanceAbstractProcess maintenanceProcess : maintenanceProcesses) {
@@ -52,18 +53,13 @@ public class MaintenanceProcessManagerService {
     }
 
     private boolean isCooldownOver() {
-        if (lastExecutionMs == 0) return true;
         long currentMs = System.currentTimeMillis();
         long coolDownMs = configurationFieldService
                 .getValue(ConfigurationField.APP_MAINTENANCE_TASK_INTERVAL_MINS)
                 .asLong() * 60 * 1000;
         boolean isExpired = lastExecutionMs + coolDownMs <= currentMs;
-        if (isExpired) {
-            lastExecutionMs = currentMs;
-            return true;
-        }
-        return false;
-
+        if (isExpired) lastExecutionMs = currentMs;
+        return isExpired;
     }
 
     private boolean shouldRunTask() {

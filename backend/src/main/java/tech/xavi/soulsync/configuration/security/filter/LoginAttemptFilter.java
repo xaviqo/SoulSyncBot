@@ -16,8 +16,9 @@ import tech.xavi.soulsync.configuration.globals.ApiRoutes;
 import tech.xavi.soulsync.controller.ExceptionController;
 import tech.xavi.soulsync.dto.shared.AlertData;
 import tech.xavi.soulsync.dto.shared.ErrorDto;
-import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.entity.LoginAttempt;
+import tech.xavi.soulsync.exception.SoulSyncError;
+import tech.xavi.soulsync.service.configuration.DemoModeService;
 import tech.xavi.soulsync.service.user.LoginAttemptService;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ public class LoginAttemptFilter extends OncePerRequestFilter {
             HttpMethod.POST.name()
     );
     private final LoginAttemptService loginAttemptService;
+    private final DemoModeService demoModeService;
     private final ObjectMapper objectMapper;
 
     @Override
@@ -39,15 +41,19 @@ public class LoginAttemptFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        String ipAddr = request.getRemoteAddr();
-        loginAttemptService
-                .checkAttempt(ipAddr);
-        LoginAttempt loginAttempt =
-                loginAttemptService.getAttemptByIp(ipAddr);
-        if (!loginAttempt.isBlocked())
+        if (demoModeService.isDemoMode()) {
+            String ipAddr = request.getRemoteAddr();
+            loginAttemptService
+                    .checkAttempt(ipAddr);
+            LoginAttempt loginAttempt =
+                    loginAttemptService.getAttemptByIp(ipAddr);
+            if (!loginAttempt.isBlocked())
+                filterChain.doFilter(request, response);
+            else
+                handleTokenFilterException(response, loginAttempt);
+        } else {
             filterChain.doFilter(request, response);
-        else
-            handleTokenFilterException(response, loginAttempt);
+        }
     }
 
     private void handleTokenFilterException(HttpServletResponse response, LoginAttempt loginAttempt){

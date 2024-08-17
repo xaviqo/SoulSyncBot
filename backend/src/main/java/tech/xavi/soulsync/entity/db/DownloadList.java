@@ -14,9 +14,9 @@ import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 @Entity
 public class DownloadList {
 
-    @Id @GeneratedValue
+    @Id
     private Long downloadListId;
-    @Column
+    @Column(name = "playlist_id")
     private String playlistId;
     @Column
     private String searchPolicy;
@@ -40,4 +40,15 @@ public class DownloadList {
         this.attempts++;
     }
 
+    @Override
+    public String toString() {
+        return "DownloadList{" +
+                "downloadListId=" + downloadListId +
+                ", searchPolicy='" + searchPolicy + '\'' +
+                ", isActive=" + isActive +
+                ", priority=" + priority +
+                ", attempts=" + attempts +
+                ", lastCheck=" + lastCheck +
+                '}';
+    }
 }

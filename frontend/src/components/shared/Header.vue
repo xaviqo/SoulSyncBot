@@ -55,7 +55,7 @@ export default {
         isInternal: false,
         go: () => {
           const current = JSON.parse(localStorage.getItem('version')).current;
-          window.open(`https://soulsync.xavi.tech/manual?v=${current}`, '_blank');
+          window.open(`https://manual.soulsync.fyi/?v=${current}`, '_blank');
         }
       },
       {

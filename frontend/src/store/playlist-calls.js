@@ -28,7 +28,7 @@ export const usePlaylistStore = defineStore('playlist', {
         async fetchPlaylistSongs(playlistId,page,size) {
             if (playlistId) {
                 const isEmpty = this.playlistSongs.content.length < 1;
-                if (isEmpty) this.$emitter.emit('loading', {show: true, text: `Logging songs...`});
+                if (isEmpty) this.$emitter.emit('loading', {show: true, text: `Loading songs...`});
                 const res = await this.$axios.get(`/playlist/${playlistId}/songs`, { params: { page: page , size }});
                 this.playlistSongs = res.data;
                 if (isEmpty) this.$emitter.emit('loading', {show: false});
@@ -63,7 +63,7 @@ export const usePlaylistStore = defineStore('playlist', {
         async fetchDownloadListSongs(downloadListId,params) {
             if (downloadListId) {
                 const isEmpty = this.downloadListSongs.content.length < 1;
-                if (isEmpty) this.$emitter.emit('loading', {show: true, text: `Logging downloads...`});
+                if (isEmpty) this.$emitter.emit('loading', {show: true, text: `Loading downloads...`});
                 const res = await this.$axios.get(`/download-list/${downloadListId}/tracks`, { params: params });
                 this.downloadListSongs = res.data;
                 if (isEmpty) this.$emitter.emit('loading', {show: false});

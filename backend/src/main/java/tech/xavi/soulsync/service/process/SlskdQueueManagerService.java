@@ -122,8 +122,8 @@ public class SlskdQueueManagerService {
 
     private void handleRequestAndUpdate(DownloadList downloadList, SlskdRequest request) {
         slskdProcessService.handleSlskdRequest(request);
-        if (isDownloadListCompleted(downloadList))
-            updateDownloadList(downloadList);
+        boolean isListCompleted = isDownloadListCompleted(downloadList);
+        if (isListCompleted) updateDownloadList(downloadList);
     }
 
     private Optional<SlskdRequest> getNextRequestFromQueue(DownloadList downloadList) {

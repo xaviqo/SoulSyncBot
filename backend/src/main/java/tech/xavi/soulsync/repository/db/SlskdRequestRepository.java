@@ -21,7 +21,8 @@ public interface SlskdRequestRepository extends CrudRepository<SlskdRequest, Lon
     Page<SlskdRequest> findByDownloadListAndStatusIn(DownloadList downloadList, List<ProcessStatus> statusList, Pageable pageable);
     Page<SlskdRequest> findByDownloadListAndStatusInAndSearchInputContaining(DownloadList downloadList, List<ProcessStatus> statusList, String searchInput, Pageable pageable);
     Optional<SlskdRequest> findByFilenameAndSharedBy(String filename, String sharedBy);
-    Set<SlskdRequest> findByStatus(ProcessStatus status);
+    @Query("FROM SlskdRequest s WHERE s.status IN :statuses")
+    Set<SlskdRequest> findByStatus(ProcessStatus... status);
 
     @Transactional
     @Modifying

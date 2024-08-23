@@ -10,6 +10,7 @@ import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import tech.xavi.soulsync.service.download.SlskdRequestService;
 import tech.xavi.soulsync.service.stats.StatsService;
 
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -21,6 +22,12 @@ public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
     private final SlskdRequestService slskdRequestService;
     private final ConfigurationFieldService configurationFieldService;
     private final StatsService statsService;
+    private static final long ONE_HOUR_IN_MS = 60 * 60 * 1000;
+    private static final ProcessStatus[] STATUSES_TO_CHECK_STUCK = new ProcessStatus[]{
+            ProcessStatus.SEARCHING,
+            ProcessStatus.FINDING_FILE,
+            ProcessStatus.DOWNLOADING
+    };
 
     @Override
     public CompletableFuture<Boolean> execute() {
@@ -34,6 +41,13 @@ public class FindStuckDownloadsProcess extends MaintenanceAbstractProcess {
                                         slskdRequestService.setRequestToWaiting(req);
                                 })
                 );
+        slskdRequestService
+                .findByStatus(STATUSES_TO_CHECK_STUCK)
+                .forEach( slskdRequest -> {
+                    boolean isStatusStuck = Instant.now().toEpochMilli() - slskdRequest.getLastCheck() >= ONE_HOUR_IN_MS;
+                    if (isStatusStuck) slskdRequestService.setRequestToWaiting(slskdRequest);
+                });
+
         if (statsService.isBanned()) {
             slskdRequestService
                     .findByStatus(ProcessStatus.SEARCHING)

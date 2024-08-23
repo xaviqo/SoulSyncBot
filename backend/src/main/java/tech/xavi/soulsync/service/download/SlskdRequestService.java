@@ -53,7 +53,7 @@ public class SlskdRequestService {
                 .filter( song -> song.getAttempts() <= retiesThreshold);
     }
 
-    public Set<SlskdRequest> findByStatus(ProcessStatus status){
+    public Set<SlskdRequest> findByStatus(ProcessStatus... status){
         return slskdRequestRepository.findByStatus(status);
     }
 

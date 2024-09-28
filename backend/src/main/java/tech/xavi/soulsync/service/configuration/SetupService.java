@@ -119,8 +119,11 @@ public class SetupService implements CommandLineRunner {
         return null;
     }
 
-    public Map<String,Boolean> isAppInstalledResponse(){
-        return Map.of("isInstalled",isAppInstalled());
+    public Map<String,Object> isAppInstalledResponse(){
+        return Map.of(
+                "isInstalled",isAppInstalled(),
+                "appVersion",getCurrentAndLatestVersion()
+        );
     }
 
     public Map<GatewayName,Boolean> getApiChecks() {

@@ -12,16 +12,29 @@
       </template>
       <template #content>
         <div class="flex flex-column justify-content-around">
-          <div class="flex justify-content-center p-4 border-round-lg">
-            <div v-if="activeStep === 0" class="w-8 flex gap-4">
-              <Button
-                  class="w-6 p-3"
-                  label="Go to installation manual"
-              />
-              <Button
-                  class="w-6 p-3"
-                  label="Go to installation video"
-              />
+          <div class="flex flex-column align-items-center gap-4 p-4 border-round-lg">
+            <div v-if="activeStep === 0" class="w-full flex flex-column gap-4">
+              <div class="text-gray-300 flex justify-content-center w-full mb-4">
+                The video is still in process... Apologies! 🙇
+              </div>
+              <div class="flex justify-content-center gap-4 px-8">
+                <Button
+                    class="w-4 p-3"
+                    label="Go to repository documentation"
+                    @click="goTo('github')"
+                />
+                <Button
+                    class="w-4 p-3"
+                    label="Go to installation manual"
+                    @click="goTo('manual')"
+                />
+                <Button
+                    class="w-4 p-3"
+                    label="Go to installation video"
+                    :disabled="'true'"
+
+                />
+              </div>
             </div>
             <div v-else-if="activeStep === 1">
               <div class="w-full flex flex-wrap align-items-start justify-content-evenly gap-8">
@@ -126,7 +139,12 @@ export default {
     apiStatus: {
       SPOTIFY: false,
       SLSKD: false
-    }
+    },
+    goToUrls: {
+      manual: 'https://manual.soulsync.fyi',
+      github: 'https://github.com/xaviqo/SoulSyncBot',
+      video: 'https://soulsync.fyi'
+    },
   }),
   methods: {
     saveAccountAndFinish() {
@@ -212,14 +230,11 @@ export default {
       else if (this.activeStep === 3)
         this.saveAccountAndFinish();
     },
-    isReady() {
-      if (this.activeStep === 0)
-        return true
-      else if (this.activeStep === 1)
-        return this.apiStatus['SLSKD'];
+    goTo(where) {
+      window.open(this.goToUrls[where], '_blank');
     }
   },
-  created() {
+  mounted() {
     this.$axios.get('/cfg/is-installed')
         .then(res => {
           if (res.data?.isInstalled){
@@ -228,6 +243,9 @@ export default {
               message: `SoulSync is already configured`
             });
             this.$router.push({ name : 'login-view'});
+          }
+          if (res.data?.appVersion?.current) {
+            this.goToUrls.manual = `https://manual.soulsync.fyi/?v=${res.data.appVersion.current}`;
           }
         })
   }

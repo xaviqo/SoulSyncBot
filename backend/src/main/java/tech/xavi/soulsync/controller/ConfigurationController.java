@@ -46,7 +46,7 @@ public class ConfigurationController {
     }
 
     @GetMapping(ApiRoutes.EP_IS_INSTALLED)
-    public ResponseEntity<Map<String,Boolean>> isAppInstalled(){
+    public ResponseEntity<Map<String,Object>> isAppInstalled(){
         return ResponseEntity.ok(setupService.isAppInstalledResponse());
     }
 

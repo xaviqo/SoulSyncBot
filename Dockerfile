@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x ./mvnw
+RUN chmod +x mvnw && sed -i 's/\r$//' mvnw
 
 RUN ./mvnw clean package -DskipTests
 

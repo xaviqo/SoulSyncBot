@@ -23,7 +23,7 @@ public class WatchdogService {
     private final Map<UUID, WatchdogTaskWrapper> taskLastActivityMap = new ConcurrentHashMap<>();
     private final ThreadPoolTaskExecutor taskExecutor;
     private final ThreadPoolTaskScheduler taskScheduler;
-    private final AtomicBoolean stopCreatingThreads;
+    private final AtomicBoolean isThreadCreationAllowed;
 
     public WatchdogService(
             ThreadPoolTaskExecutor taskExecutor,
@@ -31,7 +31,7 @@ public class WatchdogService {
     ) {
         this.taskExecutor = taskExecutor;
         this.taskScheduler = taskScheduler;
-        this.stopCreatingThreads = new AtomicBoolean(false);
+        this.isThreadCreationAllowed = new AtomicBoolean(true);
     }
 
     @Scheduled(fixedRate = 60000)
@@ -41,7 +41,7 @@ public class WatchdogService {
         taskLastActivityMap.forEach( (taskId, wrapper) -> {
             if (currentTime - wrapper.getLastUpdate() > MAX_TASK_DURATION_MS) {
                 log.warn("Task {} exceeded max duration. Attempting to handle.", taskId);
-                if (!stopCreatingThreads.get()) {
+                if (isThreadCreationAllowed()) {
                     try {
                         handleStuckTask(taskId);
                     } catch (InterruptedException e) {
@@ -76,7 +76,7 @@ public class WatchdogService {
     private void handleStuckTask(UUID taskId) throws InterruptedException {
         WatchdogTaskWrapper taskWrapper = taskLastActivityMap.get(taskId);
 
-        stopCreatingThreads.set(true);
+        isThreadCreationAllowed.set(true);
         log.debug("Task {} is stuck. Reloading SoulSync threads. Waiting for {}ms", taskWrapper, THREADS_COMPLETION_WAIT_MS);
         Thread.sleep(THREADS_COMPLETION_WAIT_MS);
 
@@ -112,7 +112,7 @@ public class WatchdogService {
             log.error("Thread was interrupted while handling stuck task {}.", taskWrapper, e);
             throw e;
         } finally {
-            stopCreatingThreads.set(false);
+            isThreadCreationAllowed.set(false);
             log.debug("Creation of new threads resumed after handling task {}.", taskWrapper);
         }
 

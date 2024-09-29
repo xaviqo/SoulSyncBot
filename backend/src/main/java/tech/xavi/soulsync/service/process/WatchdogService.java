@@ -120,7 +120,7 @@ public class WatchdogService {
     }
 
     public boolean isThreadCreationAllowed(){
-        return stopCreatingThreads.get();
+        return isThreadCreationAllowed.get();
     }
 
 }

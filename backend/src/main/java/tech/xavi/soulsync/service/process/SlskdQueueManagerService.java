@@ -9,6 +9,7 @@ import org.springframework.web.client.HttpStatusCodeException;
 import tech.xavi.soulsync.configuration.globals.DownloadPriority;
 import tech.xavi.soulsync.configuration.globals.GatewayName;
 import tech.xavi.soulsync.configuration.globals.ProcessStatus;
+import tech.xavi.soulsync.configuration.scheduling.SchedulerConfiguration;
 import tech.xavi.soulsync.entity.datafile.ConfigurationField;
 import tech.xavi.soulsync.entity.db.DownloadList;
 import tech.xavi.soulsync.entity.db.SlskdRequest;
@@ -38,6 +39,7 @@ public class SlskdQueueManagerService {
     private final SlskdProcessService slskdProcessService;
     private final SlskdRequestService slskdRequestService;
     private final SearchPolicyService searchPolicyService;
+    private final WatchdogService watchdogService;
     private final SlskdRequestsThrottleService throttleService;
 
     public SlskdQueueManagerService(
@@ -47,9 +49,11 @@ public class SlskdQueueManagerService {
             SlskdProcessService slskdProcessService,
             SlskdRequestService slskdRequestService,
             SearchPolicyService searchPolicyService,
+            WatchdogService watchdogService,
             SlskdRequestsThrottleService throttleService
     ) {
         this.cfgFieldService = cfgFieldService;
+        this.watchdogService = watchdogService;
         this.downloadListService = downloadListService;
         this.slskdProcessService = slskdProcessService;
         this.slskdRequestService = slskdRequestService;
@@ -59,47 +63,24 @@ public class SlskdQueueManagerService {
         this.queue = new ConcurrentLinkedQueue<>();
     }
 
-    @Async
+    @Async(SchedulerConfiguration.SOULSYNC_SCHEDULER_POOL_NAME)
     @Scheduled(fixedRate = RUN_RATE_MS, initialDelay = RUN_RATE_MS)
     protected void runQueue() {
         try {
-            if (shouldRunTask() && throttleService.isNotBanned() && isRequestSlotAvailable())
-                getNextDownloadList().ifPresent(downloadList ->
-                        getNextRequestFromQueue(downloadList).ifPresent(request ->
-                                handleRequestAndUpdate(downloadList, request)
+            boolean shouldRun = shouldRunTask()
+                    && throttleService.isNotBanned()
+                    && isRequestSlotAvailable()
+                    && watchdogService.isThreadCreationAllowed();
+            if (shouldRun)
+                getNextDownloadList()
+                        .ifPresent(downloadList ->
+                            getNextRequestFromQueue(downloadList)
+                                .ifPresent(request ->
+                                    handleRequestAndUpdate(downloadList, request)
                         )
                 );
-        } catch (HttpStatusCodeException hsce) {String responseError = hsce.getResponseBodyAsString();
-            log.warn("HTTP Error: {}", responseError);
-            switch (hsce.getStatusCode()) {
-                case HttpStatus.CONFLICT:
-                case HttpStatus.INTERNAL_SERVER_ERROR:
-                    if (isBanError(responseError)) {
-                        log.warn("Too many requests per minute. " +
-                                        "Expect 30 minutes of ban on the SoulSeek network " +
-                                        "| Current Throttle: {} " +
-                                        "| Current Ms Between Req: {}*{}",
-                                throttleService.getMillisBetweenRequests(),
-                                cfgFieldService
-                                        .getValue(ConfigurationField.SRCH_MILLIS_BETWEEN_REQUESTS)
-                                        .asLong(),
-                                throttleService.getThrottleMultiplier()
-                        );
-                        throttleService.setBanned();
-                    } else if (responseError.contains("appears to be offline")
-                            || responseError.contains("error occurred while saving the entity changes")){
-                        log.warn(responseError);
-                    } else {
-                        hsce.printStackTrace();
-                    }
-                    break;
-                case HttpStatus.UNAUTHORIZED:
-                    log.warn("It seems that SLSKD token has expired earlier than expected.... New token requested");
-                    gatewayTokenService.requestNewToken(GatewayName.SLSKD);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected status code from SLSKD API: " + hsce.getStatusCode());
-            }
+        } catch (HttpStatusCodeException hsce) {
+            logHttpError(hsce);
         }
     }
 
@@ -195,4 +176,38 @@ public class SlskdQueueManagerService {
                 .contains(SLSKD_BAN_MESSAGE);
     }
 
+    private void logHttpError(HttpStatusCodeException hsce) {
+        String responseError = hsce.getResponseBodyAsString();
+        log.warn("HTTP Error: {}", responseError);
+
+        switch (hsce.getStatusCode()) {
+            case HttpStatus.CONFLICT:
+            case HttpStatus.INTERNAL_SERVER_ERROR:
+                if (isBanError(responseError)) {
+                    log.warn("Too many requests per minute. " +
+                                    "Expect 30 minutes of ban on the SoulSeek network " +
+                                    "| Current Throttle: {} " +
+                                    "| Current Ms Between Req: {}*{}",
+                            throttleService.getMillisBetweenRequests(),
+                            cfgFieldService
+                                    .getValue(ConfigurationField.SRCH_MILLIS_BETWEEN_REQUESTS)
+                                    .asLong(),
+                            throttleService.getThrottleMultiplier()
+                    );
+                    throttleService.setBanned();
+                } else if (responseError.contains("appears to be offline")
+                        || responseError.contains("error occurred while saving the entity changes")){
+                    log.warn(responseError);
+                } else {
+                    hsce.printStackTrace();
+                }
+                break;
+            case HttpStatus.UNAUTHORIZED:
+                log.warn("It seems that SLSKD token has expired earlier than expected.... New token requested");
+                gatewayTokenService.requestNewToken(GatewayName.SLSKD);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected status code from SLSKD API: " + hsce.getStatusCode());
+        }
+    }
 }

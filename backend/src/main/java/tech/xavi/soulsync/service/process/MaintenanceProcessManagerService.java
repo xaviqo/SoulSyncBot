@@ -10,6 +10,7 @@ import tech.xavi.soulsync.service.process.maintenance.MaintenanceAbstractProcess
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 
 @Log4j2
 @Service
@@ -18,24 +19,34 @@ public class MaintenanceProcessManagerService {
     private static final int RUN_INTERVAL_SEC = 60;
     private final List<MaintenanceAbstractProcess> maintenanceProcesses;
     private final ConfigurationFieldService configurationFieldService;
+    private final WatchdogService watchdogService;
     private long lastExecutionMs;
 
     public MaintenanceProcessManagerService(
             List<MaintenanceAbstractProcess> processes,
-            ConfigurationFieldService cfgFieldService)
-    {
+            WatchdogService watchdogService,
+            ConfigurationFieldService cfgFieldService
+    ) {
         this.lastExecutionMs = System.currentTimeMillis();
         this.maintenanceProcesses = processes
                 .stream()
                 .sorted(Comparator.comparingInt(Process::getOrder))
                 .toList();
+        this.watchdogService = watchdogService;
         this.configurationFieldService = cfgFieldService;
     }
 
     @Scheduled(fixedRate = RUN_INTERVAL_SEC * 1000, initialDelay = RUN_INTERVAL_SEC * 1000)
     protected void runMaintenance() {
-        if (shouldRunTask() && isCooldownOver()) {
+        boolean shouldRun = shouldRunTask()
+                && isCooldownOver()
+                && watchdogService.isThreadCreationAllowed();
+
+        if (shouldRun) {
+            final UUID taskId = watchdogService.registerTask(this.getClass().getName());
+
             for (MaintenanceAbstractProcess maintenanceProcess : maintenanceProcesses) {
+                watchdogService.updateTaskActivity(taskId,maintenanceProcess.getTaskName());
                 StopWatch stopWatch = new StopWatch();
                 stopWatch.start();
                 maintenanceProcess.execute().join();
@@ -49,6 +60,8 @@ public class MaintenanceProcessManagerService {
                         stopWatch.getTotalTimeSeconds() + "s"
                 );
             }
+
+            watchdogService.completeTask(taskId);
         }
     }
 

@@ -11,11 +11,13 @@ import tech.xavi.soulsync.entity.db.SlskdRequest;
 import tech.xavi.soulsync.entity.db.SpotifySong;
 import tech.xavi.soulsync.service.configuration.ConfigurationFieldService;
 import tech.xavi.soulsync.service.process.Process;
+import tech.xavi.soulsync.service.process.WatchdogService;
 import tech.xavi.soulsync.service.process.download.SlskdAbstractProcess;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Log4j2
@@ -27,14 +29,16 @@ public class SlskdProcessService {
     private final ConfigurationFieldService cfgFieldService;
     private final ThreadPoolTaskScheduler threadPoolTaskScheduler;
     private final SlskdRequestService slskdRequestService;
-    @Getter private AtomicReference<String> lastFailed;
-    @Getter private AtomicReference<String> lastSuccess;
+    private final WatchdogService watchdogService;
+    @Getter private final AtomicReference<String> lastFailed;
+    @Getter private final AtomicReference<String> lastSuccess;
 
     public SlskdProcessService(
             List<SlskdAbstractProcess> processes,
             ConfigurationFieldService cfgFieldService,
             ThreadPoolTaskScheduler threadPoolTaskScheduler,
-            SlskdRequestService slskdRequestService
+            SlskdRequestService slskdRequestService,
+            WatchdogService watchdogService
     ) {
         this.slskdProcesses = processes
                 .stream()
@@ -44,6 +48,7 @@ public class SlskdProcessService {
         this.cfgFieldService = cfgFieldService;
         this.threadPoolTaskScheduler = threadPoolTaskScheduler;
         this.slskdRequestService = slskdRequestService;
+        this.watchdogService = watchdogService;
         this.lastSuccess = new AtomicReference<>("");
         this.lastFailed = new AtomicReference<>("");
     }
@@ -51,7 +56,6 @@ public class SlskdProcessService {
     public void handleSlskdRequest(SlskdRequest slskdRequest) {
         if (slskdRequest != null) {
             currentRequests.add(slskdRequest);
-
             try {
                 executeProcesses(slskdRequest);
             } finally {
@@ -62,8 +66,10 @@ public class SlskdProcessService {
     }
 
     private void executeProcesses(SlskdRequest slskdRequest) {
-        for (SlskdAbstractProcess slskdProcess : slskdProcesses) {
+        final UUID taskId = watchdogService.registerTask(this.getClass().getName());
 
+        for (SlskdAbstractProcess slskdProcess : slskdProcesses) {
+            watchdogService.updateTaskActivity(taskId,slskdProcess.getStatus().name());
             StopWatch stopWatch = initProcess(slskdRequest, slskdProcess);
             boolean isSuccess = slskdProcess.execute(slskdRequest).join();
             stopWatch.stop();
@@ -92,6 +98,8 @@ public class SlskdProcessService {
                 break;
             }
         }
+
+        watchdogService.completeTask(taskId);
     }
 
     private StopWatch initProcess(SlskdRequest request, SlskdAbstractProcess process) {

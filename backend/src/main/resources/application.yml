@@ -13,6 +13,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        default_schema: public
         format_sql: true
         connection:
           characterEncoding: utf8

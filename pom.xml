@@ -18,7 +18,7 @@
     </parent>
 
     <properties>
-        <revision>2.0.0-beta</revision>
+        <revision>2.1.0-beta</revision>
         <main.basedir>${project.basedir}</main.basedir>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

@@ -48,7 +48,7 @@
     <div v-if="isDemo" class="fixed p-3 w-full flex justify-content-center bg-gray-900 text-gray-300 shadow-2" style="bottom: 0; letter-spacing: .05em; opacity: .85">
       <div class="fade-effect">
         <span>
-          SoulSync is in demo mode. Some features are hidden or limited
+          SoulSync is running in demo mode. Some features are hidden or limited.
         </span>
         <span v-if="isAuthenticated" class="cursor-pointer" @click="()  => window.open('https://github.com/xaviqo/SoulSyncBot', '_blank')">
           - v{{ getVersion() }}

@@ -1,6 +1,6 @@
 image::img/logo.jpg[align=center]
 
-# About SoulSync
+== About SoulSync
 
 Segunda versión del bot SoulSync. SoulSync es un bot para automatizar la busqueda de playlists de Spotify en la red de SoulSeek haciendo peticiones a la API de link:https://github.com/slskd/slskd[SLSKD]
 
@@ -10,13 +10,13 @@ Puedes probar el bot desde el siguente enlace, algunas funcionaldiades están li
 ** Credenciales: *user*: demo / *password*: demo
 ** Demo deploy: https://soulsync.fyi
 
-## Estado del desarrollo
+== Estado del desarrollo
 
 El bot continua en desarrollo, hay funcionalidades que faltan por añadir (Youtube, Archivos CSV o TXT, preescucha, responsive...) y otras por mejorar. Hay algunos bugs de los cuales soy consciente, pero voy ajustado de tiempo... Así que puedo ponerme a ello cuando tengo tiempo libre y ganas.
 
 Si quieres hacer alguna peticion o quieres colaborar con el desarrollo puedes ponerte en contacto desde el formulario de contacto de mi site personal. link:https://xavi.tech/#contact[*Formulario de contacto*]
 
-## Novedades v2
+=== Novedades v2
 
 * *Se ha mejorado considerablemente el código relacionado con la cola de busquedas pendientes*, evitando que pasado el tiempo la aplicación desbore el uso de memoria RAM.
 
@@ -26,7 +26,7 @@ Si quieres hacer alguna peticion o quieres colaborar con el desarrollo puedes po
 
 * Otras mejoras de codigo y funcionamiento.
 
-# Requisitos
+== Requisitos
 
 * *SLSKD* - Es necesaria una instancia de SLSKD corriendo a la que puedas realizar peticiones. (link:https://github.com/slskd/slskd?tab=readme-ov-file#quick-start[Slskd Quick Start])
 ** *IMPORTANTE*: Si no has usado nunca SLSKD, no solo tienes que iniciar la instancia, tienes también que configurar tu usuario y directorios o el bot no funcionará.
@@ -35,7 +35,7 @@ Si quieres hacer alguna peticion o quieres colaborar con el desarrollo puedes po
 
 * *DOCKER o JAVA* - Es necesario Docker con compose o Java, según como pretendas correr el bot. Igual la forma mas sencilla de hacerlo es mediante Docker.
 
-# Instalación
+== Instalación
 
 El primer paso es clonar el repositorio:
 
@@ -45,7 +45,7 @@ git clone https://github.com/xaviqo/SoulSyncBot.git
 
 Y ahora decide como quieres proceder:
 
-## Si prefieres usar Docker...
+=== Si prefieres usar Docker...
 
 . Configurar volumenes (necesario si vas a usar la funcionalidad _relocate_)
 
@@ -57,7 +57,7 @@ Si quieres que las descagas finalizadas se copien en un directorio concreto debe
       - ../soulsync/local/relocated/directory:/soulsync/relocated
 ----
 
-## Si prefieres usar Java...
+=== Si prefieres usar Java...
 
 *Seccion pendiente de completar*
 
@@ -83,11 +83,11 @@ mvn clean package
 java -jar backend/target/soulsync-backend-{version}.jar
 ----
 
-# Setup
+== Setup
 
 * Accede a la aplicación y pulsa siguente para introducir las variables de configuracion. (http://localhost:6743/)
 
-## Credenciales de Spotify
+=== Credenciales de Spotify
 
 * Inicia sesion en el panel de desarrolladores de Spotify (https://developer.spotify.com/dashboard)
 
@@ -102,23 +102,23 @@ java -jar backend/target/soulsync-backend-{version}.jar
 image::img/spotify-dev.png[align=center]
 image::img/soulsync-cfg1.png[align=center]
 
-## Credenciales de Slskd
+=== Credenciales de Slskd
 
 * Indica la direccion de acceso de Slskd. Es la misma que usas para acceder como usuario (http://localhost:5030)
 
 * Introduce tu usuario y contraseña. Por defecto es *slskd* como usuario y contraseña.
 
-## Probar conexión
+=== Probar conexión
 
 * Tan sencillo como pulsar sobre *Check Connection*. Cuando ambos indicadores están en verde, puedes comenzar a usar el bot. Como ultimo paso puedes cambiar las credenciales si lo deseas.
 
 image::img/soulsync-cfg-checks.png[align=center]
 
-## Configuración general
+=== Configuración general
 
-## Políticas de busqueda
+==== Políticas de busqueda
 
-# Agradecimientos y documentacion de interés
+== Agradecimientos y documentacion de interés
 
 * link:https://github.com/slskd/slskd[*Slskd Repository*] - *My gratitude towards this project is absolute*. Not only because I have been using their application for a long time, but also because their API has been fundamental for the development of the bot.
 

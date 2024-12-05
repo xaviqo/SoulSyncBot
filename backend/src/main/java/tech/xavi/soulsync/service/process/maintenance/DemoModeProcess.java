@@ -23,8 +23,10 @@ public class DemoModeProcess extends MaintenanceAbstractProcess {
 
     @Override
     public CompletableFuture<Boolean> execute() {
-        boolean shouldRunTask = demoModeService.isLimitReached() || isCooldownForCleanupOver();
-        if (demoModeService.isDemoMode() && shouldRunTask) demoModeService.executeCleanup();
+        if (demoModeService.isDemoMode()) {
+            boolean shouldRunTask = demoModeService.isLimitReached() || isCooldownForCleanupOver();
+            if (shouldRunTask) demoModeService.executeCleanup();
+        }
         return CompletableFuture.completedFuture(true);
     }
 

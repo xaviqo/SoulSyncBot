@@ -9,9 +9,12 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import tech.xavi.soulsync.dto.gateway.GatewayRequest;
+import tech.xavi.soulsync.exception.GatewayException;
 import tech.xavi.soulsync.exception.SoulSyncError;
 import tech.xavi.soulsync.exception.SoulSyncException;
 
@@ -49,15 +52,27 @@ public abstract class Gateway {
     }
 
     public String call(GatewayRequest request) {
-        return restTemplate.exchange(
-                getRequestURI(request),
-                request.method(),
-                new HttpEntity<>(
-                        request.payload(),
-                        createHttpHeaders(request)),
-                String.class
-        ).getBody();
+        try {
+            return restTemplate.exchange(
+                    getRequestURI(request),
+                    request.method(),
+                    new HttpEntity<>(
+                            request.payload(),
+                            createHttpHeaders(request)),
+                    String.class
+            ).getBody();
+        } catch (HttpServerErrorException e) {
+            log.warn("API call failed - Status Code: {}, Response: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new GatewayException("Remote service error: " + e.getResponseBodyAsString());
+        } catch (HttpClientErrorException e) {
+            log.warn("Client error - Status Code: {}, Response: {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new GatewayException("Client error: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Unexpected error occurred during API call: {}", e.getMessage());
+            throw new GatewayException("Unexpected service error", e);
+        }
     }
+
 
     private HttpHeaders createHttpHeaders(GatewayRequest request) {
         final String BEARER_PREFIX = "Bearer ";
